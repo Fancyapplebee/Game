@@ -1,6 +1,6 @@
 from string import punctuation
 from random import randint
-
+Quests = False
 #Roles
 heroes = ("PERCY JACKSON","ELF","ZELDA")
 villains = ("ELF","GOBLIN")
@@ -9,8 +9,6 @@ places = ("HOUSE", "BEACH", "FOREST", "MOUNTAIN", "DESERT")
 
 def cS(s):
     return s.upper().translate(str.maketrans('', '', punctuation))
-
-
 #Role Types
 class Role():
     def __init__(self, name):
@@ -35,11 +33,17 @@ class Role():
         return place
     
     def Menu1(self):
-        option = cS(input("Enter either 'map' or 'search' "))
-        while option not in ("MAP","SEARCH"):
+        if Quests == False:
+            option = cS(input("Enter either 'Map' or 'Search' "))
+        elif Quests == True:
+            option = cS(input("Enter either 'Map', 'Search', or 'Quests'"))
+        while option not in ("MAP","SEARCH","QUESTS"):
             print("Try again!")
-            option = cS(input("Enter either 'map' or 'search' "))
-        return option
+            if Quests == False:
+                option = cS(input("Enter either 'Map' or 'Search' "))
+            elif Quests == True:
+                option = cS(input("Enter either 'Map', 'Search', or 'Quests'"))
+            return option
         
 
 class Hero(Role):
@@ -190,7 +194,10 @@ def HeroGame(playerhero):
             RoleHero.map()
         elif option=="SEARCH":
             place = RoleHero.search(Place)
-        print("New thing unlocked! Quests have been unlocked.")
+    print("New thing unlocked! Quests have been unlocked.")
+    Quests = True
+    print("To open quests, in the menu quests will be unlocked.")
+    option = RoleHero.Menu1()
     
     
     
