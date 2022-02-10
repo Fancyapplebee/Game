@@ -1,16 +1,17 @@
 from string import punctuation
 from random import randint
+
 Quests = False
 #Roles
 heroes = ("PERCY JACKSON","ELF","ZELDA")
 villains = ("ELF","GOBLIN")
-goodNPCs = ("Healer",)
+goodNPCs = ("HEALER",)
 places = ("HOUSE", "BEACH", "FOREST", "MOUNTAIN", "DESERT")
 
 def cS(s):
     return s.upper().translate(str.maketrans('', '', punctuation))
 #Role Types
-class Role():
+class Role:
     def __init__(self, name):
         self.name = name
     def map(self):
@@ -35,15 +36,16 @@ class Role():
     def Menu1(self):
         if Quests == False:
             option = cS(input("Enter either 'Map' or 'Search' "))
-        elif Quests == True:
-            option = cS(input("Enter either 'Map', 'Search', or 'Quests'"))
-        while option not in ("MAP","SEARCH","QUESTS"):
-            print("Try again!")
-            if Quests == False:
+            while option not in ("MAP","SEARCH"):
+                print("Try again!")
                 option = cS(input("Enter either 'Map' or 'Search' "))
-            elif Quests == True:
-                option = cS(input("Enter either 'Map', 'Search', or 'Quests'"))
-            return option
+        elif Quests == True:
+            option = cS(input("Enter either 'Map', 'Search', or 'Quests' "))
+            while option not in ("MAP","SEARCH","QUESTS"):
+                print("Try again!")
+                option = cS(input("Enter either 'Map' or 'Search' "))
+        
+        return option
         
 
 class Hero(Role):
@@ -60,6 +62,9 @@ class Elf(Hero, Villain):
     pass
 
 class Zelda(Hero):
+    pass
+
+class Goblin(Villain):
     pass
 
 class NPC(Role):
@@ -79,7 +84,13 @@ class NeutralNPC(NPC):
 
 #Setting Types
 class Setting:
-    pass
+    def map(self):
+        print("------")
+        print("Places")
+        print("------")
+        for place in self.places:
+            print(place)
+        print()
 
 class House(Setting):
     def __init__(self):
@@ -88,30 +99,29 @@ class House(Setting):
 
         
         
-        
-
+    
 class Beach(Setting):
-    def __init__(self,Role):
+    def __init__(self):
         self.name = "Beach"
-        self.places = ("SAND, CASTLE, OCEAN") # Fill this up
+        self.places = ("SAND", "CASTLE", "OCEAN") # Fill this up
 
 
 class Forest(Setting):
-    def __init__(self,Role):
+    def __init__(self):
         self.name = "Forest"
-        self.places = ("TREE") # Fill this up
+        self.places = ("TREE",) # Fill this up
 
 
 class Mountain(Setting):
-    def __init__(self,Role):
+    def __init__(self):
         self.name = "Mountain"
-        self.places = ("CAVE, UP") # Fill this up
+        self.places = ("CAVE", "UP") # Fill this up
 
 
 class Desert(Setting):
-    def __init__(self,Role):
+    def __init__(self):
         self.name = "Desert"
-        self.places = ("SAND, CACTUS, WELL") # Fill this up
+        self.places = ("SAND", "CACTUS", "WELL") # Fill this up
 
 
 
@@ -163,42 +173,45 @@ def HeroGame(playerhero):
         Place = House()
         option = RoleHero.Menu1()
         if option=="MAP":
-            RoleHero.map()
+            Place.map()
         elif option=="SEARCH":
             place = RoleHero.search(Place)
     elif placetogo == "BEACH":
-        Place = Beach(RoleHero)#complete this to be like the first if-statement
+        Place = Beach()#complete this to be like the first if-statement
         option = RoleHero.Menu1()
         if option=="MAP":
-            RoleHero.map()
+            Place.map()
         elif option=="SEARCH":
             place = RoleHero.search(Place)
     elif placetogo == "FOREST":
-        Place = Forest(RoleHero)#complete this to be like the first if-statement
+        Place = Forest()#complete this to be like the first if-statement
         option = RoleHero.Menu1()
         if option=="MAP":
-            RoleHero.map()
+            Place.map()
         elif option=="SEARCH":
             place = RoleHero.search(Place)
     elif placetogo == "MOUNTAIN":
-        Place = Mountain(RoleHero)#complete this to be like the first if-statement
+        Place = Mountain()#complete this to be like the first if-statement
         option = RoleHero.Menu1()
         if option=="MAP":
-            RoleHero.map()
+            Place.map()
         elif option=="SEARCH":
             place = RoleHero.search(Place)
     elif placetogo == "DESERT":
-        Place = Desert(RoleHero)#complete this to be like the first if-statement
+        Place = Desert()#complete this to be like the first if-statement
         option = RoleHero.Menu1()
         if option=="MAP":
-            RoleHero.map()
+            Place.map()
         elif option=="SEARCH":
             place = RoleHero.search(Place)
     print("New thing unlocked! Quests have been unlocked.")
+    global Quests
     Quests = True
     print("To open quests, in the menu quests will be unlocked.")
     option = RoleHero.Menu1()
-    
+    if option == "QUESTS":
+        print("Quest 1: Chop Down 10 Trees")
+        #Complete this to simulate a minigame using the time function
     
     
     
@@ -209,7 +222,9 @@ def HeroGame(playerhero):
     
 def VillainGame(playervillain):  # Make this be like HeroGame
     if playervillain == "ELF":
-        RoleVillain=Elf(playervillain)
+        RoleVillain= Elf(playervillain)
+    elif playervillain == "GOBLIN":
+        RoleVillain = Goblin(playervillain)
     print("Welcome to the game!")
     print("Where am I?")
     print("You see a chest.")
@@ -232,38 +247,38 @@ def VillainGame(playervillain):  # Make this be like HeroGame
         Place = House()
         option = RoleVillain.Menu1()
         if option=="MAP":
-            RoleVillain.map()
+            Place.map()
         elif option=="SEARCH":
             place = RoleVillain.search(Place)
     elif placetogo == "BEACH":
-        Place = Beach(RoleVillain)#complete this to be like the first if-statement
+        Place = Beach()#complete this to be like the first if-statement
         option = RoleVillain.Menu1()
         if option=="MAP":
-            RoleVillain.map()
+            Place.map()
         elif option=="SEARCH":
             place = RoleVillain.search(Place)
     elif placetogo == "FOREST":
-        Place = Forest(RoleVillain)#complete this to be like the first if-statement
+        Place = Forest()#complete this to be like the first if-statement
         option = RoleVillain.Menu1()
         if option=="MAP":
-            RoleVillain.map()
+            Place.map()
         elif option=="SEARCH":
             place = RoleVillain.search(Place)
     elif placetogo == "MOUNTAIN":
-        Place = Mountain(RoleVillain)#complete this to be like the first if-statement
+        Place = Mountain()#complete this to be like the first if-statement
         option = RoleVillain.Menu1()
         if option=="MAP":
-            RoleVillain.map()
+            Place.map()
         elif option=="SEARCH":
             place = RoleVillain.search(Place)
     elif placetogo == "DESERT":
-        Place = Desert(RoleVillan)#complete this to be like the first if-statement
+        Place = Desert()#complete this to be like the first if-statement
         option = RoleVillain.Menu1()
         if option=="MAP":
-            RoleVillain.map()
+            Place.map()
         elif option=="SEARCH":
             place = RoleVillain.search(Place)
-
+    #Complete this to be like the herogame function, but different, as this is for villains!
     
 
 def game():
@@ -298,7 +313,6 @@ item system for all the roles,
         - Elf's elf key
         - Zelda has a special bow and a sword
 damage multiplier, armor, ...
-
 '''
 
 
