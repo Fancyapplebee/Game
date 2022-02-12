@@ -1,6 +1,6 @@
-from string import punctuation
-from random import randint
-
+from string import punctuation, ascii_letters
+from random import randint, choice
+from time import time, sleep
 Quests = False
 #Roles
 heroes = ("PERCY JACKSON","ELF","ZELDA")
@@ -40,14 +40,29 @@ class Role:
                 print("Try again!")
                 option = cS(input("Enter either 'Map' or 'Search' "))
         elif Quests == True:
-            option = cS(input("Enter either 'Map', 'Search', or 'Quests' "))
-            while option not in ("MAP","SEARCH","QUESTS"):
+            option = cS(input("Enter either 'Map', 'Search', 'Mine' or 'Quests' "))
+            while option not in ("MAP","SEARCH","QUESTS", "MINE"):
                 print("Try again!")
-                option = cS(input("Enter either 'Map' or 'Search' "))
+                if Quests == False:
+                    option = cS(input("Enter either 'Map' or 'Search' "))
+                elif Quests == True:
+                    option = cS(input("Enter either 'Map', 'Search', 'Mine' or 'Quests' "))
         
         return option
-        
-
+def Mine():
+    print("The objective of this game is to type the letter in time(To stop, type stop)!")
+    while True:
+        start = time()
+        stop = time()
+        randletter = choice(ascii_letters)
+        x = input("Enter {}".format(randletter))
+        stop = time()
+        time = (stop-start)
+        print("You entered it in {:.2f} mins!".format(time))
+        if stop-start <=4:
+            print("You passed!")
+        else:
+            print("Try again!")
 class Hero(Role):
     pass
 
@@ -211,15 +226,16 @@ def HeroGame(playerhero):
     option = RoleHero.Menu1()
     if option == "QUESTS":
         print("Quest 1: Chop Down 10 Trees")
+        print("To chop down trees do the command 'Mine'")
+        option = RoleHero.Menu1()
+        if option == "MINE":
+            Mine()
         #Complete this to simulate a minigame using the time function
     
     
     
     
 
-    
-    
-    
 def VillainGame(playervillain):  # Make this be like HeroGame
     if playervillain == "ELF":
         RoleVillain= Elf(playervillain)
