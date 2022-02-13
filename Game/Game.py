@@ -1,5 +1,5 @@
 from string import punctuation, ascii_letters
-from random import randint, choice
+from random import randint, choice, random
 from time import time, sleep
 Quests = False
 #Roles
@@ -7,6 +7,8 @@ heroes = ("PERCY JACKSON","ELF","ZELDA")
 villains = ("ELF","GOBLIN")
 goodNPCs = ("HEALER",)
 places = ("HOUSE", "BEACH", "FOREST", "MOUNTAIN", "DESERT")
+neutralNPCS = ("MINER", "WOODCHUCKER")
+
 
 def cS(s):
     return s.upper().translate(str.maketrans('', '', punctuation))
@@ -49,20 +51,7 @@ class Role:
                     option = cS(input("Enter either 'Map', 'Search', 'Mine' or 'Quests' "))
         
         return option
-def Mine():
-    print("The objective of this game is to type the letter in time(To stop, type stop)!")
-    while True:
-        start = time()
-        stop = time()
-        randletter = choice(ascii_letters)
-        x = input("Enter {}".format(randletter))
-        stop = time()
-        time = (stop-start)
-        print("You entered it in {:.2f} mins!".format(time))
-        if stop-start <=4:
-            print("You passed!")
-        else:
-            print("Try again!")
+
 class Hero(Role):
     pass
 
@@ -93,8 +82,49 @@ class BadNPC(NPC):
     pass
 
 class NeutralNPC(NPC):
+    def __init__(self):
+        global neutralNPCS, randint
+        self.role = neutralNPCS[randint(0,1)]
+        self.picture = "⛏" if self.role=="MINER" else "🪓"
     pass
+    
 
+
+def Mine():
+    global time
+    print("The objective of this game is to type the letter in time (To stop, type stop)!")
+    Opponent = NeutralNPC()
+    print(f"Get ready, you are about to face the {Opponent.role} {Opponent.picture}")
+    wins = 0
+    losses = 0
+    draws = 0
+    while True:
+        start = time()
+        randletter = choice(ascii_letters)
+        x = input("Enter '{}': ".format(randletter))
+        if cS(x)=="STOP":
+            break
+        stop = time()
+        Time = (stop-start)
+        print("You entered it in {:.2f} seconds!".format(Time))
+        npcTime = 1+(3*random())
+
+        if Time < npcTime and x==randletter:
+            print("You passed!")
+            wins+=1
+        elif Time > npcTime or x!=randletter:
+            print("You lost!")
+            losses +=1
+        
+        else:
+            print("Draw")
+            draws+=1
+    
+    points = wins - losses
+    
+    #Give the player 5 bonus points if the player's average is better than the npc.
+     # Print out the statistics, wins, losses, draws, average time of the player, average time of the npc, points that the player won, i.e., points = wins-losses
+    
 
 
 #Setting Types
@@ -230,7 +260,6 @@ def HeroGame(playerhero):
         option = RoleHero.Menu1()
         if option == "MINE":
             Mine()
-        #Complete this to simulate a minigame using the time function
     
     
     
