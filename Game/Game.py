@@ -98,6 +98,10 @@ def Mine():
     wins = 0
     losses = 0
     draws = 0
+    totalplayerscore = 0
+    playeravg = []
+    botavg = []
+    avgtime = []
     while True:
         start = time()
         randletter = choice(ascii_letters)
@@ -112,16 +116,35 @@ def Mine():
         if Time < npcTime and x==randletter:
             print("You passed!")
             wins+=1
+            totalplayerscore += 1
+            botavg.append(npcTime)
+            playeravg.append(Time)
         elif Time > npcTime or x!=randletter:
             print("You lost!")
             losses +=1
-        
-        else:
+            totalplayerscore -= 1
+            botavg.append(npcTime)
+            playeravg.append(Time)
+        elif Time == npcTime:
             print("Draw")
             draws+=1
-    
+            botavg.append(npcTime)
+            playeravg.append(Time)
+    playeravglen = (len(playeravg))
+    playeravg = sum(playeravg)
+    botavglen = (len(botavg))
+    botavg = sum(botavg)
     points = wins - losses
-    
+    if playeravg/playeravglen > botavg/botavglen:
+        print("You get 5 extra points because your avg was better than the bot!")
+        points += 5
+    print("The player average is {:.2f} seconds".format(playeravg/playeravglen))
+    print("The bot average is {:.2f} seconds".format(botavg/botavglen))
+    print("You got {} points in total!".format(points))
+    print("You won {} games!".format(wins))
+    print("You lost {} games!".format(losses))
+    print("{} is the number of games that drawed!".format(draws))
+
     #Give the player 5 bonus points if the player's average is better than the npc.
      # Print out the statistics, wins, losses, draws, average time of the player, average time of the npc, points that the player won, i.e., points = wins-losses
     
