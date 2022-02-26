@@ -135,7 +135,7 @@ def Mine():
     botavglen = (len(botavg))
     botavg = sum(botavg)
     points = wins - losses
-    if playeravg/playeravglen > botavg/botavglen:
+    if playeravg/playeravglen < botavg/botavglen:
         print("You get 5 extra points because your avg was better than the bot!")
         points += 5
     print("The player average is {:.2f} seconds".format(playeravg/playeravglen))
@@ -277,10 +277,16 @@ def HeroGame(playerhero):
     Quests = True
     print("To open quests, in the menu quests will be unlocked.")
     option = RoleHero.Menu1()
+    while option!= "QUESTS":
+        print("Please enter quests!")
+        option=RoleHero.Menu1()
     if option == "QUESTS":
         print("Quest 1: Chop Down 10 Trees")
         print("To chop down trees do the command 'Mine'")
         option = RoleHero.Menu1()
+        while option!="MINE":
+            print("Please enter mine")
+            option = RoleHero.Menu1()
         if option == "MINE":
             Mine()
     
