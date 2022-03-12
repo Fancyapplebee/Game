@@ -1,3 +1,4 @@
+from _typeshed import SupportsKeysAndGetItem
 from string import punctuation, ascii_letters
 from random import randint, choice, random
 from time import time, sleep
@@ -9,48 +10,31 @@ goodNPCs = ("HEALER",)
 places = ("HOUSE", "BEACH", "FOREST", "MOUNTAIN", "DESERT")
 neutralNPCS = ("MINER", "WOODCHUCKER")
 
+#Zeeshan Rizvi
+#https://stackoverflow.com/questions/17432478/python-print-to-one-line-with-time-delay-between-prints/52595545#52595545?newreg=cb618a4b6ed14f8bb7a782e731f4c678
+def slowPrint(text):
+    for i in text:
+        print(i, end='', flush=True)
+        sleep(0.15)
+    print()
 
 def cS(s):
     return s.upper().translate(str.maketrans('', '', punctuation))
+    
+
 #Role Types
 class Role:
     def __init__(self, name):
         self.name = name
-    def map(self):
-        print("------")
-        print("Places")
-        print("------")
-        for place in places:
-            print(place)
-        print()
-    def search(self, setting):
-        print("Places")
-        print("------")
-        for place in setting.places:
-            print(place)
-        print("------")
-        place = cS(input(f"Where in the {setting.name} do you want to explore? "))
-        while place not in setting.places:
-            print("Try again!")
-            place = cS(input(f"Where in the {setting.name} do you want to explore? "))
-        return place
+        self.inventory = [{"Name":"Logs", "Picture":"🪵", "Description":"Something you can use in the shop for crafting things", "Number":0}, ]
+    def printInventory(self):
+        for item in self.inventory:
+            if item["Number"] != 0:
+                print("{} {} {:>10}".format(item["Name"],item["Picture"],"x "+str(item["Number"])))
+                print("Description:",item["Description"])
+
+       
     
-    def Menu1(self):
-        if Quests == False:
-            option = cS(input("Enter either 'Map' or 'Search' "))
-            while option not in ("MAP","SEARCH"):
-                print("Try again!")
-                option = cS(input("Enter either 'Map' or 'Search' "))
-        elif Quests == True:
-            option = cS(input("Enter either 'Map', 'Search', 'Mine' or 'Quests' "))
-            while option not in ("MAP","SEARCH","QUESTS", "MINE"):
-                print("Try again!")
-                if Quests == False:
-                    option = cS(input("Enter either 'Map' or 'Search' "))
-                elif Quests == True:
-                    option = cS(input("Enter either 'Map', 'Search', 'Mine' or 'Quests' "))
-        
-        return option
 
 class Hero(Role):
     pass
@@ -86,11 +70,14 @@ class NeutralNPC(NPC):
         global neutralNPCS, randint
         self.role = neutralNPCS[randint(0,1)]
         self.picture = "⛏" if self.role=="MINER" else "🪓"
-    pass
+    
     
 
+# Task 1: modify the Menu function so that the user can print their inventory
+# Task 2: pass a setting variable to Mine, and, depending on the setting, they
+# can have the possibility to mine different items
 
-def Mine():
+def Mine(Setting):
     global time
     print("The objective of this game is to type the letter in time (To stop, type stop)!")
     Opponent = NeutralNPC()
@@ -136,19 +123,29 @@ def Mine():
     botavg = sum(botavg)
     points = wins - losses
     if playeravg/playeravglen < botavg/botavglen:
-        print("You get 5 extra points because your avg was better than the bot!")
+        print("You get 5 extra resources because your avg was better than the bot!")
         points += 5
+    elif Setting == "BEACH":
+        Sand = Sand 
+        Sand += Points
+    elif Setting == "FOREST":
+
+    elif Setting == "MOUNTAIN":
+
+    elif Setting == "DESSERT":
+
     print("The player average is {:.2f} seconds".format(playeravg/playeravglen))
     print("The bot average is {:.2f} seconds".format(botavg/botavglen))
-    print("You got {} points in total!".format(points))
+    print("You got {} resources in total!".format(points))
     print("You won {} games!".format(wins))
     print("You lost {} games!".format(losses))
     print("{} is the number of games that drawed!".format(draws))
-
+    
+    return points
+    
     #Give the player 5 bonus points if the player's average is better than the npc.
      # Print out the statistics, wins, losses, draws, average time of the player, average time of the npc, points that the player won, i.e., points = wins-losses
     
-
 
 #Setting Types
 class Setting:
@@ -210,6 +207,55 @@ def displayVillains():
     print()
     
 
+def map():
+    print("------")
+    print("Places")
+    print("------")
+    for place in places:
+        print(place)
+    print()
+
+def search(setting):
+    print("------")
+    print("Places")
+    print("------")
+    for place in setting.places:
+        print(place)
+    print("------")
+    place = cS(input(f"Where in the {setting.name} do you want to explore? "))
+    while place not in setting.places:
+        print("Try again!")
+        place = cS(input(f"Where in the {setting.name} do you want to explore? "))
+    return place
+
+def Menu(role, setting):
+    if Quests == False:
+        option = cS(input("Enter either 'Map' or 'Search' "))
+        while option not in ("MAP","SEARCH"):
+            print("Try again!")
+            option = cS(input("Enter either 'Map' or 'Search' "))
+        if option == "MAP":
+            setting.map()
+        elif option == "SEARCH":
+            search(setting)
+    elif Quests == True:
+        option = cS(input("Enter either 'Map', 'Search', 'Mine' or 'Quests'(To print your inventory type 'PrintInv'"))
+        while option not in ("MAP","SEARCH","QUESTS", "MINE", "PRINTINV"):
+            print("Try again!")
+            option = cS(input("Enter either 'Map', 'Search', 'Mine' or 'Quests'(To print your inventory type 'PrintInv'")) 
+        while option == "MAP" or option == "SEARCH" or option=="MINE":
+            if option == "MAP":
+                setting.map()
+                option = cS(input("Enter either 'Map', 'Search', 'Mine' or 'Quests'(To print your inventory type 'PrintInv'"))
+            elif option == "SEARCH":
+                search(setting)
+                option = cS(input("Enter either 'Map', 'Search', 'Mine' or 'Quests'(To print your inventory type 'PrintInv'"))
+            elif option == "MINE":
+                role.inventory[0]["Number"] += Mine()
+                option = cS(input("Enter either 'Map', 'Search', 'Mine' or 'Quests'(To print your inventory type 'PrintInv'"))
+            elif option == "PRINTINV":
+                printInventory 
+
     
     
 def HeroGame(playerhero):
@@ -219,7 +265,13 @@ def HeroGame(playerhero):
         RoleHero = Elf(playerhero)
     elif playerhero == "ZELDA":
         RoleHero = Zelda(playerhero)
-    print("Welcome to the game!")
+    Sand = 0
+    Logs = 0
+    Rocks = 0
+    Silver = 0
+    Gold = 0
+    Diamond = 0
+    Emerald = 0
     print("Where am I?")
     print("You see a chest.")
     open = cS(input("Do you open the chest? "))
@@ -230,7 +282,7 @@ def HeroGame(playerhero):
         print("You do not have the key.")
     elif open == "NO":
         print("You continue on with your day.")
-    RoleHero.map()
+    map()
     placetogo = cS(input("Where do you want to go? "))
     while placetogo not in places:
         print("Try again")
@@ -239,142 +291,58 @@ def HeroGame(playerhero):
     print(f"You are now at {placetogo}")
     if placetogo == "HOUSE":
         Place = House()
-        option = RoleHero.Menu1()
-        if option=="MAP":
-            Place.map()
-        elif option=="SEARCH":
-            place = RoleHero.search(Place)
+        Menu(RoleHero,Place)
     elif placetogo == "BEACH":
         Place = Beach()#complete this to be like the first if-statement
-        option = RoleHero.Menu1()
-        if option=="MAP":
-            Place.map()
-        elif option=="SEARCH":
-            place = RoleHero.search(Place)
+        Menu(RoleHero,Place)
     elif placetogo == "FOREST":
         Place = Forest()#complete this to be like the first if-statement
-        option = RoleHero.Menu1()
-        if option=="MAP":
-            Place.map()
-        elif option=="SEARCH":
-            place = RoleHero.search(Place)
+        Menu(RoleHero,Place)
     elif placetogo == "MOUNTAIN":
         Place = Mountain()#complete this to be like the first if-statement
-        option = RoleHero.Menu1()
-        if option=="MAP":
-            Place.map()
-        elif option=="SEARCH":
-            place = RoleHero.search(Place)
+        Menu(RoleHero,Place)
     elif placetogo == "DESERT":
         Place = Desert()#complete this to be like the first if-statement
-        option = RoleHero.Menu1()
-        if option=="MAP":
-            Place.map()
-        elif option=="SEARCH":
-            place = RoleHero.search(Place)
+        Menu(RoleHero,Place)
     print("New thing unlocked! Quests have been unlocked.")
     global Quests
     Quests = True
     print("To open quests, in the menu quests will be unlocked.")
-    option = RoleHero.Menu1()
-    while option!= "QUESTS":
-        print("Please enter quests!")
-        option=RoleHero.Menu1()
-    if option == "QUESTS":
-        print("Quest 1: Chop Down 10 Trees")
-        print("To chop down trees do the command 'Mine'")
-        option = RoleHero.Menu1()
-        while option!="MINE":
-            print("Please enter mine")
-            option = RoleHero.Menu1()
-        if option == "MINE":
-            Mine()
+    Menu(RoleHero,Place)
+    RoleHero.printInventory()
+        
     
-    
-    
+#    New Game
+# 5x6 grid numbers from 1 to 30
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
     
 
-def VillainGame(playervillain):  # Make this be like HeroGame
-    if playervillain == "ELF":
-        RoleVillain= Elf(playervillain)
-    elif playervillain == "GOBLIN":
-        RoleVillain = Goblin(playervillain)
-    print("Welcome to the game!")
-    print("Where am I?")
-    print("You see a chest.")
-    open = cS(input("Do you open the chest? "))
-    while open != "YES" and open != "NO":
-        print("Try again")
-        open = cS(input("Do you open the chest? "))
-    if open == "YES":
-        print("You do not have the key.")
-    elif open == "NO":
-        print("You continue on with your day.")
-    RoleVillain.map()
-    placetogo = cS(input("Where do you want to go? "))
-    while placetogo not in places:
-        print("Try again")
-        placetogo = cS(input("Where do you want to go? "))
-    print("Going to {}".format(placetogo))
-    print(f"You are now at {placetogo}")
-    if placetogo == "HOUSE":
-        Place = House()
-        option = RoleVillain.Menu1()
-        if option=="MAP":
-            Place.map()
-        elif option=="SEARCH":
-            place = RoleVillain.search(Place)
-    elif placetogo == "BEACH":
-        Place = Beach()#complete this to be like the first if-statement
-        option = RoleVillain.Menu1()
-        if option=="MAP":
-            Place.map()
-        elif option=="SEARCH":
-            place = RoleVillain.search(Place)
-    elif placetogo == "FOREST":
-        Place = Forest()#complete this to be like the first if-statement
-        option = RoleVillain.Menu1()
-        if option=="MAP":
-            Place.map()
-        elif option=="SEARCH":
-            place = RoleVillain.search(Place)
-    elif placetogo == "MOUNTAIN":
-        Place = Mountain()#complete this to be like the first if-statement
-        option = RoleVillain.Menu1()
-        if option=="MAP":
-            Place.map()
-        elif option=="SEARCH":
-            place = RoleVillain.search(Place)
-    elif placetogo == "DESERT":
-        Place = Desert()#complete this to be like the first if-statement
-        option = RoleVillain.Menu1()
-        if option=="MAP":
-            Place.map()
-        elif option=="SEARCH":
-            place = RoleVillain.search(Place)
-    #Complete this to be like the herogame function, but different, as this is for villains!
+
     
 
 def game():
-    
-    Role = cS(input("Welcome! Are you are a hero or a villain? "))
-    while Role!="HERO" and Role!="VILLAIN":
-        Role = cS(input("Please enter 'Hero' or 'Villain': "))
-    if Role=="HERO":
-        displayHeroes()
+    slowPrint("Welcome to the Game!")
+#    Animation
+    displayHeroes()
+    playerhero = cS(input("What hero do you want to be? "))
+    while playerhero not in heroes:
+        print("Error: Please try again")
         playerhero = cS(input("What hero do you want to be? "))
-        while playerhero not in heroes:
-            print("Error: Please try again")
-            playerhero = cS(input("What hero do you want to be? "))
-        HeroGame(playerhero)
-    else:
-        displayVillains()
-        playervillain = cS(input("What villain do you want to be? "))
-        while playervillain not in villains:
-            print("Error: Please try again")
-            playervillain = cS(input("What villain do you want to be? "))
-        VillainGame(playervillain)
-    
+    HeroGame(playerhero)
+
 
     
 '''
