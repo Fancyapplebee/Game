@@ -1,8 +1,12 @@
+from asyncio.events import BaseDefaultEventLoopPolicy
 from string import punctuation, ascii_letters
 from random import randint, choice, random
 from time import time, sleep
 from inputimeout import inputimeout, TimeoutOccurred
+from threading import Thread
+
 Quests = False
+Shop = False
 #Roles
 heroes = ("PERCY JACKSON","ELF","ZELDA")
 goodNPCs = ("HEALER",)
@@ -21,6 +25,15 @@ def slowPrint(text):
         sleep(0.15)
     print()
 
+
+'''
+cS is NOT an input function!!!
+
+1. converts string to uppercase
+2. gets rid of all of the punctuation
+3. gets rid of leading and trailing spaces
+'''
+
 def cS(s):
     marksremoved = s.upper().translate(str.maketrans('', '', punctuation))
     return marksremoved.strip()
@@ -29,23 +42,59 @@ def cS(s):
 class Role:
     def __init__(self, name):
         self.name = name
+        self.money = 100
         # Task 1: Modify descriptions of inventory
-        self.inventory = {"Cookie":{"Name":"Cookie", "Picture":"🍪", "Description":"Something to eat!", "Number":0},
-        "Logs":{"Name":"Logs", "Picture":"🪵", "Description":"Something you can use in the shop for crafting things or to sell", "Number":0},
-        "Sand":{"Name":"Sand", "Picture":"🟫", "Description":"Something you can smelt or sell!", "Number":0},
-        "Rocks":{"Name":"Rocks", "Picture":"🪨", "Description":"Something you can use in the shop for crafting things, selling, or refining", "Number":0},
-        "Silver":{"Name":"Silver", "Picture":"🪙", "Description":"Something you can use in the shop for crafting things, selling, or fusing","Number":0},
-        "Gold":{"Name":"Gold", "Picture":"⚱️", "Description":"Something you can use in the shop for crafting things, selling, or fusing", "Number":0},
-        "Diamond":{"Name":"Diamond", "Picture":"💎", "Description":"Something you can use in the shop for crafting things, selling, or fusing", "Number":0}, "Emerald":{"Name":"Emerald", "Picture":"🟩", "Description":"Something you can use in the shop for crafting things, selling, or fusing", "Number":0}, "Cactus":{"Name":"Cactus", "Picture":"🌵", "Description":"Something to sell or turn into pointy armour!", "Number":0},
-        "Golden Sapling":{"Name":"Golden Sapling", "Picture":"🌸", "Description":"Grows into a golden tree!", "Number":0},
-        "Golden Log":{"Name":"Golden Log", "Picture":"🌴", "Description":"The most powerful wood, when combined with weapons +10 to all stats!", "Number":0},
-        "Sand Pail":{"Name":"Sand Pail", "Picture":"N/A","Description":"A bucket, maybe you can plant something in here.","Number":0},
-        "Sand":{"Name":"Sand", "Picture":"⌛","Description":"Sand, used for smelting into glass or for making sandpaper.","Number":0}}
-        self.defending = False
+        self.inventory = {"Cookie":{"Name":"Cookie", "Picture":"🍪", "Description":"Something to eat!", "Number":0, "BuyValue":1, "SellValue":0},
+        "Logs":{"Name":"Logs", "Picture":"🪵", "Description":"Something you can use in the shop for crafting things or to sell", "Number":0, "BuyValue": 5, "SellValue":4},
+        "Sand":{"Name":"Sand", "Picture":"🟫", "Description":"Something you can smelt or sell!", "Number":0,"BuyValue":2, "SellValue":1},
+        "Rocks":{"Name":"Rocks", "Picture":"🪨", "Description":"Something you can use in the shop for crafting things, selling, or refining", "Number":0, "BuyValue":5, "SellValue":4},
+        "Silver":{"Name":"Silver", "Picture":"🪙", "Description":"Something you can use in the shop for crafting things, selling, or fusing","Number":0, "BuyValue": 20, "SellValue": 19},
+        "Gold":{"Name":"Gold", "Picture":"⚱️", "Description":"Something you can use in the shop for crafting things, selling, or fusing", "Number":0, "BuyValue": 200, "SellValue": 199},
+        "Diamond":{"Name":"Diamond", "Picture":"💎", "Description":"Something you can use in the shop for crafting things, selling, or fusing", "Number":0, "BuyValue":450, "SellValue":449},
+        "Emerald":{"Name":"Emerald", "Picture":"🟩", "Description":"Something you can use in the shop for crafting things, selling, or fusing", "Number":0, "BuyValue":900,"SellValue":899},
+        "Cactus":{"Name":"Cactus", "Picture":"🌵", "Description":"Something to sell or turn into pointy armour!", "Number":0, "BuyValue":5, "SellValue":4},
+        "Golden Sapling":{"Name":"Golden Sapling", "Picture":"🌸", "Description":"Grows into a golden tree!", "Number":0, "BuyValue":50000, "SellValue": 49995},
+        "Golden Log":{"Name":"Golden Log", "Picture":"🌴", "Description":"The most powerful wood, when combined with weapons +10 to all stats!", "Number":0, "BuyValue": 25000, "SellValue": 24999},
+        "Sand Pail":{"Name":"Sand Pail", "Picture":"N/A","Description":"A bucket, maybe you can plant something in here.","Number":0, "BuyValue": 20, "SellValue": 19},
+        "Sand":{"Name":"Sand", "Picture":"⌛","Description":"Sand, used for smelting into glass or for making sandpaper.","Number":0, "BuyValue": 1, "SellValue": 1}, "Keys":{"Key 1": {"Name":"Key 1", "Picture":"🔐","Description":"Used to access a certain chest","Number":0}}}
         
+        self.defending = False
+        self.moved = False
+        self.moveTime = None
+        self.waitTime = None
+
 #    https://hypixel-skyblock.fandom.com/wiki/Defense
     def attack(self,enemy):
-        enemy.health -= (Defense(enemy.defense)*self.attackpower)
+#        enemy.health -= (Defense(enemy.defense)*self.attackpower)
+        if not self.moved:
+            self.moved = True
+            enemy.health -= (Defense(enemy.defense)*self.attackpower)
+            self.moveTime = time()
+            self.waitTime = self.attackStamina
+        elif time() - self.waitTime < self.moveTime:
+            print("Can't attack yet")
+        else:
+            enemy.health -= (Defense(enemy.defense)*self.attackpower)
+            self.moveTime = time()
+            self.waitTime = self.attackStamina
+            
+    def defend(self):
+        if not self.moved:
+            self.moved = True
+            self.defending = True
+            self.defense += 250
+            self.moveTime = time()
+            self.waitTime = self.defenseStamina
+        elif time() - self.waitTime < self.moveTime:
+            print("Can't boost defense yet")
+        else:
+            self.defense += 250
+            self.moveTime = time()
+            self.waitTime = self.defenseStamina
+        
+        print(self.defense)
+#        self.defending = True
+        
         
     def printInventory(self):
         for item in self.inventory:
@@ -82,7 +131,7 @@ e.g. 157 health
 
 def HealthBar(character):
     print(character.picture)
-    tempHealth = character.health
+    tempHealth = int(character.health)
     hundreds = tempHealth // 100
     tempHealth %= 100
     tens = tempHealth // 10
@@ -112,14 +161,14 @@ class Elf(Role):
         self.health = 50
         self.baseDefense = 200
         self.defense = 200
-        self.attackStamina = 0.2
+        self.attackStamina = 2
         self.defenseStamina = 0.4
 
 class Zelda(Role):
     def __init__(self,name):
         super().__init__(name)
         self.picture = "🗡"
-        self.attackpower = 20
+        self.attackpower = 2000 # Change back to 20 for actual game
         self.health = 100
         self.baseDefense = 50
         self.defense = 50
@@ -129,8 +178,9 @@ class Zelda(Role):
 class NPC:
 #enemy.health -= (Defense(enemy.defense)*self.attackpower)
     def attack(self,enemy):
-        enemy.health -= self.attackpower
-    
+#        enemy.health -= self.attackpower
+        enemy.health -= (Defense(enemy.defense)*self.attackpower)
+            
 class GoodNPC(NPC):
     pass
 
@@ -205,9 +255,9 @@ def Mine(role, setting):
             draws+=1
             botavg.append(npcTime)
             playeravg.append(Time)
-    playeravglen = (len(playeravg))
+    playeravglen = (len(playeravg)) if len(playeravg)!=0 else 1
     playeravg = sum(playeravg)
-    botavglen = (len(botavg))
+    botavglen = (len(botavg)) if len(botavg)!=0 else 1
     botavg = sum(botavg)
     points = wins - losses
     if playeravg/playeravglen < botavg/botavglen:
@@ -362,9 +412,37 @@ def search(setting, role):
         print("You got a cookie!")
     return place
 
+# User can buy or sell as many items as they wish, given that they have enough
+# money
+def shop(Role):
+    inventory = self.inventory # alias
+    option = cS(input("Would you like to buy or sell today (type 'exit' to exit)? "))
+    # Input validation
+    while option != "BUY" and option != "SELL" and option != "EXIT":
+        print("Try again!")
+        option = cS(input("Would you like to buy or sell today? "))
+    
+    if option == "EXIT":
+        return
+    
+    elif option == "BUY":
+        BuyOption = cS(input("What would you like to buy today? "))
+    elif option == "SELL":
+        SellOption = cS(input("What would you like to sell today? "))
+    
+
+def GetMenuOption():
+    option = cS(input("Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n\n"))
+    while option not in ("MAP","SEARCH","QUESTS", "MINE", "INV", "SHOP"):
+        print("Try again!")
+        option = cS(input("Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n\n"))
+    return option
+
 def Menu(role, setting):
+    # Only going to execute once
     if Quests == False:
         option = cS(input("Enter either 'Map' or 'Search' "))
+        # Input validation
         while option not in ("MAP","SEARCH"):
             print("Try again!")
             option = cS(input("Enter either 'Map' or 'Search' "))
@@ -372,46 +450,74 @@ def Menu(role, setting):
             setting.map()
         elif option == "SEARCH":
             search(setting,role)
-    elif Quests == True:
-        option = cS(input("Enter either 'Map', 'Search', 'Mine', 'Inv' or 'Quests': "))
-        while option not in ("MAP","SEARCH","QUESTS", "MINE", "INV"):
+            
+    # Will go on until user enters "Quests"
+    elif Quests == True or Shop == True:
+        '''
+        Enter one of the following options
+        ==================================
+        
+        '''
+        option = cS(input("Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n\n"))
+        
+        #Input validation
+        while option not in ("MAP","SEARCH","QUESTS", "MINE", "INV", "SHOP"):
             print("Try again!")
-            option = cS(input("Enter either 'Map', 'Search', 'Mine', 'Inv' or 'Quests': "))
-        while option == "MAP" or option == "SEARCH" or option=="MINE" or option=="INV":
+            option = cS(input("Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n\n"))
+        
+        
+        while option in ("MAP","SEARCH","QUESTS", "MINE", "INV", "SHOP"):
             if option == "MAP":
                 setting.map()
-                option = cS(input("Enter either 'Map', 'Search', 'Mine', 'Inv' or 'Quests': "))
-                while option not in ("MAP","SEARCH","QUESTS", "MINE", "INV"):
-                    print("Try again!")
-                    option = cS(input("Enter either 'Map', 'Search', 'Mine', 'Inv' or 'Quests': "))
+                option = GetMenuOption()
             elif option == "SEARCH":
                 search(setting,role)
-                option = cS(input("Enter either 'Map', 'Search', 'Mine', 'Inv' or 'Quests': "))
-                while option not in ("MAP","SEARCH","QUESTS", "MINE", "INV"):
-                    print("Try again!")
-                    option = cS(input("Enter either 'Map', 'Search', 'Mine', 'Inv' or 'Quests': "))
+                option = GetMenuOption()
             elif option == "MINE":
                 Mine(role,setting)
-                option = cS(input("Enter either 'Map', 'Search', 'Mine', 'Inv' or 'Quests': "))
-                while option not in ("MAP","SEARCH","QUESTS", "MINE", "INV"):
-                    print("Try again!")
-                    option = cS(input("Enter either 'Map', 'Search', 'Mine', 'Inv' or 'Quests': "))
+                option = GetMenuOption()
             elif option == "INV":
                 role.printInventory()
-                option = cS(input("Enter either 'Map', 'Search', 'Mine', 'Inv' or 'Quests': "))
-                while option not in ("MAP","SEARCH","QUESTS", "MINE", "INV"):
-                    print("Try again!")
-                    option = cS(input("Enter either 'Map', 'Search', 'Mine', 'Inv' or 'Quests': "))
-
+                option = GetMenuOption()
+            elif option == "SHOP":
+                if Shop == True:
+                    shop(role)
+                    option = GetMenuOption()
+                else:
+                    print("You do not have access to the shop yet!")
+                    option = GetMenuOption()
 
 def Quest1(RoleHero):
+    #Implementing stacking, so they can only defend 10 times
+#    Stack1 = False
+#    Stack2 = False
+#    Stack3 = False
+#    Stack4 = False
+#    Stack5 = False
+#    Stack6 = False
+#    Stack7 = False
+#    Stack8 = False
+#    Stack9 = False
+#    Stack10 = False
+
+        
+
+    Stacks = [False]*2
+    
+    def DefenseWait(index):
+        sleep(5)
+        if RoleHero.defense >= RoleHero.baseDefense + 250:
+            RoleHero.defense -= 250
+        #decrease the defense by one notch here
+        Stacks[index] = False
+        
     global badNPCs # we're saying that we will be using the global variable badNPCs
     NumberDefeated = 0
     while NumberDefeated < 10 or RoleHero.health <= 0:
         randnum = randint(1,100)
         start = 1
         end = 0
-#        {"NINJA":0.05,"OGRE":0.01, "DEMON":0.94}
+#        {"NINJA":0.05,"OGRE":0.01, "DEMON":0.94}1
         for b in badNPCs:
             end += int(badNPCs[b]*100) #probability of spawning
             if start <= randnum <= end:
@@ -428,11 +534,16 @@ def Quest1(RoleHero):
                     try:
                         start = time()  # 100000000
                         TimeToMove = random()*3 # 4
+                        if RoleHero.defending == True and start - RoleHero.moveTime > 0.1:
+                            print("Defense Boost expired")
+                            RoleHero.defending == False
+                            RoleHero.defense = RoleHero.baseDefense
+                            
                         move = inputimeout(prompt="1. to attack, 2. for temporary defense boost: ", timeout=TimeToMove)
                         while move != "1" and move != "2":
                             TimeToMove = TimeToMove + start - time()#100000004
                             if TimeToMove > 0:
-                                move = inputimeout(prompt="1. to attack, 2. to defend: ", timeout=TimeToMove)
+                                move = inputimeout(prompt="1. to attack, 2. for temporary defense boost: ", timeout=TimeToMove)
                             else:
                                 raise TimeoutOccurred
 #                        print(move)
@@ -440,17 +551,32 @@ def Quest1(RoleHero):
                         if move=="1":
                             RoleHero.attack(a)
                         if move=="2":
-                            RoleHero.defense += 250
-                            print(RoleHero.defense)
-                            RoleHero.defending = True
-#                            RoleHero.health -= a.attackpower*Defense(RoleHero.defense)
-#                            RoleHero.defense -= 250
+                        
+                            if all(Stacks):
+                                print("You have reached your defense boost cap!")
+                            else:
+                                for stack in range(len(Stacks)):
+                                    if Stacks[stack] == False:
+                                        Stacks[stack] = True
+                                        Thread(target=DefenseWait,args = (stack,)).start()
+                                        break
+                                RoleHero.defend()
+                            
+            
                     except TimeoutOccurred:
+                        start = time()
+                        if RoleHero.defending == True and start - RoleHero.moveTime > 0.1:
+                            print("Defense Boost expired")
+                            RoleHero.defending == False
+                            RoleHero.defense = RoleHero.baseDefense
+                            
+                        
                         a.attack(RoleHero)
                         if RoleHero.defending == True:
                             RoleHero.defense = RoleHero.baseDefense
                             RoleHero.defending = False
-                        print(f"You were attacked! You have {RoleHero.health} remaining")
+                        print(f"You were attacked! You have {RoleHero.health:.2f} remaining")
+
                             
                 if RoleHero.health <= 0:
                     print("You are destroyed!")
@@ -459,21 +585,11 @@ def Quest1(RoleHero):
                 
 
             start=end+1
-            
-#            start=1
-#            end=0
-#            end=5
-#            1 <= rn <= 5
-#            start=6
-#            end=6
-#            6 <= rn <= 6
-#            start=7
-#            end=100
-#            7 <= rn <= 100
+    print("You have completed the quest!")
+    print("You now have access to the shop")
             
             
-    
-    
+#
 def HeroGame(playerhero):
     if playerhero == "PERCY JACKSON":
         RoleHero = PercyJackson(playerhero)
@@ -514,33 +630,15 @@ def HeroGame(playerhero):
         Place = Desert()
         Menu(RoleHero,Place)
     print("New thing unlocked! Quests have been unlocked.")
-    global Quests
+    global Quests, Shop
     Quests = True
     print("To open quests, in the menu quests will be unlocked.")
     Menu(RoleHero,Place)
     Quest1(RoleHero)
+    Shop = True
+    Menu(RoleHero,Place)
     
-#    New Game
-# 5x6 grid numbers from 1 to 30
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
     
-
-
-    
-
 def game():
     slowPrint("Welcome to the Game!")
 #    Animation
@@ -550,21 +648,4 @@ def game():
         print("Error: Please try again")
         playerhero = (cS(input("What hero do you want to be? ")))
     HeroGame(playerhero)
-
-
-    
-'''
-health system for all the roles,
-damage system for all the roles,
-item system for all the roles,
-    special items for special roles:
-        examples:
-        - Percy Jackson's riptide
-        - Elf's elf key
-        - Zelda has a special bow and a sword
-damage multiplier, armor, ...
-'''
-
-
-
 game()
