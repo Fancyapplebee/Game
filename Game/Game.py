@@ -99,7 +99,7 @@ class Role:
     def printInventory(self):
         for item in self.inventory:
             if self.inventory[item]["Number"] != 0:
-                print("{} {} {:>10}".format(self.inventory[item]["Name"],self.inventory[item]["Picture"],"x "+str(self.inventory[item]["Number"])))
+                print("{} {} {:>10}".format(self.inventory[item]["Name"],self.inventory[item]["Picture"],"x "+str(self.inventory[item]["Number"])+self.inventory[item]["Key 1"], self.inventory[item]["Key 1"],"x "+str(self.inventory["Key 1"]["Number"])))
                 print("Description:",self.inventory[item]["Description"])
 
 
@@ -483,6 +483,9 @@ def Menu(role, setting):
                 if Shop == True:
                     shop(role)
                     option = GetMenuOption()
+            elif option == "QUESTS":
+                if Quests == True:
+                    Quest1(RoleHero)
                 else:
                     print("You do not have access to the shop yet!")
                     option = GetMenuOption()
