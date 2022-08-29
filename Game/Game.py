@@ -4,21 +4,24 @@ from random import randint, choice, random
 from time import time, sleep
 from inputimeout import inputimeout, TimeoutOccurred
 from threading import Thread
+from tabulate import tabulate
 
 Quests = False
 Shop = False
-#Roles
-heroes = ("PERCY JACKSON","ELF","ZELDA")
+# Roles
+heroes = ("PERCY JACKSON", "ELF", "ZELDA")
 goodNPCs = ("HEALER",)
-badNPCs = {"NINJA":0.05,"OGRE":0.01, "DEMON":0.94}
+badNPCs = {"NINJA": 0.05, "OGRE": 0.01, "DEMON": 0.94}
 places = ("HOUSE", "BEACH", "FOREST", "MOUNTAIN", "DESERT")
 neutralNPCs = ("MINER", "WOODCHUCKER")
 
 
 def Defense(Def):
-    return 1-(Def/(Def+100))
-#Zeeshan Rizvi
-#https://stackoverflow.com/questions/17432478/python-print-to-one-line-with-time-delay-between-prints/52595545#52595545?newreg=cb618a4b6ed14f8bb7a782e731f4c678
+    return 1 - (Def / (Def + 100))
+
+
+# Zeeshan Rizvi
+# https://stackoverflow.com/questions/17432478/python-print-to-one-line-with-time-delay-between-prints/52595545#52595545?newreg=cb618a4b6ed14f8bb7a782e731f4c678
 def slowPrint(text):
     for i in text:
         print(i, end='', flush=True)
@@ -34,50 +37,80 @@ cS is NOT an input function!!!
 3. gets rid of leading and trailing spaces
 '''
 
+
 def cS(s):
     marksremoved = s.upper().translate(str.maketrans('', '', punctuation))
     return marksremoved.strip()
 
-#Role Types
+
+# Role Types
 class Role:
     def __init__(self, name):
         self.name = name
-        self.money = 100
         # Task 1: Modify descriptions of inventory
-        self.inventory = {"Cookie":{"Name":"Cookie", "Picture":"🍪", "Description":"Something to eat!", "Number":0, "BuyValue":1, "SellValue":0},
-        "Logs":{"Name":"Logs", "Picture":"🪵", "Description":"Something you can use in the shop for crafting things or to sell", "Number":0, "BuyValue": 5, "SellValue":4},
-        "Sand":{"Name":"Sand", "Picture":"🟫", "Description":"Something you can smelt or sell!", "Number":0,"BuyValue":2, "SellValue":1},
-        "Rocks":{"Name":"Rocks", "Picture":"🪨", "Description":"Something you can use in the shop for crafting things, selling, or refining", "Number":0, "BuyValue":5, "SellValue":4},
-        "Silver":{"Name":"Silver", "Picture":"🪙", "Description":"Something you can use in the shop for crafting things, selling, or fusing","Number":0, "BuyValue": 20, "SellValue": 19},
-        "Gold":{"Name":"Gold", "Picture":"⚱️", "Description":"Something you can use in the shop for crafting things, selling, or fusing", "Number":0, "BuyValue": 200, "SellValue": 199},
-        "Diamond":{"Name":"Diamond", "Picture":"💎", "Description":"Something you can use in the shop for crafting things, selling, or fusing", "Number":0, "BuyValue":450, "SellValue":449},
-        "Emerald":{"Name":"Emerald", "Picture":"🟩", "Description":"Something you can use in the shop for crafting things, selling, or fusing", "Number":0, "BuyValue":900,"SellValue":899},
-        "Cactus":{"Name":"Cactus", "Picture":"🌵", "Description":"Something to sell or turn into pointy armour!", "Number":0, "BuyValue":5, "SellValue":4},
-        "Golden Sapling":{"Name":"Golden Sapling", "Picture":"🌸", "Description":"Grows into a golden tree!", "Number":0, "BuyValue":50000, "SellValue": 49995},
-        "Golden Log":{"Name":"Golden Log", "Picture":"🌴", "Description":"The most powerful wood, when combined with weapons +10 to all stats!", "Number":0, "BuyValue": 25000, "SellValue": 24999},
-        "Sand Pail":{"Name":"Sand Pail", "Picture":"N/A","Description":"A bucket, maybe you can plant something in here.","Number":0, "BuyValue": 20, "SellValue": 19},
-        "Sand":{"Name":"Sand", "Picture":"⌛","Description":"Sand, used for smelting into glass or for making sandpaper.","Number":0, "BuyValue": 1, "SellValue": 1}, "Keys":{"Key 1": {"Name":"Key 1", "Picture":"🔐","Description":"Used to access a certain chest","Number":0}}}
-        
+        self.inventory = {
+            "Cookies": {"Name": "Cookies", "Picture": "🍪", "Description": "Something to eat!", "Number": 0,
+                        "BuyValue": 1,
+                        "SellValue": 0},
+            "Logs": {"Name": "Logs", "Picture": "🪵",
+                     "Description": "Something you can use in the shop for crafting things or to sell", "Number": 0,
+                     "BuyValue": 5, "SellValue": 4},
+            "Sands": {"Name": "Sands", "Picture": "🟫", "Description": "Something you can smelt or sell!", "Number": 0,
+                      "BuyValue": 2, "SellValue": 1},
+            "Rocks": {"Name": "Rocks", "Picture": "🪨",
+                      "Description": "Something you can use in the shop for crafting things, selling, or refining",
+                      "Number": 0, "BuyValue": 5, "SellValue": 4},
+            "Silvers": {"Name": "Silvers", "Picture": "🪙",
+                        "Description": "Something you can use in the shop for crafting things, selling, or fusing",
+                        "Number": 0, "BuyValue": 20, "SellValue": 19},
+            "Golds": {"Name": "Golds", "Picture": "⚱️",
+                      "Description": "Something you can use in the shop for crafting things, selling, or fusing",
+                      "Number": 0, "BuyValue": 200, "SellValue": 199},
+            "Diamonds": {"Name": "Diamonds", "Picture": "💎",
+                         "Description": "Something you can use in the shop for crafting things, selling, or fusing",
+                         "Number": 0, "BuyValue": 450, "SellValue": 449},
+            "Emeralds": {"Name": "Emeralds", "Picture": "🟩",
+                         "Description": "Something you can use in the shop for crafting things, selling, or fusing",
+                         "Number": 0, "BuyValue": 900, "SellValue": 899},
+            "Cactuses": {"Name": "Cactuses", "Picture": "🌵",
+                         "Description": "Something to sell or turn into pointy armour!",
+                         "Number": 0, "BuyValue": 5, "SellValue": 4},
+            "Golden Saplings": {"Name": "Golden Saplings", "Picture": "🌸", "Description": "Grows into a golden tree!",
+                                "Number": 0, "BuyValue": 50000, "SellValue": 49995},
+            "Golden Logs": {"Name": "Golden Logs", "Picture": "🌴",
+                            "Description": "The most powerful wood, when combined with weapons +10 to all stats!",
+                            "Number": 0, "BuyValue": 25000, "SellValue": 24999},
+            "Sand Pails": {"Name": "Sand Pails", "Picture": "N/A",
+                           "Description": "A bucket, maybe you can plant something in here.", "Number": 0,
+                           "BuyValue": 20, "SellValue": 19},
+            "Keys": {
+                "Key 1": {"Name": "Key 1", "Picture": "🔐", "Description": "Used to access a certain chest",
+                          "Number": 0}}}
+
+        # Big-O notation
+        # Index a dictionary: O(1)
+        # Search a dictionary: O(n)
+
         self.defending = False
         self.moved = False
         self.moveTime = None
         self.waitTime = None
 
-#    https://hypixel-skyblock.fandom.com/wiki/Defense
-    def attack(self,enemy):
-#        enemy.health -= (Defense(enemy.defense)*self.attackpower)
+    #    https://hypixel-skyblock.fandom.com/wiki/Defense
+    def attack(self, enemy):
+        #        enemy.health -= (Defense(enemy.defense)*self.attackpower)
         if not self.moved:
             self.moved = True
-            enemy.health -= (Defense(enemy.defense)*self.attackpower)
+            enemy.health -= (Defense(enemy.defense) * self.attackpower)
             self.moveTime = time()
             self.waitTime = self.attackStamina
         elif time() - self.waitTime < self.moveTime:
             print("Can't attack yet")
         else:
-            enemy.health -= (Defense(enemy.defense)*self.attackpower)
+            enemy.health -= (Defense(enemy.defense) * self.attackpower)
             self.moveTime = time()
             self.waitTime = self.attackStamina
-            
+
     def defend(self):
         if not self.moved:
             self.moved = True
@@ -91,20 +124,53 @@ class Role:
             self.defense += 250
             self.moveTime = time()
             self.waitTime = self.defenseStamina
-        
+
         print(self.defense)
-#        self.defending = True
-        
-        
+
+    #        self.defending = True
+
     def printInventory(self):
+        temp = []  # temp is short for the word 'temporary'
         for item in self.inventory:
-            if self.inventory[item]["Number"] != 0:
-                print("{} {} {:>10}".format(self.inventory[item]["Name"],self.inventory[item]["Picture"],"x "+str(self.inventory[item]["Number"])))
-                print("Description:",self.inventory[item]["Description"])
+            if item == "Keys":
+                for key in self.inventory["Keys"]:
+                    if self.inventory["Keys"][key]["Number"] != 0:
+                        print("{} {} {:>10}".format(self.inventory["Keys"][key]["Name"],
+                                                    self.inventory["Keys"][key]["Picture"],
+                                                    "x " + str(self.inventory["Keys"][key]["Number"])))
+                        print("Description:", self.inventory["Keys"][key]["Description"])
+
+            elif self.inventory[item]["Number"] != 0:
+                temp.append((self.inventory[item]["Name"], self.inventory[item]["Picture"],
+                             "x " + str(self.inventory[item]["Number"])))
+        print()
+        print(tabulate(temp, headers=("Name", "Picture", "Number")))
+        print()
+
+    #                print("{} {} {:>10}".format(self.inventory[item]["Name"],self.inventory[item]["Picture"],"x "+str(self.inventory[item]["Number"])))
+    #                print("Description:",self.inventory[item]["Description"])
+
+    def printSellItems(self):
+        NoneConv = lambda x: 0 if x == None else x  # converts None/not None to 0/1
+        temp = []  # temp is short for the word 'temporary'
+        sellableItems = {}
+        for item in self.inventory:
+            if "SellValue" in self.inventory[item] and NoneConv(self.inventory[item].get("Number")) > 0:
+                sellableItems[(self.inventory[item]["Name"]).upper()] = self.inventory[item]["Number"]
+
+                temp.append((self.inventory[item]["Name"], self.inventory[item]["Picture"],
+                             "x " + str(self.inventory[item]["Number"])))
+        print()
+        print(tabulate(temp, headers=("Item", "Picture", "Number")))
+        print()
+
+        return sellableItems
 
 
-       
-    
+#        for item in self.inventory:
+#            if "SellValue" in self.inventory[item]:
+
+
 '''
 *: 100 health
 =: 10 health
@@ -128,7 +194,6 @@ e.g. 157 health
 '''
 
 
-
 def HealthBar(character):
     print(character.picture)
     tempHealth = int(character.health)
@@ -136,8 +201,8 @@ def HealthBar(character):
     tempHealth %= 100
     tens = tempHealth // 10
     ones = tempHealth % 10
-    print(hundreds*"*"+tens*"="+ones*"-")
-    
+    print(hundreds * "*" + tens * "=" + ones * "-")
+
 
 class PercyJackson(Role):
     def __init__(self, name):
@@ -149,6 +214,9 @@ class PercyJackson(Role):
         self.defense = 100
         self.attackStamina = 0.1
         self.defenseStamina = 0.2
+        self.money = 50
+
+
 #        mac_and_cheese
 #        MacAndCheese
 #        macAndCheese
@@ -157,35 +225,42 @@ class Elf(Role):
     def __init__(self, name):
         super().__init__(name)
         self.picture = "🧝"
-        self.attackpower = 40
+        self.attackpower = 10
         self.health = 50
         self.baseDefense = 200
         self.defense = 200
         self.attackStamina = 2
         self.defenseStamina = 0.4
+        self.money = 200
+
 
 class Zelda(Role):
-    def __init__(self,name):
+    def __init__(self, name):
         super().__init__(name)
         self.picture = "🗡"
-        self.attackpower = 2000 # Change back to 20 for actual game
+        # TODO Change back to 20 for actual game
+        self.attackpower = 2000
         self.health = 100
         self.baseDefense = 50
         self.defense = 50
         self.attackStamina = 0.15
         self.defenseStamina = 0.25
+        self.money = 100
+
 
 class NPC:
-#enemy.health -= (Defense(enemy.defense)*self.attackpower)
-    def attack(self,enemy):
-#        enemy.health -= self.attackpower
-        enemy.health -= (Defense(enemy.defense)*self.attackpower)
-            
+    # enemy.health -= (Defense(enemy.defense)*self.attackpower)
+    def attack(self, enemy):
+        #        enemy.health -= self.attackpower
+        enemy.health -= (Defense(enemy.defense) * self.attackpower)
+
+
 class GoodNPC(NPC):
     pass
 
+
 class BadNPC(NPC):
-    def __init__(self,name):
+    def __init__(self, name):
         global badNPCs, randint
         self.role = name
         if self.role == "NINJA":
@@ -204,13 +279,12 @@ class BadNPC(NPC):
             self.health = 100
             self.defense = 20
 
+
 class NeutralNPC(NPC):
     def __init__(self):
         global neutralNPCs, randint
-        self.role = neutralNPCs[randint(0,len(neutralNPCs)-1)]
-        self.picture = "⛏" if self.role=="MINER" else "🪓"
-    
-    
+        self.role = neutralNPCs[randint(0, len(neutralNPCs) - 1)]
+        self.picture = "⛏" if self.role == "MINER" else "🪓"
 
 
 def Mine(role, setting):
@@ -231,91 +305,89 @@ def Mine(role, setting):
         start = time()
         randletter = choice(ascii_letters)
         x = input("Enter '{}': (Type 'stop' to stop) ".format(randletter))
-        if cS(x)=="STOP":
+        if cS(x) == "STOP":
             break
         stop = time()
-        Time = (stop-start)
+        Time = (stop - start)
         print("You entered it in {:.2f} seconds!".format(Time))
-        npcTime = 1+(3*random())
+        npcTime = 1 + (3 * random())
 
-        if Time < npcTime and x==randletter:
+        if Time < npcTime and x == randletter:
             print("You passed!")
-            wins+=1
+            wins += 1
             totalplayerscore += 1
             botavg.append(npcTime)
             playeravg.append(Time)
-        elif Time > npcTime or x!=randletter:
+        elif Time > npcTime or x != randletter:
             print("You lost!")
-            losses +=1
+            losses += 1
             totalplayerscore -= 1
             botavg.append(npcTime)
             playeravg.append(Time)
         elif Time == npcTime:
             print("Draw")
-            draws+=1
+            draws += 1
             botavg.append(npcTime)
             playeravg.append(Time)
-    playeravglen = (len(playeravg)) if len(playeravg)!=0 else 1
+    playeravglen = (len(playeravg)) if len(playeravg) != 0 else 1
     playeravg = sum(playeravg)
-    botavglen = (len(botavg)) if len(botavg)!=0 else 1
+    botavglen = (len(botavg)) if len(botavg) != 0 else 1
     botavg = sum(botavg)
     points = wins - losses
-    if playeravg/playeravglen < botavg/botavglen:
+    if playeravg / playeravglen < botavg / botavglen:
         print("You get 5 extra resources because your avg was better than the bot!")
         points += 5
-    
-    
 
     if TheSetting == "BEACH":
         for i in range(points):
-            role.inventory["Sand"]["Number"] += 1
-        
+            role.inventory["Sands"]["Number"] += 1
+
     elif TheSetting == "FOREST":
         for i in range(points):
             Temprand = randint(1, 100)
             if 1 <= Temprand <= 2:
-                role.inventory["Golden Sapling"]["Number"] += 1
-            if 3 <= Temprand <=7:
-                role.inventory["Golden Log"]["Number"] += 1
+                role.inventory["Golden Saplings"]["Number"] += 1
+            if 3 <= Temprand <= 7:
+                role.inventory["Golden Logs"]["Number"] += 1
             else:
                 role.inventory["Logs"]["Number"] += 1
         return
     elif TheSetting == "HOUSE":
         for i in range(points):
-            role.inventory["Cookie"]["Number"] += 1
-        
+            role.inventory["Cookies"]["Number"] += 1
+
     elif TheSetting == "MOUNTAIN":
         for i in range(points):
-            Temprand = randint(1,100)
+            Temprand = randint(1, 100)
             if 1 <= Temprand <= 25:
-                role.inventory["Silver"]["Number"] += 1
+                role.inventory["Silvers"]["Number"] += 1
             elif 26 <= Temprand <= 35:
-                role.inventory["Gold"]["Number"] +=1
+                role.inventory["Golds"]["Number"] += 1
             elif 36 <= Temprand <= 40:
-                role.inventory["Diamond"]["Number"] += 1
+                role.inventory["Diamonds"]["Number"] += 1
             elif 41 <= Temprand <= 42:
-                role.inventory["Emerald"]["Number"] += 1
+                role.inventory["Emeralds"]["Number"] += 1
             else:
                 role.inventory["Rocks"]["Number"] += 1
     elif TheSetting == "DESERT":
         for i in range(points):
             Temprand = randint(1, 100)
             if 1 <= Temprand <= 25:
-                role.inventory["Cactus"]["Number"] += 1
+                role.inventory["Cactuses"]["Number"] += 1
             else:
-                role.inventory["Sand"]["Number"] += 1
-        
+                role.inventory["Sands"]["Number"] += 1
 
-    print("The player average is {:.2f} seconds".format(playeravg/playeravglen))
-    print("The bot average is {:.2f} seconds".format(botavg/botavglen))
+    print("The player average is {:.2f} seconds".format(playeravg / playeravglen))
+    print("The bot average is {:.2f} seconds".format(botavg / botavglen))
     print("You got {} resources in total!".format(points))
     print("You won {} games!".format(wins))
     print("You lost {} games!".format(losses))
     print("{} is the number of games that drawed!".format(draws))
-    
+
     return points
 
-#Setting Types
+
+# Setting Types
 class Setting:
     def map(self):
         print("------")
@@ -325,37 +397,35 @@ class Setting:
             print(place)
         print()
 
+
 class House(Setting):
     def __init__(self):
         self.name = "House"
         self.places = ("FRIDGE",)
 
-        
-        
-    
+
 class Beach(Setting):
     def __init__(self):
         self.name = "Beach"
-        self.places = ("SAND", "CASTLE", "OCEAN") # Fill this up
+        self.places = ("SAND", "CASTLE", "OCEAN")  # Fill this up
 
 
 class Forest(Setting):
     def __init__(self):
         self.name = "Forest"
-        self.places = ("TREE",) # Fill this up
+        self.places = ("TREE",)  # Fill this up
 
 
 class Mountain(Setting):
     def __init__(self):
         self.name = "Mountain"
-        self.places = ("CAVE", "UP") # Fill this up
+        self.places = ("CAVE", "UP")  # Fill this up
 
 
 class Desert(Setting):
     def __init__(self):
         self.name = "Desert"
-        self.places = ("SAND", "CACTUS") # Fill this up
-
+        self.places = ("SAND", "CACTUS")  # Fill this up
 
 
 def displayHeroes():
@@ -366,6 +436,7 @@ def displayHeroes():
         print(hero)
     print()
 
+
 def map():
     print("------")
     print("Places")
@@ -373,6 +444,7 @@ def map():
     for place in places:
         print(place)
     print()
+
 
 def search(setting, role):
     print("------")
@@ -386,95 +458,136 @@ def search(setting, role):
         print("Try again!")
         place = cS(input(f"Where in the {setting.name} do you want to explore? "))
     if place == "SAND":
-        Chances = randint(1,100)
+        Chances = randint(1, 100)
         if 1 <= Chances <= 5:
-            role.inventory["Sand Pail"]["Number"] += 1
+            role.inventory["Sand Pails"]["Number"] += 1
             print("You got a Sand Pail!")
         else:
-            role.inventory["Sand"]["Number"] += 1
+            role.inventory["Sands"]["Number"] += 1
             print("You got SAND!")
     elif place == "CACTUS":
-        role.inventory["Cactus"]["Number"] += 1
+        role.inventory["Cactuses"]["Number"] += 1
         print("You found a cactus!")
     elif place == "CASTLE":
-        Chances = randint(1,100)
+        Chances = randint(1, 100)
         if 1 <= Chances <= 4:
-            role.inventorty["Golden Log"] += 1
+            role.inventorty["Golden Logs"] += 1
             print("SUPER RARE DROP: Golden Log!")
         else:
-            role.inventory["Emerald"]["Number"] += 1
+            role.inventory["Emeralds"]["Number"] += 1
             print("You got an emerald.")
     elif place == "OCEAN":
-        role.inventory["Gold"]["Number"] += 1
+        role.inventory["Golds"]["Number"] += 1
         print("You got gold!")
     elif place == "FRIDGE":
-        role.inventory["Cookie"]["Number"] += 1
+        role.inventory["Cookies"]["Number"] += 1
         print("You got a cookie!")
     return place
+
+
+def HasSellableItems(inventory):
+    for item in inventory:
+        if item == "Keys":
+            continue
+        elif inventory[item]["Number"] > 0:
+            return True
+    return False
+
 
 # User can buy or sell as many items as they wish, given that they have enough
 # money
 def shop(Role):
-    inventory = self.inventory # alias
-    option = cS(input("Would you like to buy or sell today (type 'exit' to exit)? "))
-    # Input validation
-    while option != "BUY" and option != "SELL" and option != "EXIT":
-        print("Try again!")
-        option = cS(input("Would you like to buy or sell today? "))
-    
-    if option == "EXIT":
-        return
-    
-    elif option == "BUY":
-        BuyOption = cS(input("What would you like to buy today? "))
-    elif option == "SELL":
-        SellOption = cS(input("What would you like to sell today? "))
-    
+    inventory = Role.inventory  # alias
+    while True:
+        option = cS(input("Would you like to buy or sell today (type 'exit' to exit)? "))
+        # Input validation
+        while option != "BUY" and option != "SELL" and option != "EXIT":
+            print("Try again!")
+            option = cS(input("Would you like to buy or sell today? "))
+
+        if option == "EXIT":
+            return
+
+        elif option == "BUY":
+            BuyOption = cS(input("What would you like to buy today? "))
+
+        elif option == "SELL":
+            if not HasSellableItems(inventory):
+                print("You don't have any sellable items!")
+                continue
+
+            # Problem spot
+            sellableItems = Role.printSellItems()
+            SellOption = cS(input("What would you like to sell today? "))
+
+            # Check if SellOption is a sellable item: Input validation
+            while SellOption not in sellableItems:
+                print(f"Error! {SellOption} is not one of your sellable items")
+                SellOption = cS(input("What would you like to sell today? "))
+
+            AmountToSell = input(f"How many {SellOption} would you like to sell? ")
+            while not AmountToSell.isdigit() or int(AmountToSell) > sellableItems[SellOption]:
+                if not AmountToSell.isdigit():
+                    print(f"Error! {AmountToSell} is not a valid digit! ")
+                    AmountToSell = input(f"How many {SellOption} would you like to sell? ")
+                elif int(AmountToSell) > sellableItems[SellOption]:
+                    print(f"Error! You don't have {AmountToSell} {SellOption} to sell.")
+                    AmountToSell = input(f"How many {SellOption} would you like to sell? ")
+
+
+# Complete this part
+
 
 def GetMenuOption():
-    option = cS(input("Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n\n"))
-    while option not in ("MAP","SEARCH","QUESTS", "MINE", "INV", "SHOP"):
+    option = cS(input(
+        "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop"
+        "'\n'Quests'\n\n"))
+    while option not in ("MAP", "SEARCH", "QUESTS", "MINE", "INV", "SHOP"):
         print("Try again!")
-        option = cS(input("Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n\n"))
+        option = cS(input(
+            "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n"
+            "'Shop'\n'Quests'\n\n"))
     return option
+
 
 def Menu(role, setting):
     # Only going to execute once
     if Quests == False:
         option = cS(input("Enter either 'Map' or 'Search' "))
         # Input validation
-        while option not in ("MAP","SEARCH"):
+        while option not in ("MAP", "SEARCH"):
             print("Try again!")
             option = cS(input("Enter either 'Map' or 'Search' "))
         if option == "MAP":
             setting.map()
         elif option == "SEARCH":
-            search(setting,role)
-            
+            search(setting, role)
+
     # Will go on until user enters "Quests"
     elif Quests == True or Shop == True:
         '''
         Enter one of the following options
         ==================================
-        
+
         '''
-        option = cS(input("Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n\n"))
-        
-        #Input validation
-        while option not in ("MAP","SEARCH","QUESTS", "MINE", "INV", "SHOP"):
+        option = cS(input(
+            "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n\n"))
+
+        # Input validation
+        while option not in ("MAP", "SEARCH", "QUESTS", "MINE", "INV", "SHOP"):
             print("Try again!")
-            option = cS(input("Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n\n"))
-        
-        
-        while option in ("MAP","SEARCH","QUESTS", "MINE", "INV", "SHOP"):
+            option = cS(input(
+                "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n\n"))
+
+        while option in ("MAP", "SEARCH", "MINE", "INV", "SHOP"):
             if option == "MAP":
                 setting.map()
                 option = GetMenuOption()
             elif option == "SEARCH":
-                search(setting,role)
+                search(setting, role)
                 option = GetMenuOption()
             elif option == "MINE":
-                Mine(role,setting)
+                Mine(role, setting)
                 option = GetMenuOption()
             elif option == "INV":
                 role.printInventory()
@@ -487,108 +600,106 @@ def Menu(role, setting):
                     print("You do not have access to the shop yet!")
                     option = GetMenuOption()
 
+
 def Quest1(RoleHero):
-    #Implementing stacking, so they can only defend 10 times
-#    Stack1 = False
-#    Stack2 = False
-#    Stack3 = False
-#    Stack4 = False
-#    Stack5 = False
-#    Stack6 = False
-#    Stack7 = False
-#    Stack8 = False
-#    Stack9 = False
-#    Stack10 = False
+    # Implementing stacking, so they can only defend 10 times
+    #    Stack1 = False
+    #    Stack2 = False
+    #    Stack3 = False
+    #    Stack4 = False
+    #    Stack5 = False
+    #    Stack6 = False
+    #    Stack7 = False
+    #    Stack8 = False
+    #    Stack9 = False
+    #    Stack10 = False
 
-        
+    Stacks = [False] * 2
 
-    Stacks = [False]*2
-    
     def DefenseWait(index):
         sleep(5)
         if RoleHero.defense >= RoleHero.baseDefense + 250:
             RoleHero.defense -= 250
-        #decrease the defense by one notch here
+        # decrease the defense by one notch here
         Stacks[index] = False
-        
-    global badNPCs # we're saying that we will be using the global variable badNPCs
+
+    global badNPCs  # we're saying that we will be using the global variable badNPCs
     NumberDefeated = 0
     while NumberDefeated < 10 or RoleHero.health <= 0:
-        randnum = randint(1,100)
+        randnum = randint(1, 100)
         start = 1
         end = 0
-#        {"NINJA":0.05,"OGRE":0.01, "DEMON":0.94}1
+        #        {"NINJA":0.05,"OGRE":0.01, "DEMON":0.94}1
         for b in badNPCs:
-            end += int(badNPCs[b]*100) #probability of spawning
+            end += int(badNPCs[b] * 100)  # probability of spawning
             if start <= randnum <= end:
-#               Fight!
+                #               Fight!
                 a = BadNPC(b)
                 HealthBar(a)
                 HealthBar(RoleHero)
                 # Fight
                 start = time()
-                enemyMove = 1 if randint(1,2)==1 else 2
+                enemyMove = 1 if randint(1, 2) == 1 else 2
                 enemyMoved = False
-                ETTMA = random()/2 #Enemy Time To Move Again
+                ETTMA = random() / 2  # Enemy Time To Move Again
                 while RoleHero.health > 0 and a.health > 0:
                     try:
                         start = time()  # 100000000
-                        TimeToMove = random()*3 # 4
+                        TimeToMove = random() * 3  # 4
                         if RoleHero.defending == True and start - RoleHero.moveTime > 0.1:
                             print("Defense Boost expired")
                             RoleHero.defending == False
                             RoleHero.defense = RoleHero.baseDefense
-                            
+
                         move = inputimeout(prompt="1. to attack, 2. for temporary defense boost: ", timeout=TimeToMove)
                         while move != "1" and move != "2":
-                            TimeToMove = TimeToMove + start - time()#100000004
+                            TimeToMove = TimeToMove + start - time()  # 100000004
                             if TimeToMove > 0:
-                                move = inputimeout(prompt="1. to attack, 2. for temporary defense boost: ", timeout=TimeToMove)
+                                move = inputimeout(prompt="1. to attack, 2. for temporary defense boost: ",
+                                                   timeout=TimeToMove)
                             else:
                                 raise TimeoutOccurred
-#                        print(move)
-#                        print(a.health)
-                        if move=="1":
+                        #                        print(move)
+                        #                        print(a.health)
+                        if move == "1":
                             RoleHero.attack(a)
-                        if move=="2":
-                        
+                        if move == "2":
+
                             if all(Stacks):
                                 print("You have reached your defense boost cap!")
                             else:
                                 for stack in range(len(Stacks)):
                                     if Stacks[stack] == False:
                                         Stacks[stack] = True
-                                        Thread(target=DefenseWait,args = (stack,)).start()
+                                        Thread(target=DefenseWait, args=(stack,)).start()
                                         break
                                 RoleHero.defend()
-                            
-            
+
+
                     except TimeoutOccurred:
                         start = time()
                         if RoleHero.defending == True and start - RoleHero.moveTime > 0.1:
                             print("Defense Boost expired")
                             RoleHero.defending == False
                             RoleHero.defense = RoleHero.baseDefense
-                            
-                        
+
                         a.attack(RoleHero)
                         if RoleHero.defending == True:
                             RoleHero.defense = RoleHero.baseDefense
                             RoleHero.defending = False
                         print(f"You were attacked! You have {RoleHero.health:.2f} remaining")
 
-                            
                 if RoleHero.health <= 0:
                     print("You are destroyed!")
                     return
-                NumberDefeated+=1
-                
+                NumberDefeated += 1
 
-            start=end+1
+            start = end + 1
     print("You have completed the quest!")
+    RoleHero.inventory["Keys"]["Key 1"]["Number"] = 1
     print("You now have access to the shop")
-            
-            
+
+
 #
 def HeroGame(playerhero):
     if playerhero == "PERCY JACKSON":
@@ -616,36 +727,39 @@ def HeroGame(playerhero):
     print(f"You are now at {placetogo}")
     if placetogo == "HOUSE":
         Place = House()
-        Menu(RoleHero,Place)
+        Menu(RoleHero, Place)
     elif placetogo == "BEACH":
         Place = Beach()
-        Menu(RoleHero,Place)
+        Menu(RoleHero, Place)
     elif placetogo == "FOREST":
         Place = Forest()
-        Menu(RoleHero,Place)
+        Menu(RoleHero, Place)
     elif placetogo == "MOUNTAIN":
         Place = Mountain()
-        Menu(RoleHero,Place)
+        Menu(RoleHero, Place)
     elif placetogo == "DESERT":
         Place = Desert()
-        Menu(RoleHero,Place)
+        Menu(RoleHero, Place)
     print("New thing unlocked! Quests have been unlocked.")
     global Quests, Shop
     Quests = True
     print("To open quests, in the menu quests will be unlocked.")
-    Menu(RoleHero,Place)
+    Menu(RoleHero, Place)
     Quest1(RoleHero)
-    Shop = True
-    Menu(RoleHero,Place)
-    
-    
+    Shop = True  # shop unlocked
+    print("New thing unlocked! Shop has been unlocked.")
+    Menu(RoleHero, Place)
+
+
 def game():
     slowPrint("Welcome to the Game!")
-#    Animation
+    #    Animation
     displayHeroes()
     playerhero = (cS(input("What hero do you want to be? ")))
     while playerhero not in heroes:
         print("Error: Please try again")
         playerhero = (cS(input("What hero do you want to be? ")))
     HeroGame(playerhero)
+
+
 game()
