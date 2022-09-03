@@ -1,3 +1,4 @@
+import os
 from asyncio.events import BaseDefaultEventLoopPolicy
 from string import punctuation, ascii_letters
 from random import randint, choice, random
@@ -527,12 +528,21 @@ def shop(Role):
 
             AmountToSell = input(f"How many {SellOption} would you like to sell? ")
             while not AmountToSell.isdigit() or int(AmountToSell) > sellableItems[SellOption]:
-                if not AmountToSell.isdigit():
+                if not AmountToSell:
+                    AmountToSell.isdigit()
                     print(f"Error! {AmountToSell} is not a valid digit! ")
                     AmountToSell = input(f"How many {SellOption} would you like to sell? ")
                 elif int(AmountToSell) > sellableItems[SellOption]:
                     print(f"Error! You don't have {AmountToSell} {SellOption} to sell.")
                     AmountToSell = input(f"How many {SellOption} would you like to sell? ")
+            ValueToSubtract = AmountToSell*SellOption.SellValue
+            Role.money -= ValueToSubtract
+            print(Role.money)
+
+
+
+                    #Role.money
+
 
 
 # Complete this part
@@ -750,9 +760,9 @@ def HeroGame(playerhero):
     print("New thing unlocked! Shop has been unlocked.")
     Menu(RoleHero, Place)
 
-
 def game():
     slowPrint("Welcome to the Game!")
+    os.system
     #    Animation
     displayHeroes()
     playerhero = (cS(input("What hero do you want to be? ")))
