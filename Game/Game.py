@@ -1,4 +1,3 @@
-import os
 from asyncio.events import BaseDefaultEventLoopPolicy
 from string import punctuation, ascii_letters
 from random import randint, choice, random
@@ -44,6 +43,9 @@ def cS(s):
     return marksremoved.strip()
 
 
+# A class is a user-defined type!!!
+
+
 # Role Types
 class Role:
     def __init__(self, name):
@@ -52,27 +54,55 @@ class Role:
         self.inventory = {
             "Cookies": {"Name": "Cookies", "Picture": "🍪", "Description": "Something to eat!", "Number": 0,
                         "BuyValue": 1,
-                        "SellValue": 0},
+                        "SellValue": 0}, #
             "Logs": {"Name": "Logs", "Picture": "🪵",
                      "Description": "Something you can use in the shop for crafting things or to sell", "Number": 0,
                      "BuyValue": 5, "SellValue": 4},
+            #sould in boards , 1 lumber = 10 boards logs = 0.1
+
+            # Sand Cost in real life
+            # 2000 pounds = $10.00
+            # 1 Sands = 650 grams (1 handful)
+            # 2000 pounds = 907184.7 grams
+            # 1396 sands = $10.00
+            # 1 sand = $0.007
+            # 2 G = $0.007
+            # 1 G = $0.0035 (= 2 yen as of September 17, 11:05 am PST)
+
+            # sands : 1, gold :
+
+            #            Lesson on order of magnitude
+            #            10**1 10**2 10**0 2e0 10e0
+            #            100000 - 99999
+            #            0 - 9.99 (repeating) e0
+
             "Sands": {"Name": "Sands", "Picture": "🟫", "Description": "Something you can smelt or sell!", "Number": 0,
                       "BuyValue": 2, "SellValue": 1},
+
+            # Rock cost in real life
+            # 2000 pounds = $30.00
+            # 6 pounds = 1 handful = $0.9
+
             "Rocks": {"Name": "Rocks", "Picture": "🪨",
                       "Description": "Something you can use in the shop for crafting things, selling, or refining",
                       "Number": 0, "BuyValue": 5, "SellValue": 4},
-            "Silvers": {"Name": "Silvers", "Picture": "🪙",
+            "Silvers": {"Name": "Iron Ore", "Picture": "🪙",
                         "Description": "Something you can use in the shop for crafting things, selling, or fusing",
                         "Number": 0, "BuyValue": 20, "SellValue": 19},
+            #ONE ITEM OF SILVER= 0.1 POUND
+            #1TON IRON Real Life = $98.89, 6pound = 0.3, 1item = $0.3
             "Golds": {"Name": "Golds", "Picture": "⚱️",
                       "Description": "Something you can use in the shop for crafting things, selling, or fusing",
                       "Number": 0, "BuyValue": 200, "SellValue": 199},
+            #1 pound = 15 troy ounce gold = 1,684.60 per troy ounce. Gold = 151614
             "Diamonds": {"Name": "Diamonds", "Picture": "💎",
                          "Description": "Something you can use in the shop for crafting things, selling, or fusing",
                          "Number": 0, "BuyValue": 450, "SellValue": 449},
+            #handful = 50 carat so diamond = 1478300
             "Emeralds": {"Name": "Emeralds", "Picture": "🟩",
                          "Description": "Something you can use in the shop for crafting things, selling, or fusing",
                          "Number": 0, "BuyValue": 900, "SellValue": 899},
+            #50,000 = carat emeralds = 2500000
             "Cactuses": {"Name": "Cactuses", "Picture": "🌵",
                          "Description": "Something to sell or turn into pointy armour!",
                          "Number": 0, "BuyValue": 5, "SellValue": 4},
@@ -84,6 +114,7 @@ class Role:
             "Sand Pails": {"Name": "Sand Pails", "Picture": "N/A",
                            "Description": "A bucket, maybe you can plant something in here.", "Number": 0,
                            "BuyValue": 20, "SellValue": 19},
+            #sand pails = 20, vital for pregression
             "Keys": {
                 "Key 1": {"Name": "Key 1", "Picture": "🔐", "Description": "Used to access a certain chest",
                           "Number": 0}}}
@@ -160,16 +191,26 @@ class Role:
                 sellableItems[(self.inventory[item]["Name"]).upper()] = self.inventory[item]["Number"]
 
                 temp.append((self.inventory[item]["Name"], self.inventory[item]["Picture"],
-                             "x " + str(self.inventory[item]["Number"])))
+                             "x " + str(self.inventory[item]["Number"]), str(self.inventory[item]["SellValue"])))
         print()
-        print(tabulate(temp, headers=("Item", "Picture", "Number")))
+        print(tabulate(temp, headers=("Item", "Picture", "Number", "Sell Value")))
         print()
 
         return sellableItems
 
+    #        for item in self.inventory:
+    #            if "SellValue" in self.inventory[item]:
 
-#        for item in self.inventory:
-#            if "SellValue" in self.inventory[item]:
+    def baseLineStats(self):
+        # health, defense, true health, money
+        print()
+        print(f"Attack Power = {self.attackpower}")
+        print(f"Health = {self.health}")
+        print(f"Defense = {self.baseDefense}")
+        print(f"Attack Stamina = {self.attackStamina}")
+        print(f"Defense Stamina = {self.defenseStamina}")
+        print(f"Money = {self.money}")
+        print()
 
 
 '''
@@ -464,6 +505,7 @@ def search(setting, role):
             role.inventory["Sand Pails"]["Number"] += 1
             print("You got a Sand Pail!")
         else:
+
             role.inventory["Sands"]["Number"] += 1
             print("You got SAND!")
     elif place == "CACTUS":
@@ -512,6 +554,7 @@ def shop(Role):
         elif option == "BUY":
             BuyOption = cS(input("What would you like to buy today? "))
 
+
         elif option == "SELL":
             if not HasSellableItems(inventory):
                 print("You don't have any sellable items!")
@@ -527,51 +570,58 @@ def shop(Role):
                 SellOption = cS(input("What would you like to sell today? "))
 
             AmountToSell = input(f"How many {SellOption} would you like to sell? ")
+            # short-circuit evaluation
             while not AmountToSell.isdigit() or int(AmountToSell) > sellableItems[SellOption]:
-                if not AmountToSell:
-                    AmountToSell.isdigit()
+                # Note: not AmountToSell.isdigit() is being evaluated twice
+                if not AmountToSell.isdigit():
                     print(f"Error! {AmountToSell} is not a valid digit! ")
                     AmountToSell = input(f"How many {SellOption} would you like to sell? ")
                 elif int(AmountToSell) > sellableItems[SellOption]:
                     print(f"Error! You don't have {AmountToSell} {SellOption} to sell.")
                     AmountToSell = input(f"How many {SellOption} would you like to sell? ")
-            ValueToSubtract = AmountToSell*SellOption.SellValue
-            Role.money -= ValueToSubtract
-            print(Role.money)
+                    # Role.money
+        ATS = int(AmountToSell)
+        # Converting from all caps to first letter uppercase of each word
+        # (rest lowercase)
+        SellOption = SellOption.split()
+        SellOption = " ".join([temp[0] + temp[1:].lower() for temp in SellOption])
+
+        TTS = Role.inventory[SellOption]["SellValue"]
+        Role.money = Role.money + ATS * TTS
+
+        Role.inventory[SellOption]["Number"] -= ATS
 
 
-
-                    #Role.money
-
-
+#        for i in range(int(ATS)):
+#            inventory - inventory[f"{SellOption}"]["Value"]
 
 # Complete this part
 
 
 def GetMenuOption():
     option = cS(input(
-        "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop"
-        "'\n'Quests'\n\n"))
-    while option not in ("MAP", "SEARCH", "QUESTS", "MINE", "INV", "SHOP"):
+        "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
+    while option not in ("MAP", "SEARCH", "QUESTS", "MINE", "INV", "SHOP", "STATS"):
         print("Try again!")
         option = cS(input(
-            "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n"
-            "'Shop'\n'Quests'\n\n"))
+            "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
     return option
 
 
 def Menu(role, setting):
     # Only going to execute once
     if Quests == False:
-        option = cS(input("Enter either 'Map' or 'Search' "))
+        option = cS(input("Enter either 'Map' or 'Search' or 'Stats' "))
         # Input validation
-        while option not in ("MAP", "SEARCH"):
+        while option not in ("MAP", "SEARCH", "STATS"):
             print("Try again!")
-            option = cS(input("Enter either 'Map' or 'Search' "))
+            option = cS(input("Enter either 'Map' or 'Search'  or 'Stats' "))
         if option == "MAP":
             setting.map()
         elif option == "SEARCH":
             search(setting, role)
+        elif option == "STATS":
+            role.baseLineStats()
 
     # Will go on until user enters "Quests"
     elif Quests == True or Shop == True:
@@ -581,20 +631,23 @@ def Menu(role, setting):
 
         '''
         option = cS(input(
-            "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n\n"))
+            "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
 
         # Input validation
-        while option not in ("MAP", "SEARCH", "QUESTS", "MINE", "INV", "SHOP"):
+        while option not in ("MAP", "SEARCH", "QUESTS", "MINE", "INV", "SHOP", "STATS"):
             print("Try again!")
             option = cS(input(
-                "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n\n"))
+                "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
 
-        while option in ("MAP", "SEARCH", "MINE", "INV", "SHOP"):
+        while option in ("MAP", "SEARCH", "MINE", "INV", "SHOP", "STATS"):
             if option == "MAP":
                 setting.map()
                 option = GetMenuOption()
             elif option == "SEARCH":
                 search(setting, role)
+                option = GetMenuOption()
+            elif option == "STATS":
+                role.baseLineStats()
                 option = GetMenuOption()
             elif option == "MINE":
                 Mine(role, setting)
@@ -760,9 +813,9 @@ def HeroGame(playerhero):
     print("New thing unlocked! Shop has been unlocked.")
     Menu(RoleHero, Place)
 
+
 def game():
     slowPrint("Welcome to the Game!")
-    os.system
     #    Animation
     displayHeroes()
     playerhero = (cS(input("What hero do you want to be? ")))
