@@ -1,0 +1,31 @@
+Index: Game/Test.c
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Game/Test.c b/Game/Test.c
+new file mode 100644
+--- /dev/null	(date 1662224916971)
++++ b/Game/Test.c	(date 1662224916971)
+@@ -0,0 +1,4 @@
++#include <stdio.h>
++int square(int i){
++return i * i;
++}	
+Index: Game/Test.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Game/Test.py b/Game/Test.py
+new file mode 100644
+--- /dev/null	(date 1662225750284)
++++ b/Game/Test.py	(date 1662225750284)
+@@ -0,0 +1,7 @@
++import os
++os.system("cc -fPIC -shared -o Test.so Test.c")
++from ctypes import *
++sofile = "/mnt/c/Users/andre/PycharmProjects/Game/Game/Test.so"
++myfunc = CDLL(sofile)
++print(myfunc.square(5))
++
