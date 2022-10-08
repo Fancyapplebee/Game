@@ -46,19 +46,71 @@ def cS(s):
 # A class is a user-defined type!!!
 
 
+# Internet archive links
+# https://web.archive.org
 # Role Types
 class Role:
     def __init__(self, name):
         self.name = name
-        # Task 1: Modify descriptions of inventory
+        self.questLevel = 0
+
+        '''
+        Order of Magnitude = OM
+        prob = probability
+
+        OM
+        __
+
+        891
+
+        8.91 * 10**2
+
+        OM = 2
+
+        1214
+
+        1.214 * 10**3
+
+        OM = 3
+
+        971
+
+        9.71 * 10**2
+
+        OM = 2
+
+        item                OM      prob
+
+        cookie              2-3     .1-.01
+        logs                3-4     .01-.001
+        sands               0       10
+        rocks               2       .1
+        silvers             4       .001
+        golds               5       .0001
+        diamonds            7       .000001
+        emeralds            7       .000001
+        cactuses            3       .01
+        golden saplings     8       .0000001
+        golden logs         8       .0000001
+        sand pails          5       .0001
+        '''
+
         self.inventory = {
+            # 1 "Cookies" = 1 cookie ≈ $4.25
+            # 4.25/.0035 = 1214.2857142857142
+            # https://bethebudget.com/how-much-to-charge-for-cookies/
+            # https://web.archive.org/web/20220930045630/https://bethebudget.com/how-much-to-charge-for-cookies/
             "Cookies": {"Name": "Cookies", "Picture": "🍪", "Description": "Something to eat!", "Number": 0,
-                        "BuyValue": 1,
-                        "SellValue": 0}, #
+                        "BuyValue": 1214,
+                        "SellValue": 971},
+
+            # 1 "Logs" = 1 board = 10% of 1 log = $43.50
+            # 43.50/.0035 = 12428.571428571428
+            # https://markets.businessinsider.com/commodities/lumber-price
+            # https://web.archive.org/web/20220930045534/https://markets.businessinsider.com/commodities/lumber-price
             "Logs": {"Name": "Logs", "Picture": "🪵",
                      "Description": "Something you can use in the shop for crafting things or to sell", "Number": 0,
-                     "BuyValue": 5, "SellValue": 4},
-            #sould in boards , 1 lumber = 10 boards logs = 0.1
+                     "BuyValue": 12429, "SellValue": 9943},
 
             # Sand Cost in real life
             # 2000 pounds = $10.00
@@ -69,7 +121,7 @@ class Role:
             # 2 G = $0.007
             # 1 G = $0.0035 (= 2 yen as of September 17, 11:05 am PST)
 
-            # sands : 1, gold :
+            # sands : 1, gold : 751497
 
             #            Lesson on order of magnitude
             #            10**1 10**2 10**0 2e0 10e0
@@ -81,40 +133,71 @@ class Role:
 
             # Rock cost in real life
             # 2000 pounds = $30.00
-            # 6 pounds = 1 handful = $0.9
+            # 6 pounds = 1 handful = $0.9 = 90 257.14285714285717cents
+            # .9/.0035 = 257.14285714285717
 
             "Rocks": {"Name": "Rocks", "Picture": "🪨",
                       "Description": "Something you can use in the shop for crafting things, selling, or refining",
-                      "Number": 0, "BuyValue": 5, "SellValue": 4},
+                      "Number": 0, "BuyValue": 257, "SellValue": 206},
+
+            # ONE ITEM OF SILVER = 1 pound bar = $302.08
+            # 302.08/0.0035 = 86308.57142857142
+
             "Silvers": {"Name": "Iron Ore", "Picture": "🪙",
                         "Description": "Something you can use in the shop for crafting things, selling, or fusing",
-                        "Number": 0, "BuyValue": 20, "SellValue": 19},
-            #ONE ITEM OF SILVER= 0.1 POUND
-            #1TON IRON Real Life = $98.89, 6pound = 0.3, 1item = $0.3
+                        "Number": 0, "BuyValue": 86309, "SellValue": 81993},
+
+            # ONE ITEM OF GOLD = 1 pound bar = $26302.40
+            # 26302.40/0.0035 = 751497.1428571428
+
             "Golds": {"Name": "Golds", "Picture": "⚱️",
                       "Description": "Something you can use in the shop for crafting things, selling, or fusing",
-                      "Number": 0, "BuyValue": 200, "SellValue": 199},
-            #1 pound = 15 troy ounce gold = 1,684.60 per troy ounce. Gold = 151614
+                      "Number": 0, "BuyValue": 751497, "SellValue": 747739},
+
             "Diamonds": {"Name": "Diamonds", "Picture": "💎",
                          "Description": "Something you can use in the shop for crafting things, selling, or fusing",
-                         "Number": 0, "BuyValue": 450, "SellValue": 449},
-            #handful = 50 carat so diamond = 1478300
+                         "Number": 0, "BuyValue": 42237143, "SellValue": 42143283},
+            # 1 "Diamonds" = 5 carat diamond = $147,830
+            # 147830/0.0035 = 42237142.85714286
+            # https://www.diamondse.info/diamonds-price-index.asp
+            # https://web.archive.org/web/20220930045549/https://www.diamondse.info/diamonds-price-index.asp
+
             "Emeralds": {"Name": "Emeralds", "Picture": "🟩",
                          "Description": "Something you can use in the shop for crafting things, selling, or fusing",
-                         "Number": 0, "BuyValue": 900, "SellValue": 899},
-            #50,000 = carat emeralds = 2500000
+                         "Number": 0, "BuyValue": 35714286, "SellValue": 35674603},
+            # 1 "Emerals" = 5 carat ≈ $125,000
+            # 125000/.0035 = 35714285.71428572
+            # https://emeralds.com/education/price-of-an-emerald/
+            # https://web.archive.org/web/20220930045614/https://emeralds.com/education/price-of-an-emerald/
+
+            # 1 "Cactuses" = 1 cheap cactus plant = $15
+            # 15/.0035 = 4285.714285714285
+            # https://www.gdncnursery.com/cactus
+            # https://web.archive.org/web/20220930045627/https://www.gdncnursery.com/cactus
             "Cactuses": {"Name": "Cactuses", "Picture": "🌵",
                          "Description": "Something to sell or turn into pointy armour!",
-                         "Number": 0, "BuyValue": 5, "SellValue": 4},
+                         "Number": 0, "BuyValue": 4286, "SellValue": 3429},
+
+            # Game-only item, no real world equivalent, but ≈ $1,000,000
+            # 1000000/.0035 = 285714285.71428573
+
             "Golden Saplings": {"Name": "Golden Saplings", "Picture": "🌸", "Description": "Grows into a golden tree!",
-                                "Number": 0, "BuyValue": 50000, "SellValue": 49995},
+                                "Number": 0, "BuyValue": 285714286, "SellValue": 285685714},
+
+            # Game-only item, no real world equivalent, but ≈ $500,000
+            # 500000/.0035 = 142857142.85714287
+
             "Golden Logs": {"Name": "Golden Logs", "Picture": "🌴",
                             "Description": "The most powerful wood, when combined with weapons +10 to all stats!",
-                            "Number": 0, "BuyValue": 25000, "SellValue": 24999},
+                            "Number": 0, "BuyValue": 142857143, "SellValue": 142851429},
+
+            # Game-only item, no real world equivalent, but ≈ $400
+            # 400/.0035 = 114285.71428571429
+
             "Sand Pails": {"Name": "Sand Pails", "Picture": "N/A",
                            "Description": "A bucket, maybe you can plant something in here.", "Number": 0,
-                           "BuyValue": 20, "SellValue": 19},
-            #sand pails = 20, vital for pregression
+                           "BuyValue": 114286, "SellValue": 108571},
+            # sand pails = 20, vital for pregression
             "Keys": {
                 "Key 1": {"Name": "Key 1", "Picture": "🔐", "Description": "Used to access a certain chest",
                           "Number": 0}}}
@@ -142,6 +225,8 @@ class Role:
             enemy.health -= (Defense(enemy.defense) * self.attackpower)
             self.moveTime = time()
             self.waitTime = self.attackStamina
+
+    #            100 - ((1 - (50 / (50 + 100)))*10)
 
     def defend(self):
         if not self.moved:
@@ -256,12 +341,13 @@ class PercyJackson(Role):
         self.defense = 100
         self.attackStamina = 0.1
         self.defenseStamina = 0.2
-        self.money = 50
+        self.money = 50  # because the economy in italy is so bad :)
 
 
-#        mac_and_cheese
-#        MacAndCheese
-#        macAndCheese
+#    Naming variables convention
+#        mac_and_cheese : snake case
+#        MacAndCheese : pascal case
+#        macAndCheese : camel case
 
 class Elf(Role):
     def __init__(self, name):
@@ -299,27 +385,6 @@ class NPC:
 
 class GoodNPC(NPC):
     pass
-
-
-class BadNPC(NPC):
-    def __init__(self, name):
-        global badNPCs, randint
-        self.role = name
-        if self.role == "NINJA":
-            self.picture = "🥷"
-            self.attackpower = 10
-            self.health = 100
-            self.defense = 50
-        elif self.role == "OGRE":
-            self.picture = "👹"
-            self.attackpower = 10
-            self.health = 500
-            self.defense = 100
-        elif self.role == "DEMON":
-            self.picture = "👿"
-            self.attackpower = 5
-            self.health = 100
-            self.defense = 20
 
 
 class NeutralNPC(NPC):
@@ -386,35 +451,47 @@ def Mine(role, setting):
 
     elif TheSetting == "FOREST":
         for i in range(points):
-            Temprand = randint(1, 100)
-            if 1 <= Temprand <= 2:
+            Temprand = randint(1, 1000000)
+            if 999999 <= Temprand <= 1000000:
                 role.inventory["Golden Saplings"]["Number"] += 1
-            if 3 <= Temprand <= 7:
+            if 999997 <= Temprand <= 999998:
                 role.inventory["Golden Logs"]["Number"] += 1
-            else:
+            if 100000 <= Temprand <= 1000:
                 role.inventory["Logs"]["Number"] += 1
+            else:
+                return
         return
     elif TheSetting == "HOUSE":
         for i in range(points):
-            role.inventory["Cookies"]["Number"] += 1
+            Temprand = randint(1, 100)
+            if 1 <= Temprand <= 10:
+                role.inventory["Cookies"]["Number"] += 1
+            else:
+                return
+            return
 
     elif TheSetting == "MOUNTAIN":
         for i in range(points):
-            Temprand = randint(1, 100)
-            if 1 <= Temprand <= 25:
+            Temprand = randint(1, 100000)
+            if 1 <= Temprand <= 100:
                 role.inventory["Silvers"]["Number"] += 1
-            elif 26 <= Temprand <= 35:
+            elif 2 <= Temprand <= 20:
                 role.inventory["Golds"]["Number"] += 1
-            elif 36 <= Temprand <= 40:
+            elif 99999 <= Temprand <= 100000:
                 role.inventory["Diamonds"]["Number"] += 1
-            elif 41 <= Temprand <= 42:
+            elif 99998 <= Temprand <= 99999:
                 role.inventory["Emeralds"]["Number"] += 1
-            else:
+                #10000
+            elif 3 <= Temprand <= 30000:
                 role.inventory["Rocks"]["Number"] += 1
+            else:
+                return
+            return
+        return
     elif TheSetting == "DESERT":
         for i in range(points):
             Temprand = randint(1, 100)
-            if 1 <= Temprand <= 25:
+            if 1 <= Temprand <= 2:
                 role.inventory["Cactuses"]["Number"] += 1
             else:
                 role.inventory["Sands"]["Number"] += 1
@@ -427,6 +504,52 @@ def Mine(role, setting):
     print("{} is the number of games that drawed!".format(draws))
 
     return points
+
+
+class BadNPC(NPC):
+    def __init__(self, name):
+        global badNPCs, randint
+        self.role = name
+        if self.role == "NINJA":
+            self.picture = "🥷"
+            self.attackpower = 10
+            self.health = 100
+            self.defense = 50
+        elif self.role == "OGRE":
+            self.picture = "👹"
+            self.attackpower = 10
+            self.health = 500
+            self.defense = 100
+        elif self.role == "DEMON":
+            self.picture = "👿"
+            self.attackpower = 5
+            self.health = 100
+            self.defense = 20
+
+    '''
+    x   y
+    -   --
+    0   1
+    1   1.2
+    2   1.4
+    3   1.6
+    4   1.8
+    5   2.0
+
+    y = m*x+b
+
+    m = 0.2
+    b = 1
+
+    x = 1:  y = 0.2*1+1 = 1.2
+    x = 1.2: y = 0.2*1.2+1 = 1.24
+    '''
+
+    def statboost(self, RoleHero):
+        multiplier = (0.2 * RoleHero.questLevel) + 1
+        self.attackpower = multiplier * self.attackpower
+        self.health = multiplier * self.health
+        self.defense = multiplier * self.defense
 
 
 # Setting Types
@@ -552,6 +675,11 @@ def shop(Role):
             return
 
         elif option == "BUY":
+            if Role.money == 0:
+                print("You don't have any money!")
+                continue
+
+            print(f"\nYour Money = {Role.money:0.2f}\n")
             BuyOption = cS(input("What would you like to buy today? "))
 
 
@@ -560,8 +688,8 @@ def shop(Role):
                 print("You don't have any sellable items!")
                 continue
 
-            # Problem spot
             sellableItems = Role.printSellItems()
+            print(f"\nYour Money = {Role.money:0.2f}\n")
             SellOption = cS(input("What would you like to sell today? "))
 
             # Check if SellOption is a sellable item: Input validation
@@ -692,16 +820,19 @@ def Quest1(RoleHero):
         randnum = randint(1, 100)
         start = 1
         end = 0
-        #        {"NINJA":0.05,"OGRE":0.01, "DEMON":0.94}1
+        #        {"NINJA":0.05,"OGRE":0.01, "DEMON":0.94}
+        #
         for b in badNPCs:
             end += int(badNPCs[b] * 100)  # probability of spawning
             if start <= randnum <= end:
-                #               Fight!
-                a = BadNPC(b)
+                # Fight!
+                a = BadNPC(b)  # we are spawning an enemy here
+
+                a.statboost(RoleHero)
+
                 HealthBar(a)
                 HealthBar(RoleHero)
                 # Fight
-                start = time()
                 enemyMove = 1 if randint(1, 2) == 1 else 2
                 enemyMoved = False
                 ETTMA = random() / 2  # Enemy Time To Move Again
@@ -761,9 +892,9 @@ def Quest1(RoleHero):
     print("You have completed the quest!")
     RoleHero.inventory["Keys"]["Key 1"]["Number"] = 1
     print("You now have access to the shop")
+    RoleHero.questLevel += 1
 
 
-#
 def HeroGame(playerhero):
     if playerhero == "PERCY JACKSON":
         RoleHero = PercyJackson(playerhero)
