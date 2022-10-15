@@ -49,7 +49,7 @@
     "WebServerToolWindowFactoryState": "false",
     "idea.background.editor": "https://static.wikia.nocookie.net/pokemon/images/6/6a/Serena_Sylveon.png/revision/latest/scale-to-width/360?cb=20220415123033,25,scale,top_left",
     "last_opened_file_path": "C:/Users/andre/PycharmProjects/Game",
-    "settings.editor.selected.configurable": "power.mode.ii"
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
 }]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -89,7 +89,11 @@
       <workItem from="1665112374401" duration="4972000" />
       <workItem from="1665237917330" duration="60000" />
       <workItem from="1665238033670" duration="997000" />
-      <workItem from="1665239049870" duration="3933000" />
+      <workItem from="1665239049870" duration="5647000" />
+      <workItem from="1665808199521" duration="1215000" />
+      <workItem from="1665810204715" duration="179000" />
+      <workItem from="1665810394016" duration="311000" />
+      <workItem from="1665810716422" duration="402000" />
     </task>
     <task id="LOCAL-00001" summary="it works">
       <created>1657430290327</created>
@@ -126,7 +130,14 @@
       <option name="project" value="LOCAL" />
       <updated>1664493096041</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="it works WHOO UPDATE">
+      <created>1665246676059</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1665246676059</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

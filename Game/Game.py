@@ -19,6 +19,18 @@ neutralNPCs = ("MINER", "WOODCHUCKER")
 def Defense(Def):
     return 1 - (Def / (Def + 100))
 
+# TODO:
+#####
+# Implement buy function of def shop -> possibly add some items
+# Add use function for each of the items
+# Boost stats of hero after a quest, and maybe also after mining?
+# quest2 -> In C programming
+# Work on menu option function where you can use some of your items to build weapons that can boost your stats
+# figure out use case of items not attaiable through mining
+
+
+# modify search function probabilities
+
 
 # Zeeshan Rizvi
 # https://stackoverflow.com/questions/17432478/python-print-to-one-line-with-time-delay-between-prints/52595545#52595545?newreg=cb618a4b6ed14f8bb7a782e731f4c678
@@ -81,18 +93,19 @@ class Role:
 
         item                OM      prob
 
-        cookie              2-3     .1-.01
-        logs                3-4     .01-.001
-        sands               0       10
-        rocks               2       .1
-        silvers             4       .001
-        golds               5       .0001
-        diamonds            7       .000001
-        emeralds            7       .000001
-        cactuses            3       .01
-        golden saplings     8       .0000001
-        golden logs         8       .0000001
-        sand pails          5       .0001
+
+        cookie              2-3     1-.1
+        logs                3-4     .1-.01
+        sands               0       100
+        rocks               2       1
+        silvers             4       .01
+        golds               5       .001
+        diamonds            7       .00001
+        emeralds            7       .00001
+        cactuses            3       .1
+        golden saplings     8       .000001
+        golden logs         8       .000001
+        sand pails          5       .001
         '''
 
         self.inventory = {
@@ -100,7 +113,8 @@ class Role:
             # 4.25/.0035 = 1214.2857142857142
             # https://bethebudget.com/how-much-to-charge-for-cookies/
             # https://web.archive.org/web/20220930045630/https://bethebudget.com/how-much-to-charge-for-cookies/
-            "Cookies": {"Name": "Cookies", "Picture": "🍪", "Description": "Something to eat!", "Number": 0,
+            "Cookies": {"Name": "Cookies", "Picture": "🍪", "Description": "Something to eat! Increase health by 25% ",
+                        "Number": 0,
                         "BuyValue": 1214,
                         "SellValue": 971},
 
@@ -197,7 +211,12 @@ class Role:
             "Sand Pails": {"Name": "Sand Pails", "Picture": "N/A",
                            "Description": "A bucket, maybe you can plant something in here.", "Number": 0,
                            "BuyValue": 114286, "SellValue": 108571},
-            # sand pails = 20, vital for pregression
+            # sand pails = 20, vital for progression
+
+            "Potion": {"Name": "Potion", "Picture": "🧪",
+                       "Description": "Increases health by 20", "Number": 0,
+                       "BuyValue": 26, "SellValue": 13},
+
             "Keys": {
                 "Key 1": {"Name": "Key 1", "Picture": "🔐", "Description": "Used to access a certain chest",
                           "Number": 0}}}
@@ -336,6 +355,7 @@ class PercyJackson(Role):
         super().__init__(name)
         self.picture = "⚡️"
         self.attackpower = 20
+        self.basehealth = 200
         self.health = 200
         self.baseDefense = 100
         self.defense = 100
@@ -354,6 +374,7 @@ class Elf(Role):
         super().__init__(name)
         self.picture = "🧝"
         self.attackpower = 10
+        self.basehealth = 50
         self.health = 50
         self.baseDefense = 200
         self.defense = 200
@@ -366,8 +387,9 @@ class Zelda(Role):
     def __init__(self, name):
         super().__init__(name)
         self.picture = "🗡"
-        # TODO Change back to 20 for actual game
+        # TODO: Change back to 20 for actual game
         self.attackpower = 2000
+        self.basehealth = 100
         self.health = 100
         self.baseDefense = 50
         self.defense = 50
@@ -442,62 +464,71 @@ def Mine(role, setting):
     botavg = sum(botavg)
     points = wins - losses
     if playeravg / playeravglen < botavg / botavglen:
-        print("You get 5 extra resources because your avg was better than the bot!")
+        print(f"You get 5 extra resources because your avg was better than the {Opponent.role} {Opponent.picture}!")
         points += 5
 
-    if TheSetting == "BEACH":
-        for i in range(points):
-            role.inventory["Sands"]["Number"] += 1
+    #        cookie              2-3     1-.1
+    #        logs                3-4     .1-.01
+    #        sands               0       100
+    #        rocks               2       1
+    #        silvers             4       .01
+    #        golds               5       .001
+    #        diamonds            7       .00001
+    #        emeralds            7       .00001
+    #        cactuses            3       .1
+    #        golden saplings     8       .000001
+    #        golden logs         8       .000001
+    #        sand pails          5       .001
 
+    if TheSetting == "BEACH":
+        role.inventory["Sands"]["Number"] += points
+
+    #    3 <= x <= 5 #x is between 3 and 5 inclusive
+    #    3 < x < 5 #x is between 3 and 5 exclusive
     elif TheSetting == "FOREST":
         for i in range(points):
-            Temprand = randint(1, 1000000)
-            if 999999 <= Temprand <= 1000000:
+            Temprand = randint(1, 1e8)
+            if Temprand == 1e8:
                 role.inventory["Golden Saplings"]["Number"] += 1
-            if 999997 <= Temprand <= 999998:
+            elif Temprand == 1:
                 role.inventory["Golden Logs"]["Number"] += 1
-            if 100000 <= Temprand <= 1000:
+            elif 10000 <= Temprand <= 100000:
                 role.inventory["Logs"]["Number"] += 1
-            else:
-                return
-        return
+
+
     elif TheSetting == "HOUSE":
         for i in range(points):
-            Temprand = randint(1, 100)
-            if 1 <= Temprand <= 10:
+            Temprand = randint(1, 1000)
+            if 1 <= Temprand <= 5:
                 role.inventory["Cookies"]["Number"] += 1
-            else:
-                return
-            return
+
 
     elif TheSetting == "MOUNTAIN":
         for i in range(points):
-            Temprand = randint(1, 100000)
-            if 1 <= Temprand <= 100:
+            Temprand = randint(1, 1e7)
+            if 1 <= Temprand <= 1000:
                 role.inventory["Silvers"]["Number"] += 1
-            elif 2 <= Temprand <= 20:
+            elif 1001 <= Temprand <= 1100:
                 role.inventory["Golds"]["Number"] += 1
-            elif 99999 <= Temprand <= 100000:
+            elif Temprand == 1101:
                 role.inventory["Diamonds"]["Number"] += 1
-            elif 99998 <= Temprand <= 99999:
+            elif Temprand == 1102:
                 role.inventory["Emeralds"]["Number"] += 1
-                #10000
-            elif 3 <= Temprand <= 30000:
+                # 10000
+            elif 1103 <= Temprand <= 101102:
                 role.inventory["Rocks"]["Number"] += 1
-            else:
-                return
-            return
-        return
+
+
+
     elif TheSetting == "DESERT":
+        role.inventory["Sands"]["Number"] += points
         for i in range(points):
-            Temprand = randint(1, 100)
-            if 1 <= Temprand <= 2:
+            Temprand = randint(1, 1000)
+            if Temprand == 1:
                 role.inventory["Cactuses"]["Number"] += 1
-            else:
-                role.inventory["Sands"]["Number"] += 1
 
     print("The player average is {:.2f} seconds".format(playeravg / playeravglen))
-    print("The bot average is {:.2f} seconds".format(botavg / botavglen))
+    print("The {} {} average is {:.2f} seconds".format(Opponent.role, Opponent.picture, botavg / botavglen))
     print("You got {} resources in total!".format(points))
     print("You won {} games!".format(wins))
     print("You lost {} games!".format(losses))
@@ -572,7 +603,7 @@ class House(Setting):
 class Beach(Setting):
     def __init__(self):
         self.name = "Beach"
-        self.places = ("SAND", "CASTLE", "OCEAN")  # Fill this up
+        self.places = ("SANDBAR", "CASTLE", "OCEAN")  # Fill this up
 
 
 class Forest(Setting):
@@ -590,7 +621,7 @@ class Mountain(Setting):
 class Desert(Setting):
     def __init__(self):
         self.name = "Desert"
-        self.places = ("SAND", "CACTUS")  # Fill this up
+        self.places = ("LANDSCAPE", "HILLSIDE")  # Fill this up
 
 
 def displayHeroes():
@@ -622,32 +653,63 @@ def search(setting, role):
     while place not in setting.places:
         print("Try again!")
         place = cS(input(f"Where in the {setting.name} do you want to explore? "))
-    if place == "SAND":
-        Chances = randint(1, 100)
-        if 1 <= Chances <= 5:
+
+    #        item                OM      prob
+    #
+    #
+    #        cookie              2-3     1-.1
+    #        logs                3-4     .1-.01
+    #        sands               0       100
+    #        rocks               2       1
+    #        silvers             4       .01
+    #        golds               5       .001
+    #        diamonds            7       .00001
+    #        emeralds            7       .00001
+    #        cactuses            3       .1
+    #        golden saplings     8       .000001
+    #        golden logs         8       .000001
+    #        sand pails          5       .001
+
+    if place == "SANDBAR":
+        Chances = randint(1, 100000)
+        role.inventory["Sands"]["Number"] += 1
+        print("You got SAND!")
+        if Chances == 1:
             role.inventory["Sand Pails"]["Number"] += 1
             print("You got a Sand Pail!")
-        else:
 
-            role.inventory["Sands"]["Number"] += 1
-            print("You got SAND!")
-    elif place == "CACTUS":
-        role.inventory["Cactuses"]["Number"] += 1
-        print("You found a cactus!")
+    elif place == "HILLSIDE":
+        Chances = randint(1, 1000)
+        if Chances == 1:
+            role.inventory["Cactuses"]["Number"] += 1
+            print("You found a cactus!")
+        else:
+            print("Nothing Found.")
+
     elif place == "CASTLE":
-        Chances = randint(1, 100)
-        if 1 <= Chances <= 4:
+        Chances = randint(1, 1e8)
+        if Chances == 1:
             role.inventorty["Golden Logs"] += 1
             print("SUPER RARE DROP: Golden Log!")
-        else:
+        elif 2 <= Chances <= 11:
             role.inventory["Emeralds"]["Number"] += 1
             print("You got an emerald.")
+        else:
+            print("Nothing Found.")
     elif place == "OCEAN":
-        role.inventory["Golds"]["Number"] += 1
-        print("You got gold!")
+        Chances = randint(1, 1e5)
+        if Chances == 1:
+            role.inventory["Golds"]["Number"] += 1
+            print("You got gold!")
+        else:
+            print("Nothing Found.")
     elif place == "FRIDGE":
-        role.inventory["Cookies"]["Number"] += 1
-        print("You got a cookie!")
+        Chances = randint(1, 1000)
+        if 1 <= Chances <= 5:
+            role.inventory["Cookies"]["Number"] += 1
+            print("You got a cookie!")
+        else:
+            print("Nothing Found.")
     return place
 
 
@@ -681,6 +743,7 @@ def shop(Role):
 
             print(f"\nYour Money = {Role.money:0.2f}\n")
             BuyOption = cS(input("What would you like to buy today? "))
+
 
 
         elif option == "SELL":
@@ -718,12 +781,6 @@ def shop(Role):
         Role.money = Role.money + ATS * TTS
 
         Role.inventory[SellOption]["Number"] -= ATS
-
-
-#        for i in range(int(ATS)):
-#            inventory - inventory[f"{SellOption}"]["Value"]
-
-# Complete this part
 
 
 def GetMenuOption():
@@ -946,8 +1003,10 @@ def HeroGame(playerhero):
 
 
 def game():
-    slowPrint("Welcome to the Game!")
-    #    Animation
+    # TODO: uncomment next line in actual game
+    # slowPrint("Welcome to the Game!")
+    print("Welcome to the Game!")
+    # Animation
     displayHeroes()
     playerhero = (cS(input("What hero do you want to be? ")))
     while playerhero not in heroes:
