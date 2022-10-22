@@ -19,7 +19,8 @@ neutralNPCs = ("MINER", "WOODCHUCKER")
 def Defense(Def):
     return 1 - (Def / (Def + 100))
 
-# TODO:
+
+# Todo:
 #####
 # Implement buy function of def shop -> possibly add some items
 # Add use function for each of the items
@@ -27,9 +28,10 @@ def Defense(Def):
 # quest2 -> In C programming
 # Work on menu option function where you can use some of your items to build weapons that can boost your stats
 # figure out use case of items not attaiable through mining
+# implement a save function
+# saving => writes information to a file (e.g. time, stats, items, time that the RoleHero last searched etc.)
 
-
-# modify search function probabilities
+# modify search option so that it can only occur once per people day
 
 
 # Zeeshan Rizvi
@@ -51,8 +53,7 @@ cS is NOT an input function!!!
 
 
 def cS(s):
-    marksremoved = s.upper().translate(str.maketrans('', '', punctuation))
-    return marksremoved.strip()
+    return ''.join(c for c in s if c not in punctuation).upper().strip()
 
 
 # A class is a user-defined type!!!
@@ -65,7 +66,7 @@ class Role:
     def __init__(self, name):
         self.name = name
         self.questLevel = 0
-
+        self.searchTime = 0
         '''
         Order of Magnitude = OM
         prob = probability
@@ -215,7 +216,11 @@ class Role:
 
             "Potion": {"Name": "Potion", "Picture": "🧪",
                        "Description": "Increases health by 20", "Number": 0,
-                       "BuyValue": 26, "SellValue": 13},
+                       "BuyValue": 26, "SellValue": 13, "QuestLevel": 1},
+
+            "Apple": {"Name": "Apple", "Picture": "🍎",
+                      "Description": "Increases health by 25%", "Number": 0,
+                      "BuyValue": 1214, "SellValue": 971},
 
             "Keys": {
                 "Key 1": {"Name": "Key 1", "Picture": "🔐", "Description": "Used to access a certain chest",
@@ -302,6 +307,21 @@ class Role:
 
         return sellableItems
 
+    def printBuyItems(self):
+        temp = []  # temp is short for the word 'temporary'
+        buyableItems = {}
+        for item in self.inventory:
+                buyableItems[(self.inventory[item]["Name"]).upper()] = self.inventory[item]["Number"]
+
+                temp.append((self.inventory[item]["Name"], self.inventory[item]["Picture"],
+                             "x " + str(self.inventory[item]["Number"]), str(self.inventory[item]["BuyValue"])))
+
+        print()
+        print(tabulate(temp, headers=("Item", "Picture", "Number", "Buy Value")))
+        print()
+
+        return buyableItems
+
     #        for item in self.inventory:
     #            if "SellValue" in self.inventory[item]:
 
@@ -314,6 +334,7 @@ class Role:
         print(f"Attack Stamina = {self.attackStamina}")
         print(f"Defense Stamina = {self.defenseStamina}")
         print(f"Money = {self.money}")
+        print(f"Quest Level = {self.questLevel}")
         print()
 
 
@@ -615,7 +636,7 @@ class Forest(Setting):
 class Mountain(Setting):
     def __init__(self):
         self.name = "Mountain"
-        self.places = ("CAVE", "UP")  # Fill this up
+        self.places = ("CAVE", "TOP")  # Fill this up
 
 
 class Desert(Setting):
@@ -643,6 +664,11 @@ def map():
 
 
 def search(setting, role):
+    currentTime = time()
+    if currentTime - role.searchTime < 86400:
+        print("Sorry, you cannot search at this point! ")
+        return
+
     print("------")
     print("Places")
     print("------")
@@ -654,7 +680,7 @@ def search(setting, role):
         print("Try again!")
         place = cS(input(f"Where in the {setting.name} do you want to explore? "))
 
-    #        item                OM      prob
+    #        item                OM      prob (percentage out of 100)
     #
     #
     #        cookie              2-3     1-.1
@@ -680,11 +706,11 @@ def search(setting, role):
 
     elif place == "HILLSIDE":
         Chances = randint(1, 1000)
+        role.inventory["Sands"]["Number"] += 1
+        print("You got SAND!")
         if Chances == 1:
             role.inventory["Cactuses"]["Number"] += 1
             print("You found a cactus!")
-        else:
-            print("Nothing Found.")
 
     elif place == "CASTLE":
         Chances = randint(1, 1e8)
@@ -696,6 +722,7 @@ def search(setting, role):
             print("You got an emerald.")
         else:
             print("Nothing Found.")
+
     elif place == "OCEAN":
         Chances = randint(1, 1e5)
         if Chances == 1:
@@ -710,6 +737,59 @@ def search(setting, role):
             print("You got a cookie!")
         else:
             print("Nothing Found.")
+
+    elif place == "TREE":
+        Chances = randint(1, 1000)
+        if 1 <= Chances <= 5:
+            role.inventory["Apple"]["Number"] += 1
+            print("You got an apple!")
+        else:
+            print("Nothing Found.")
+
+
+    elif place == "CAVE":
+        Chances = randint(1, 10000)
+        if Chances == 1:
+            role.inventory["Silvers"]["Number"] += 1
+            print("You got a piece of silver!")
+        elif 2 <= Chances <= 101:
+            role.inventory["Rocks"]["Number"] += 1
+            print("You got a rock!")
+        else:
+            print("Nothing Found.")
+
+    #    100000/10 = 10000 -> 1e5/10 = 1e4
+    #   1/100 = 10/1000 = 100/10000 = 1000/100000
+    elif place == "TOP":
+        Chances = randint(1, 1e5)
+        if Chances == 1:
+            role.inventory["Golds"]["Number"] += 1
+            print("You got a piece of gold!")
+        elif 2 <= Chances <= 11:
+            role.inventory["Silvers"]["Number"] += 1
+            print("You got a piece of silver!")
+
+        elif 12 <= Chances <= 1011:
+            role.inventory["Rocks"]["Number"] += 1
+            print("You got a rock!")
+        else:
+            print("Nothing Found.")
+
+
+    elif place == "LANDSCAPE":
+        Chances = randint(1, 100000)
+        role.inventory["Sands"]["Number"] += 1
+        print("You got SAND!")
+        if Chances == 1:
+            role.inventory["Sand Pails"]["Number"] += 1
+            print("You found a sand pail!")
+        elif 2 <= Chances <= 11:
+            role.inventory["Cactuses"]["Number"] += 1
+            print("You found a cactus!")
+        else:
+            print("Nothing Found.")
+
+    role.searchTime = time()
     return place
 
 
@@ -741,12 +821,40 @@ def shop(Role):
                 print("You don't have any money!")
                 continue
 
+            '''
+            print out the items that have the QuestLevel key
+
+            buyableItems = Role.printBuyItems()
+            '''
+
             print(f"\nYour Money = {Role.money:0.2f}\n")
             BuyOption = cS(input("What would you like to buy today? "))
+            buyableItems = Role.printBuyItems()
+            print(buyableItems)
+            while BuyOption not in buyableItems:
+                print(f"Error! {BuyOption} is not one of your buyable items")
+                BuyOption = cS(input("What would you like to buy today? "))
+            AmountToBuy = input(f"How many {BuyOption} would you like to buy? ")
+            while not AmountToBuy.isdigit() or int(AmountToBuy) > buyableItems[BuyOption]:
+                # Note: not AmountToSell.isdigit() is being evaluated twice
+                if not AmountToBuy.isdigit():
+                    print(f"Error! {AmountToBuy} is not a valid digit! ")
+                    AmountToSell = input(f"How many {BuyOption} would you like to buy? ")
+                elif int(AmountToBuy) > buyableItems[BuyOption]:
+                    print(f"Error! You don't have {AmountToBuy} {BuyOption} to buy.")
+                    AmountToBuy = input(f"How many {BuyOption} would you like to buy? ")
+        ATS = int(AmountToBuy)
+        # Converting from all caps to first letter uppercase of each word
+        # (rest lowercase)
+        BuyOption = BuyOption.split()
+        BuyOption = " ".join([temp[0] + temp[1:].lower() for temp in BuyOption])
 
+        TTS = Role.inventory[BuyOption]["BuyValue"]
+        Role.money = Role.money - ATS * TTS
 
+        Role.inventory[BuyOption]["Number"] += ATS
 
-        elif option == "SELL":
+        if option == "SELL":
             if not HasSellableItems(inventory):
                 print("You don't have any sellable items!")
                 continue
