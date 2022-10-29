@@ -20,9 +20,9 @@ def Defense(Def):
     return 1 - (Def / (Def + 100))
 
 
-# Todo:
+# TODO:
 #####
-# Implement buy function of def shop -> possibly add some items
+# Implement buy function of def shop -> possibly add some items ✅
 # Add use function for each of the items
 # Boost stats of hero after a quest, and maybe also after mining?
 # quest2 -> In C programming
@@ -109,15 +109,22 @@ class Role:
         sand pails          5       .001
         '''
 
+        '''
+        Types of items
+
+        In-battle
+        Out-of-battle
+        '''
+
         self.inventory = {
             # 1 "Cookies" = 1 cookie ≈ $4.25
             # 4.25/.0035 = 1214.2857142857142
             # https://bethebudget.com/how-much-to-charge-for-cookies/
             # https://web.archive.org/web/20220930045630/https://bethebudget.com/how-much-to-charge-for-cookies/
-            "Cookies": {"Name": "Cookies", "Picture": "🍪", "Description": "Something to eat! Increase health by 25% ",
+            "Cookies": {"Name": "Cookies", "Picture": "🍪", "Description": "Something to eat! Increase health by 10% ",
                         "Number": 0,
                         "BuyValue": 1214,
-                        "SellValue": 971},
+                        "SellValue": 971, "Questlevel": 1, "Type": "Healing"},
 
             # 1 "Logs" = 1 board = 10% of 1 log = $43.50
             # 43.50/.0035 = 12428.571428571428
@@ -125,7 +132,7 @@ class Role:
             # https://web.archive.org/web/20220930045534/https://markets.businessinsider.com/commodities/lumber-price
             "Logs": {"Name": "Logs", "Picture": "🪵",
                      "Description": "Something you can use in the shop for crafting things or to sell", "Number": 0,
-                     "BuyValue": 12429, "SellValue": 9943},
+                     "BuyValue": 12429, "SellValue": 9943, "Type": "Misc"},
 
             # Sand Cost in real life
             # 2000 pounds = $10.00
@@ -144,7 +151,7 @@ class Role:
             #            0 - 9.99 (repeating) e0
 
             "Sands": {"Name": "Sands", "Picture": "🟫", "Description": "Something you can smelt or sell!", "Number": 0,
-                      "BuyValue": 2, "SellValue": 1},
+                      "BuyValue": 2, "SellValue": 1, "Type": "Misc"},
 
             # Rock cost in real life
             # 2000 pounds = $30.00
@@ -153,25 +160,25 @@ class Role:
 
             "Rocks": {"Name": "Rocks", "Picture": "🪨",
                       "Description": "Something you can use in the shop for crafting things, selling, or refining",
-                      "Number": 0, "BuyValue": 257, "SellValue": 206},
+                      "Number": 0, "BuyValue": 257, "SellValue": 206, "Type": "Misc"},
 
             # ONE ITEM OF SILVER = 1 pound bar = $302.08
             # 302.08/0.0035 = 86308.57142857142
 
             "Silvers": {"Name": "Iron Ore", "Picture": "🪙",
                         "Description": "Something you can use in the shop for crafting things, selling, or fusing",
-                        "Number": 0, "BuyValue": 86309, "SellValue": 81993},
+                        "Number": 0, "BuyValue": 86309, "SellValue": 81993, "Type": "Misc"},
 
             # ONE ITEM OF GOLD = 1 pound bar = $26302.40
             # 26302.40/0.0035 = 751497.1428571428
 
             "Golds": {"Name": "Golds", "Picture": "⚱️",
                       "Description": "Something you can use in the shop for crafting things, selling, or fusing",
-                      "Number": 0, "BuyValue": 751497, "SellValue": 747739},
+                      "Number": 0, "BuyValue": 751497, "SellValue": 747739, "Type": "Misc"},
 
             "Diamonds": {"Name": "Diamonds", "Picture": "💎",
                          "Description": "Something you can use in the shop for crafting things, selling, or fusing",
-                         "Number": 0, "BuyValue": 42237143, "SellValue": 42143283},
+                         "Number": 0, "BuyValue": 42237143, "SellValue": 42143283, "Type": "Misc"},
             # 1 "Diamonds" = 5 carat diamond = $147,830
             # 147830/0.0035 = 42237142.85714286
             # https://www.diamondse.info/diamonds-price-index.asp
@@ -179,7 +186,7 @@ class Role:
 
             "Emeralds": {"Name": "Emeralds", "Picture": "🟩",
                          "Description": "Something you can use in the shop for crafting things, selling, or fusing",
-                         "Number": 0, "BuyValue": 35714286, "SellValue": 35674603},
+                         "Number": 0, "BuyValue": 35714286, "SellValue": 35674603, "Type": "Misc"},
             # 1 "Emerals" = 5 carat ≈ $125,000
             # 125000/.0035 = 35714285.71428572
             # https://emeralds.com/education/price-of-an-emerald/
@@ -191,41 +198,52 @@ class Role:
             # https://web.archive.org/web/20220930045627/https://www.gdncnursery.com/cactus
             "Cactuses": {"Name": "Cactuses", "Picture": "🌵",
                          "Description": "Something to sell or turn into pointy armour!",
-                         "Number": 0, "BuyValue": 4286, "SellValue": 3429},
+                         "Number": 0, "BuyValue": 4286, "SellValue": 3429, "Type": "Misc"},
 
             # Game-only item, no real world equivalent, but ≈ $1,000,000
             # 1000000/.0035 = 285714285.71428573
 
             "Golden Saplings": {"Name": "Golden Saplings", "Picture": "🌸", "Description": "Grows into a golden tree!",
-                                "Number": 0, "BuyValue": 285714286, "SellValue": 285685714},
+                                "Number": 0, "BuyValue": 285714286, "SellValue": 285685714, "Type": "Misc"},
 
             # Game-only item, no real world equivalent, but ≈ $500,000
             # 500000/.0035 = 142857142.85714287
 
             "Golden Logs": {"Name": "Golden Logs", "Picture": "🌴",
                             "Description": "The most powerful wood, when combined with weapons +10 to all stats!",
-                            "Number": 0, "BuyValue": 142857143, "SellValue": 142851429},
+                            "Number": 0, "BuyValue": 142857143, "SellValue": 142851429, "Type": "Misc"},
 
             # Game-only item, no real world equivalent, but ≈ $400
             # 400/.0035 = 114285.71428571429
 
             "Sand Pails": {"Name": "Sand Pails", "Picture": "N/A",
                            "Description": "A bucket, maybe you can plant something in here.", "Number": 0,
-                           "BuyValue": 114286, "SellValue": 108571},
+                           "BuyValue": 114286, "SellValue": 108571, "Type": "Misc"},
             # sand pails = 20, vital for progression
 
             "Potion": {"Name": "Potion", "Picture": "🧪",
                        "Description": "Increases health by 20", "Number": 0,
-                       "BuyValue": 26, "SellValue": 13, "QuestLevel": 1},
+                       "BuyValue": 26, "SellValue": 13, "QuestLevel": 1, "Type": "Healing"},
 
             "Apple": {"Name": "Apple", "Picture": "🍎",
                       "Description": "Increases health by 25%", "Number": 0,
-                      "BuyValue": 1214, "SellValue": 971},
+                      "BuyValue": 1214, "SellValue": 971, "QuestLevel": 1, "Type": "Healing"},
 
             "Keys": {
                 "Key 1": {"Name": "Key 1", "Picture": "🔐", "Description": "Used to access a certain chest",
                           "Number": 0}}}
-
+        def cookie_boost(self):
+            self.health+=0.1*self.health
+            if self.health > self.basehealth:
+                self.health = self.basehealth
+        def apple_boost(self):
+            self.health+=0.25*self.health
+            if self.health > self.basehealth:
+                self.health = self.basehealth
+        def potion_boost(self):
+            self.health+=20
+            if self.health > self.basehealth:
+                self.health = self.basehealth
         # Big-O notation
         # Index a dictionary: O(1)
         # Search a dictionary: O(n)
@@ -311,13 +329,14 @@ class Role:
         temp = []  # temp is short for the word 'temporary'
         buyableItems = {}
         for item in self.inventory:
-                buyableItems[(self.inventory[item]["Name"]).upper()] = self.inventory[item]["Number"]
-
+            # If item is a buyable item
+            if "BuyValue" in self.inventory[item]:
                 temp.append((self.inventory[item]["Name"], self.inventory[item]["Picture"],
-                             "x " + str(self.inventory[item]["Number"]), str(self.inventory[item]["BuyValue"])))
+                             str(self.inventory[item]["BuyValue"])))
+                buyableItems[item.upper()] = self.inventory[item]["BuyValue"]
 
         print()
-        print(tabulate(temp, headers=("Item", "Picture", "Number", "Buy Value")))
+        print(tabulate(temp, headers=("Item", "Picture", "Buy Value")))
         print()
 
         return buyableItems
@@ -828,33 +847,34 @@ def shop(Role):
             '''
 
             print(f"\nYour Money = {Role.money:0.2f}\n")
-            BuyOption = cS(input("What would you like to buy today? "))
             buyableItems = Role.printBuyItems()
-            print(buyableItems)
+            BuyOption = cS(input("What would you like to buy today? "))
+
+            #            print(buyableItems)
             while BuyOption not in buyableItems:
                 print(f"Error! {BuyOption} is not one of your buyable items")
                 BuyOption = cS(input("What would you like to buy today? "))
             AmountToBuy = input(f"How many {BuyOption} would you like to buy? ")
-            while not AmountToBuy.isdigit() or int(AmountToBuy) > buyableItems[BuyOption]:
+            while not AmountToBuy.isdigit() or int(AmountToBuy) * buyableItems[BuyOption] > Role.money:
                 # Note: not AmountToSell.isdigit() is being evaluated twice
                 if not AmountToBuy.isdigit():
                     print(f"Error! {AmountToBuy} is not a valid digit! ")
-                    AmountToSell = input(f"How many {BuyOption} would you like to buy? ")
-                elif int(AmountToBuy) > buyableItems[BuyOption]:
-                    print(f"Error! You don't have {AmountToBuy} {BuyOption} to buy.")
                     AmountToBuy = input(f"How many {BuyOption} would you like to buy? ")
-        ATS = int(AmountToBuy)
-        # Converting from all caps to first letter uppercase of each word
-        # (rest lowercase)
-        BuyOption = BuyOption.split()
-        BuyOption = " ".join([temp[0] + temp[1:].lower() for temp in BuyOption])
+                elif int(AmountToBuy) * buyableItems[BuyOption] > Role.money:
+                    print(f"Error! You don't have enough money to buy {AmountToBuy} {BuyOption}")
+                    AmountToBuy = input(f"How many {BuyOption} would you like to buy? ")
+            ATB = int(AmountToBuy)
+            # Converting from all caps to first letter uppercase of each word
+            # (rest lowercase)
+            BuyOption = BuyOption.split()
+            BuyOption = " ".join([temp[0] + temp[1:].lower() for temp in BuyOption])
 
-        TTS = Role.inventory[BuyOption]["BuyValue"]
-        Role.money = Role.money - ATS * TTS
+            TTS = Role.inventory[BuyOption]["BuyValue"]
+            Role.money = Role.money - ATB * TTS
 
-        Role.inventory[BuyOption]["Number"] += ATS
+            Role.inventory[BuyOption]["Number"] += ATB
 
-        if option == "SELL":
+        elif option == "SELL":
             if not HasSellableItems(inventory):
                 print("You don't have any sellable items!")
                 continue
@@ -879,16 +899,16 @@ def shop(Role):
                     print(f"Error! You don't have {AmountToSell} {SellOption} to sell.")
                     AmountToSell = input(f"How many {SellOption} would you like to sell? ")
                     # Role.money
-        ATS = int(AmountToSell)
-        # Converting from all caps to first letter uppercase of each word
-        # (rest lowercase)
-        SellOption = SellOption.split()
-        SellOption = " ".join([temp[0] + temp[1:].lower() for temp in SellOption])
+            ATS = int(AmountToSell)
+            # Converting from all caps to first letter uppercase of each word
+            # (rest lowercase)
+            SellOption = SellOption.split()
+            SellOption = " ".join([temp[0] + temp[1:].lower() for temp in SellOption])
 
-        TTS = Role.inventory[SellOption]["SellValue"]
-        Role.money = Role.money + ATS * TTS
+            TTS = Role.inventory[SellOption]["SellValue"]
+            Role.money = Role.money + ATS * TTS
 
-        Role.inventory[SellOption]["Number"] -= ATS
+            Role.inventory[SellOption]["Number"] -= ATS
 
 
 def GetMenuOption():
@@ -947,6 +967,7 @@ def Menu(role, setting):
                 option = GetMenuOption()
             elif option == "INV":
                 role.printInventory()
+
                 option = GetMenuOption()
             elif option == "SHOP":
                 if Shop == True:

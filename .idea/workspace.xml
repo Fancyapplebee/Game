@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="Update 1/2, 10/14/22">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Game/Game backround things.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Game/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Game.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -99,6 +100,13 @@
       <workItem from="1665851925092" duration="3972000" />
       <workItem from="1665872891390" duration="8000" />
       <workItem from="1666402408804" duration="2825000" />
+      <workItem from="1666447042857" duration="731000" />
+      <workItem from="1666447786758" duration="1995000" />
+      <workItem from="1666451063900" duration="2827000" />
+      <workItem from="1666486875009" duration="359000" />
+      <workItem from="1666841543608" duration="4276000" />
+      <workItem from="1667019852441" duration="175000" />
+      <workItem from="1667020038967" duration="601000" />
     </task>
     <task id="LOCAL-00001" summary="it works">
       <created>1657430290327</created>
