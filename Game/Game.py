@@ -5,13 +5,17 @@ from time import time, sleep
 from inputimeout import inputimeout, TimeoutOccurred
 from threading import Thread
 from tabulate import tabulate
+import cppyy
+import pygame
+from io import BytesIO
+import requests
+from PIL import Image
 
 Quests = False
 Shop = False
 # Roles
 heroes = ("PERCY JACKSON", "ELF", "ZELDA")
 goodNPCs = ("HEALER",)
-badNPCs = {"NINJA": 0.05, "OGRE": 0.01, "DEMON": 0.94}
 places = ("HOUSE", "BEACH", "FOREST", "MOUNTAIN", "DESERT")
 neutralNPCs = ("MINER", "WOODCHUCKER")
 
@@ -24,15 +28,15 @@ def Defense(Def):
 #####
 # Implement buy function of def shop -> possibly add some items ✅
 # Add use function for each of the items
-# Boost stats of hero after a quest, and maybe also after mining?
+# Boost stats of hero after a quest, and maybe also after mining? ✅
 # quest2 -> In C programming
-# Work on menu option function where you can use some of your items to build weapons that can boost your stats
-# figure out use case of items not attaiable through mining
+# Work on menu option function where you can use some of your items to build weapons that can boost your stats 👨‍💻
+# figure out use case of items not attainable through mining
 # implement a save function
 # saving => writes information to a file (e.g. time, stats, items, time that the RoleHero last searched etc.)
-
-# modify search option so that it can only occur once per people day
-
+# modify search option so that it can only occur once per people day ✅
+# Axes that can increase drop-chances for mine function
+# Find out where we can increase money besides selling
 
 # Zeeshan Rizvi
 # https://stackoverflow.com/questions/17432478/python-print-to-one-line-with-time-delay-between-prints/52595545#52595545?newreg=cb618a4b6ed14f8bb7a782e731f4c678
@@ -58,326 +62,999 @@ def cS(s):
 
 # A class is a user-defined type!!!
 
-
 # Internet archive links
 # https://web.archive.org
 # Role Types
-class Role:
-    def __init__(self, name):
-        self.name = name
-        self.questLevel = 0
-        self.searchTime = 0
-        '''
-        Order of Magnitude = OM
-        prob = probability
+cppyy.cppdef(
+    r'''
+    double Defense(double Def)
+    {
+        return 1 - (Def / (Def + 100));
+    }
+    //'Time Since Epoch In Millisecs'
+    uint64_t time()
+    {
+        using namespace std::chrono;
+        return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    }
 
-        OM
-        __
+    std::unordered_map<std::string, double> badNPCs = {{"NINJA", 0.05} , {"OGRE", 0.01} , {"DEMON", 0.94}};
 
-        891
+    struct Role;
 
-        8.91 * 10**2
+    struct BadNPC
+    {
+        const std::string role;
+        std::string picture;
+        double attackpower;
+        double health;
+        double defense;
+        double expYield;
 
-        OM = 2
+        BadNPC(const std::string& name);
 
-        1214
+        void attack(Role&);
+        void statboost(Role&);
 
-        1.214 * 10**3
+    };
 
-        OM = 3
+    BadNPC::BadNPC(const std::string& name) : role{name}
+    {
+        if (role == "NINJA") //second most powerful
+        {
+            this->picture = "🥷";
+            this->attackpower = 10;
+            this->health = 100.0;
+            this->defense = 50;
+            this->expYield = 10;
 
-        971
-
-        9.71 * 10**2
-
-        OM = 2
-
-        item                OM      prob
-
-
-        cookie              2-3     1-.1
-        logs                3-4     .1-.01
-        sands               0       100
-        rocks               2       1
-        silvers             4       .01
-        golds               5       .001
-        diamonds            7       .00001
-        emeralds            7       .00001
-        cactuses            3       .1
-        golden saplings     8       .000001
-        golden logs         8       .000001
-        sand pails          5       .001
-        '''
-
-        '''
-        Types of items
-
-        In-battle
-        Out-of-battle
-        '''
-
-        self.inventory = {
-            # 1 "Cookies" = 1 cookie ≈ $4.25
-            # 4.25/.0035 = 1214.2857142857142
-            # https://bethebudget.com/how-much-to-charge-for-cookies/
-            # https://web.archive.org/web/20220930045630/https://bethebudget.com/how-much-to-charge-for-cookies/
-            "Cookies": {"Name": "Cookies", "Picture": "🍪", "Description": "Something to eat! Increase health by 10% ",
-                        "Number": 0,
-                        "BuyValue": 1214,
-                        "SellValue": 971, "Questlevel": 1, "Type": "Healing"},
-
-            # 1 "Logs" = 1 board = 10% of 1 log = $43.50
-            # 43.50/.0035 = 12428.571428571428
-            # https://markets.businessinsider.com/commodities/lumber-price
-            # https://web.archive.org/web/20220930045534/https://markets.businessinsider.com/commodities/lumber-price
-            "Logs": {"Name": "Logs", "Picture": "🪵",
-                     "Description": "Something you can use in the shop for crafting things or to sell", "Number": 0,
-                     "BuyValue": 12429, "SellValue": 9943, "Type": "Misc"},
-
-            # Sand Cost in real life
-            # 2000 pounds = $10.00
-            # 1 Sands = 650 grams (1 handful)
-            # 2000 pounds = 907184.7 grams
-            # 1396 sands = $10.00
-            # 1 sand = $0.007
-            # 2 G = $0.007
-            # 1 G = $0.0035 (= 2 yen as of September 17, 11:05 am PST)
-
-            # sands : 1, gold : 751497
-
-            #            Lesson on order of magnitude
-            #            10**1 10**2 10**0 2e0 10e0
-            #            100000 - 99999
-            #            0 - 9.99 (repeating) e0
-
-            "Sands": {"Name": "Sands", "Picture": "🟫", "Description": "Something you can smelt or sell!", "Number": 0,
-                      "BuyValue": 2, "SellValue": 1, "Type": "Misc"},
-
-            # Rock cost in real life
-            # 2000 pounds = $30.00
-            # 6 pounds = 1 handful = $0.9 = 90 257.14285714285717cents
-            # .9/.0035 = 257.14285714285717
-
-            "Rocks": {"Name": "Rocks", "Picture": "🪨",
-                      "Description": "Something you can use in the shop for crafting things, selling, or refining",
-                      "Number": 0, "BuyValue": 257, "SellValue": 206, "Type": "Misc"},
-
-            # ONE ITEM OF SILVER = 1 pound bar = $302.08
-            # 302.08/0.0035 = 86308.57142857142
-
-            "Silvers": {"Name": "Iron Ore", "Picture": "🪙",
-                        "Description": "Something you can use in the shop for crafting things, selling, or fusing",
-                        "Number": 0, "BuyValue": 86309, "SellValue": 81993, "Type": "Misc"},
-
-            # ONE ITEM OF GOLD = 1 pound bar = $26302.40
-            # 26302.40/0.0035 = 751497.1428571428
-
-            "Golds": {"Name": "Golds", "Picture": "⚱️",
-                      "Description": "Something you can use in the shop for crafting things, selling, or fusing",
-                      "Number": 0, "BuyValue": 751497, "SellValue": 747739, "Type": "Misc"},
-
-            "Diamonds": {"Name": "Diamonds", "Picture": "💎",
-                         "Description": "Something you can use in the shop for crafting things, selling, or fusing",
-                         "Number": 0, "BuyValue": 42237143, "SellValue": 42143283, "Type": "Misc"},
-            # 1 "Diamonds" = 5 carat diamond = $147,830
-            # 147830/0.0035 = 42237142.85714286
-            # https://www.diamondse.info/diamonds-price-index.asp
-            # https://web.archive.org/web/20220930045549/https://www.diamondse.info/diamonds-price-index.asp
-
-            "Emeralds": {"Name": "Emeralds", "Picture": "🟩",
-                         "Description": "Something you can use in the shop for crafting things, selling, or fusing",
-                         "Number": 0, "BuyValue": 35714286, "SellValue": 35674603, "Type": "Misc"},
-            # 1 "Emerals" = 5 carat ≈ $125,000
-            # 125000/.0035 = 35714285.71428572
-            # https://emeralds.com/education/price-of-an-emerald/
-            # https://web.archive.org/web/20220930045614/https://emeralds.com/education/price-of-an-emerald/
-
-            # 1 "Cactuses" = 1 cheap cactus plant = $15
-            # 15/.0035 = 4285.714285714285
-            # https://www.gdncnursery.com/cactus
-            # https://web.archive.org/web/20220930045627/https://www.gdncnursery.com/cactus
-            "Cactuses": {"Name": "Cactuses", "Picture": "🌵",
-                         "Description": "Something to sell or turn into pointy armour!",
-                         "Number": 0, "BuyValue": 4286, "SellValue": 3429, "Type": "Misc"},
-
-            # Game-only item, no real world equivalent, but ≈ $1,000,000
-            # 1000000/.0035 = 285714285.71428573
-
-            "Golden Saplings": {"Name": "Golden Saplings", "Picture": "🌸", "Description": "Grows into a golden tree!",
-                                "Number": 0, "BuyValue": 285714286, "SellValue": 285685714, "Type": "Misc"},
-
-            # Game-only item, no real world equivalent, but ≈ $500,000
-            # 500000/.0035 = 142857142.85714287
-
-            "Golden Logs": {"Name": "Golden Logs", "Picture": "🌴",
-                            "Description": "The most powerful wood, when combined with weapons +10 to all stats!",
-                            "Number": 0, "BuyValue": 142857143, "SellValue": 142851429, "Type": "Misc"},
-
-            # Game-only item, no real world equivalent, but ≈ $400
-            # 400/.0035 = 114285.71428571429
-
-            "Sand Pails": {"Name": "Sand Pails", "Picture": "N/A",
-                           "Description": "A bucket, maybe you can plant something in here.", "Number": 0,
-                           "BuyValue": 114286, "SellValue": 108571, "Type": "Misc"},
-            # sand pails = 20, vital for progression
-
-            "Potion": {"Name": "Potion", "Picture": "🧪",
-                       "Description": "Increases health by 20", "Number": 0,
-                       "BuyValue": 26, "SellValue": 13, "QuestLevel": 1, "Type": "Healing"},
-
-            "Apple": {"Name": "Apple", "Picture": "🍎",
-                      "Description": "Increases health by 25%", "Number": 0,
-                      "BuyValue": 1214, "SellValue": 971, "QuestLevel": 1, "Type": "Healing"},
-
-            "Keys": {
-                "Key 1": {"Name": "Key 1", "Picture": "🔐", "Description": "Used to access a certain chest",
-                          "Number": 0}}}
-        def cookie_boost(self):
-            self.health+=0.1*self.health
-            if self.health > self.basehealth:
-                self.health = self.basehealth
-        def apple_boost(self):
-            self.health+=0.25*self.health
-            if self.health > self.basehealth:
-                self.health = self.basehealth
-        def potion_boost(self):
-            self.health+=20
-            if self.health > self.basehealth:
-                self.health = self.basehealth
-        # Big-O notation
-        # Index a dictionary: O(1)
-        # Search a dictionary: O(n)
-
-        self.defending = False
-        self.moved = False
-        self.moveTime = None
-        self.waitTime = None
-
-    #    https://hypixel-skyblock.fandom.com/wiki/Defense
-    def attack(self, enemy):
-        #        enemy.health -= (Defense(enemy.defense)*self.attackpower)
-        if not self.moved:
-            self.moved = True
-            enemy.health -= (Defense(enemy.defense) * self.attackpower)
-            self.moveTime = time()
-            self.waitTime = self.attackStamina
-        elif time() - self.waitTime < self.moveTime:
-            print("Can't attack yet")
-        else:
-            enemy.health -= (Defense(enemy.defense) * self.attackpower)
-            self.moveTime = time()
-            self.waitTime = self.attackStamina
-
-    #            100 - ((1 - (50 / (50 + 100)))*10)
-
-    def defend(self):
-        if not self.moved:
-            self.moved = True
-            self.defending = True
-            self.defense += 250
-            self.moveTime = time()
-            self.waitTime = self.defenseStamina
-        elif time() - self.waitTime < self.moveTime:
-            print("Can't boost defense yet")
-        else:
-            self.defense += 250
-            self.moveTime = time()
-            self.waitTime = self.defenseStamina
-
-        print(self.defense)
-
-    #        self.defending = True
-
-    def printInventory(self):
-        temp = []  # temp is short for the word 'temporary'
-        for item in self.inventory:
-            if item == "Keys":
-                for key in self.inventory["Keys"]:
-                    if self.inventory["Keys"][key]["Number"] != 0:
-                        print("{} {} {:>10}".format(self.inventory["Keys"][key]["Name"],
-                                                    self.inventory["Keys"][key]["Picture"],
-                                                    "x " + str(self.inventory["Keys"][key]["Number"])))
-                        print("Description:", self.inventory["Keys"][key]["Description"])
-
-            elif self.inventory[item]["Number"] != 0:
-                temp.append((self.inventory[item]["Name"], self.inventory[item]["Picture"],
-                             "x " + str(self.inventory[item]["Number"])))
-        print()
-        print(tabulate(temp, headers=("Name", "Picture", "Number")))
-        print()
-
-    #                print("{} {} {:>10}".format(self.inventory[item]["Name"],self.inventory[item]["Picture"],"x "+str(self.inventory[item]["Number"])))
-    #                print("Description:",self.inventory[item]["Description"])
-
-    def printSellItems(self):
-        NoneConv = lambda x: 0 if x == None else x  # converts None/not None to 0/1
-        temp = []  # temp is short for the word 'temporary'
-        sellableItems = {}
-        for item in self.inventory:
-            if "SellValue" in self.inventory[item] and NoneConv(self.inventory[item].get("Number")) > 0:
-                sellableItems[(self.inventory[item]["Name"]).upper()] = self.inventory[item]["Number"]
-
-                temp.append((self.inventory[item]["Name"], self.inventory[item]["Picture"],
-                             "x " + str(self.inventory[item]["Number"]), str(self.inventory[item]["SellValue"])))
-        print()
-        print(tabulate(temp, headers=("Item", "Picture", "Number", "Sell Value")))
-        print()
-
-        return sellableItems
-
-    def printBuyItems(self):
-        temp = []  # temp is short for the word 'temporary'
-        buyableItems = {}
-        for item in self.inventory:
-            # If item is a buyable item
-            if "BuyValue" in self.inventory[item]:
-                temp.append((self.inventory[item]["Name"], self.inventory[item]["Picture"],
-                             str(self.inventory[item]["BuyValue"])))
-                buyableItems[item.upper()] = self.inventory[item]["BuyValue"]
-
-        print()
-        print(tabulate(temp, headers=("Item", "Picture", "Buy Value")))
-        print()
-
-        return buyableItems
-
-    #        for item in self.inventory:
-    #            if "SellValue" in self.inventory[item]:
-
-    def baseLineStats(self):
-        # health, defense, true health, money
-        print()
-        print(f"Attack Power = {self.attackpower}")
-        print(f"Health = {self.health}")
-        print(f"Defense = {self.baseDefense}")
-        print(f"Attack Stamina = {self.attackStamina}")
-        print(f"Defense Stamina = {self.defenseStamina}")
-        print(f"Money = {self.money}")
-        print(f"Quest Level = {self.questLevel}")
-        print()
+        }
+        else if (role == "OGRE") //most powerful
+        {
+            this->picture = "👹";
+            this->attackpower = 10;
+            this->health = 500.0;
+            this->defense = 100;
+            this->expYield = 25;
+        }
+        else if (role == "DEMON") //least powerful
+        {
+            this->picture = "👿";
+            this->attackpower = 5;
+            this->health = 100.0;
+            this->defense = 20;
+            this->expYield = 5;
+        }
+    }
 
 
-'''
-*: 100 health
-=: 10 health
--: 1 health
+    struct Role
+    {
+        std::string name;
+        int questLevel;
+        double searchtime;
+        bool defending;
+        bool moved;
+        uint64_t moveTime;
+        uint64_t waitTime;
 
-e.g. 57 health
-57 // 10 # 5 =
-57 %= 10 # 7
-7 // 10 # 7 -
-=====-------
+        std::unordered_map<std::string, std::unordered_map<std::string,std::string>> stringInv;
+        std::unordered_map<std::string, std::unordered_map<std::string,double>> numInv;
+        std::unordered_map<std::string,std::unordered_map<std::string,std::function<void()>>> useInv;
 
-e.g. 157 health
-157 // 100 # 1 *
-157 %= 100 # 57
-57 // 10 # 5 =
-57 %= 10 # 7
-7 // 10 # 7 -
+        double health;
+        double basehealth;
+        double attackpower;
+        double defense;
+        double attackStamina;
+        double defenseStamina;
+        double money;
+        double baseDefense;
+        double searchTime;
+        int maxLevel;
+        int startLevel;
+        int currLevel;
+        double currExp;
+        double LevelExp;
+    //    virtual double ExpLevelFunc(double){}
 
-*=====-------
+        void defend();
+        void attack(BadNPC& enemy);
+        void baseLineStats();
+        std::vector<std::string> printInventory();
+        std::unordered_map<std::string, double> printSellItems(bool print = false);
+        std::vector<std::string> printSellItemsVec(bool print = false, bool upper = true);
+        std::vector<std::string> getTradableItems();
+        std::unordered_map<std::string, double> printBuyItems();
+        std::pair<std::unordered_map<std::string, std::unordered_map<std::string, double>>, std::vector<std::string>> printTradeInfo();
+        double AttackLevelFunc(int level)
+        {
+            return 20*pow((1-0.05),level);
+        }
+        double HealthLevelFunc(int level)
+        {
+            return 40.233 - 9.60068*pow(level,0.300144);
+        }
+        double DefenseLevelFunc(int level)
+        {
+            return 100.583 - 24.0017*pow(level,0.300144);
+        }
+        double StaminaLevelFunc(int level)
+        {
+            return exp(-1*(level+1));
+        }
 
-'''
+    //    virtual void increaseExp(double exp); //Declaration
+
+        Role(std::string name);
+        virtual ~Role();
+    };
+
+    void BadNPC::attack(Role& RoleHero)
+    {
+        RoleHero.health -= (Defense(RoleHero.defense) * attackpower);
+    }
+
+    void Role::defend() //:: is the scope resolution operator
+    {
+        if (!moved)
+        {
+            moved = true;
+            defending = true;
+            defense += 250;
+            moveTime = time();
+            waitTime = static_cast<uint64_t>(defenseStamina*1000);
+        }
+        else if (time() - waitTime < moveTime)
+        {
+            std::cout << "Can't boost defense yet\n";
+        }
+        else
+        {
+            defense += 250;
+            moveTime = time();
+            waitTime = static_cast<uint64_t>(defenseStamina*1000);
+        }
+    }
+
+    void Role::attack(BadNPC& enemy)
+    {
+        if (!moved)
+        {
+            moved = true;
+            enemy.health -= (Defense(enemy.defense) * attackpower);
+            moveTime = time();
+            waitTime = static_cast<uint64_t>(attackStamina*1000);
+        }
+        else if (time() - waitTime < moveTime)
+        {
+            std::cout << "Can't attack yet\n";
+        }
+        else
+        {
+            enemy.health -= (Defense(enemy.defense) * attackpower);
+            moveTime = time();
+            waitTime = static_cast<uint64_t>(attackStamina*1000);
+        }
+    }
+
+    void Role::baseLineStats()
+    {
+        std::cout << "\nAttack Power = " << std::setprecision(0)
+        << std::fixed << attackpower << '\n'
+        << "Health = " << std::setprecision(0)
+        << std::fixed << health << " / " << std::setprecision(0)
+        << std::fixed << basehealth << '\n'
+        << "Defense = " << std::setprecision(0)
+        << std::fixed << defense << " / " << std::setprecision(0)
+        << std::fixed << baseDefense << '\n'
+        << "Attack Stamina = " << attackStamina << '\n'
+        << "Defense Stamina = " << defenseStamina << '\n'
+        << "Money = " << money << '\n'
+        << "Quest Level = " << questLevel << '\n'
+        << "Stat Level = " << currLevel << '\n'
+        << "Exp = " << std::setprecision(2)
+        << std::fixed << currExp << " / " << std::setprecision(2)
+        << std::fixed << LevelExp
+        << "\n\n";
+    }
+
+    void BadNPC::statboost(Role& RoleHero)
+    {
+        double multiplier = (0.2 * RoleHero.questLevel) + 1;
+        attackpower = multiplier * attackpower;
+        health = multiplier * health;
+        defense = multiplier * defense;
+        expYield = multiplier * expYield;
+    }
+
+    std::vector<std::string> Role::printInventory()
+    {
+        std::vector<std::string> currentInventory;
+
+        std::cout << std::setw(15) << "Name" << std::setw(15) << "Picture" << std::setw(15) << "Number" << '\n' << std::setw(15) << "----" << std::setw(15) << "-------" << std::setw(15) << "------" << '\n';
+
+        for (auto& i: stringInv)
+        {
+    //            "Name", "Picture", "Number"
+            if (numInv[i.first]["Number"] > 0)
+            {
+                std::cout << std::setw(15) << stringInv[i.first]["Name"] << std::setw(15) << stringInv[i.first]["Picture"] << std::setw(15) << numInv[i.first]["Number"] << '\n';
+
+                std::string temp = i.first;
+                std::transform(temp.begin(), temp.end(),temp.begin(), ::toupper);
+                currentInventory.push_back(temp);
+            }
+        }
+        std::cout << '\n';
+        return currentInventory;
+    }
+    //print = true, prints out AND returns map
+    //print = false, ONLY returns map, doesn't print anything
+    std::unordered_map<std::string, double> Role::printSellItems(bool print)
+    {
+
+        if (print)
+        {
+            std::cout << std::setw(15) << "Item" << std::setw(15) << "Picture" << std::setw(15) << "Number" <<
+            std::setw(15) << "Sell Value" << '\n' << std::setw(15) << "----" << std::setw(15) << "-------" << std::setw(15) << "------" << std::setw(15) << "----------" << '\n';
+        }
+
+        std::unordered_map<std::string, double> sellableItems;
+        for (auto& i: stringInv)
+        {
+    //            "Item", "Picture", "Number", "Sell Value"
+            if ((numInv[i.first].find("SellValue") != numInv[i.first].end()) && (numInv[i.first]["Number"] > 0))
+            {
+                if (print)
+                {
+                    std::cout << std::setw(15) << stringInv[i.first]["Name"] << std::setw(15) << stringInv[i.first]["Picture"] << std::setw(15) << numInv[i.first]["Number"] << std::setw(15) << numInv[i.first]["SellValue"] << '\n';
+                }
+                std::string temp = i.first;
+                std::transform(temp.begin(), temp.end(), temp.begin(), ::toupper);
+                sellableItems[temp] = numInv[i.first]["Number"];
+            }
+        }
+        return sellableItems;
+    }
+
+    //print = true, prints out AND returns map
+    //print = false, ONLY returns map, doesn't print anything
+    std::vector<std::string> Role::printSellItemsVec(bool print, bool upper)
+    {
+        if (print)
+        {
+            std::cout << std::setw(15) << "Item" << std::setw(15) << "Picture" << std::setw(15) << "Number" <<
+            std::setw(15) << "Sell Value" << '\n' << std::setw(15) << "----" << std::setw(15) << "-------" << std::setw(15) << "------" << std::setw(15) << "----------" << '\n';
+        }
+
+        std::vector<std::string> sellableItems;
+        for (auto& i: stringInv)
+        {
+    //            "Item", "Picture", "Number", "Sell Value"
+            if ((numInv[i.first].find("SellValue") != numInv[i.first].end()) && (numInv[i.first]["Number"] > 0))
+            {
+                if (print)
+                {
+                    std::cout << std::setw(15) << stringInv[i.first]["Name"] << std::setw(15) << stringInv[i.first]["Picture"] << std::setw(15) << numInv[i.first]["Number"] << std::setw(15) << numInv[i.first]["SellValue"] << '\n';
+                }
+                std::string temp = i.first;
+                //Turning everything to uppercases
+                if (upper)
+                {
+                    std::transform(temp.begin(), temp.end(), temp.begin(), ::toupper);
+                }
+                sellableItems.push_back(temp);
+            }
+        }
+        return sellableItems;
+
+    }
+
+    std::vector<std::string> Role::getTradableItems()
+    {
+        std::vector<std::string> tradableItems;
+        for (auto& i: stringInv)
+        {
+            if (stringInv[i.first].count("Construction") && (numInv[i.first]["Questlevel"] <= this->questLevel)) //if found
+            {
+                tradableItems.push_back(i.first);
+            }
+        }
+        return tradableItems;
+    }
+
+    std::unordered_map<std::string, double> Role::printBuyItems()
+    {
+        std::unordered_map<std::string, double> buyableItems;
+
+        std::cout << std::setw(20) << "Item" << std::setw(20) << "Picture" <<
+                std::setw(20) << "Buy Value" << '\n' << std::setw(20) << "----" << std::setw(20) << "-------" << std::setw(20) << "---------" << '\n';
+
+        for (auto& i: stringInv)
+        {
+        //            "Item", "Picture", "Buy Value"
+            if ((numInv[i.first].find("BuyValue") != numInv[i.first].end()) && (numInv[i.first]["Questlevel"] <= this->questLevel))
+            {
+                std::cout << std::setw(20) << stringInv[i.first]["Name"] << std::setw(20) << stringInv[i.first]["Picture"] << std::setw(20) << numInv[i.first]["BuyValue"] << std::setw(20) << '\n';
+                std::string temp = i.first;
+                std::transform(temp.begin(), temp.end(),temp.begin(), ::toupper);
+                buyableItems[temp] = numInv[i.first]["BuyValue"];
+            }
+        }
+        std::cout << '\n';
+        return buyableItems;
+    }
+
+    std::unordered_map<std::string, double> TradeItemDict(const std::string& construction)
+    {
+        std::stringstream ss;
+        std::string temp;
+        // std::vector<std::string> tokens;
+        std::unordered_map<std::string, double> dict;
+
+        ss << construction;
+
+        while (getline(ss, temp, ','))
+        {
+            // tokens.push_back(temp);
+            // std::cout << temp << '\n';
+            size_t last_index = temp.find_last_of("0123456789");
+            int num = std::stoi(temp.substr(0, last_index+1));
+
+            last_index = temp.find_last_of(" ");
+            dict[temp.substr(last_index+1)] = num;
+        }
+
+        return dict;
+    }
+
+    std::pair<std::unordered_map<std::string, std::unordered_map<std::string, double>>, std::vector<std::string>> Role::printTradeInfo()
+    {
+        //false, false, means don't print sell items (just return the vector
+        //of sell items, and don't make the sellitems all uppercase)
+        std::vector<std::string> sellInfo = printSellItemsVec(false, false);
+
+        //get's the items that we can trade for
+        std::vector<std::string> tradableItems = getTradableItems();
+        auto tradeSize = tradableItems.size();
+        auto sellSize = sellInfo.size();
+        std::unordered_map<std::string, std::unordered_map<std::string, double>> tradeInfo;
+        std::unordered_map<std::string, double> dict;
+        int i = 0;
+
+        int maxTradeLength = 0;
+        int maxSellLength = 0;
+
+        if (tradeSize > sellSize)
+        {
+            //calculate lengths
+            for (auto& k: tradableItems)
+            {
+                int tempTradeLength = 0, tempSellLength = 0; //temporaries
+
+                //calculate tempSellLength
+                if (i < sellSize)
+                {
+                    tempSellLength = sellInfo[i].length() + stringInv[sellInfo[i]]["Picture"].length() + std::to_string(numInv[sellInfo[i]]["Number"]).length() + 5;
+
+    //                tempSellLength = sellInfo[i].length() + 1 + std::to_string(numInv[sellInfo[i]]["Number"]).length() + 5;
+
+                    if (maxSellLength < tempSellLength)
+                    {
+                        maxSellLength = tempSellLength; //update the max sell length
+                    }
+
+                    i++;
+                }
+
+                dict = TradeItemDict(stringInv[k]["Construction"]);
+                tradeInfo[k] = dict;
+                tradeInfo[k]["Money"] = static_cast<int>(numInv[k]["BuyValue"]);
+
+                tempTradeLength =  k.length() + 2 + stringInv[k]["Picture"].length();
+    //            tempTradeLength = k.length() + 2 + 1;
+
+                for (auto& j: dict)
+                {
+                    tempTradeLength += 5 + stringInv[j.first]["Picture"].length() + std::to_string(static_cast<int>(j.second)).length();
+    //                tempTradeLength += 5 + 1 + std::to_string(static_cast<int>(j.second)).length();
+                }
+
+                tempTradeLength += 5 + std::to_string(numInv[k]["BuyValue"]).length();
+
+                if (maxTradeLength < tempTradeLength)
+                {
+                    maxTradeLength = tempTradeLength; //update the max trade length
+                }
+            }
+            i = 0;
+            std::cout << maxTradeLength << '\n';
+            //output stuff using calculated lengths
+            for (auto& k: tradableItems)
+            {
+                std::string temp;
+                if (i < sellSize)
+                {
+                    int numInvVal = static_cast<int>(numInv[sellInfo[i]]["Number"]);
+                    std::string numInvString = std::to_string(numInvVal);
+
+                    temp = sellInfo[i] + ": " + stringInv[sellInfo[i]]["Picture"] + " x " + numInvString;
+
+                    std::cout << std::setw(maxSellLength) << temp;
+                    i++;
+                }
+                else
+                {
+                    std::cout << std::setw(maxSellLength) << "";
+                }
+                std::cout << "          ";
+                //Output the trade items
+                dict = TradeItemDict(stringInv[k]["Construction"]);
+
+                temp = k + ' ' + stringInv[k]["Picture"] + ':';
+
+                for (auto& j: dict)
+                {
+                    temp += ' ' + stringInv[j.first]["Picture"] + " x " + std::to_string(static_cast<int>(j.second)) + ',';
+                }
+
+                double numInvVal = numInv[k]["BuyValue"];
+                std::string numInvString = std::to_string(numInvVal);
+
+                temp += " $ = " + numInvString.substr(0, numInvString.find(".")+3);
+                std::cout << std::setw(maxTradeLength) << temp;
+                std::cout << '\n';
+            }
+
+            return std::make_pair(tradeInfo,sellInfo);
+        }
+
+    //    User Inventory                      Stuff you can trade for
+    //    ==============                      =======================
+    //    Sands: 🟫 x 1                       Armor 🛡️: 🪨 x 20, ..., $ = 142857
+
+    //    When the user has more sellable items than the # of
+    //    items currently available for trading
+
+        //calculate  lengths
+        for (auto& k: sellInfo)
+        {
+            int tempTradeLength = 0, tempSellLength = 0; //temporaries
+
+            tempSellLength = k.length() + 5 + stringInv[k]["Picture"].length() + std::to_string(numInv[k]["Number"]).length();
+
+            if (tempSellLength > maxSellLength)
+            {
+                maxSellLength = tempSellLength;
+            }
+
+            if (i < tradeSize)
+            {
+                dict = TradeItemDict(stringInv[tradableItems[i]]["Construction"]);
+                tradeInfo[tradableItems[i]] = dict;
+                tradeInfo[tradableItems[i]]["Money"] = static_cast<int>(numInv[tradableItems[i]]["BuyValue"]);
+
+                tempTradeLength = tradableItems[i].length() + 2 + stringInv[tradableItems[i]]["Picture"].length();
+
+                for (auto& j: dict)
+                {
+                    tempTradeLength += 5 + stringInv[j.first]["Picture"].length() + std::to_string(static_cast<int>(j.second)).length();
+                }
+
+                tempTradeLength += 5 + std::to_string(numInv[tradableItems[i]]["BuyValue"]).length();
+                i++;
+            }
+        }
+
+        i = 0;
+        //output the stuff
+        for (auto& k: sellInfo)
+        {
+            int numInvVal = static_cast<int>(numInv[k]["Number"]);
+            std::string numInvString = std::to_string(numInvVal);
+
+            std::string temp = k + ": " +
+            stringInv[k]["Picture"] + " x " +
+            numInvString;
+
+            std::cout << std::setw(maxSellLength) << temp;
+
+            if (i < tradeSize)
+            {
+                std::cout << "          ";
+                dict = TradeItemDict(stringInv[tradableItems[i]]["Construction"]);
+
+                temp = tradableItems[i] + ' ' + stringInv[tradableItems[i]]["Picture"] + ':';
+
+                for (auto& j: dict)
+                {
+                    temp += ' ' + stringInv[j.first]["Picture"] + " x " + std::to_string(static_cast<int>(j.second)) + ',';
+                }
+
+                double numInvVal = numInv[tradableItems[i]]["BuyValue"];
+                std::string numInvString = std::to_string(numInvVal);
+
+                temp += " $ = " + numInvString.substr(0, numInvString.find(".")+3);
+
+                std::cout << std::setw(maxTradeLength) << temp;
+                i++;
+            }
+            std::cout << '\n';
+        }
+
+        return std::make_pair(tradeInfo,sellInfo);
+    }
+
+    Role::Role(std::string name)
+    {
+        this->name = name;
+        questLevel = 0;
+        searchtime = 0;
+        defending = false;
+        moved = false;
+        moveTime = 0;
+        waitTime = 0;
+        health = 0;
+        basehealth = 0;
+        attackpower = 0;
+        defense = 0;
+        attackStamina = 0;
+        defenseStamina = 0;
+        money = 0;
+        searchTime = 0;
+        maxLevel = 100;
+        startLevel = 1; //start at the minimum level
+        currLevel = startLevel;
+        currExp = 0;
+        LevelExp = 0; //override in derived classes
+
+    //        for (auto i : stringInv)
+    //        for i in stringInv
+
+        stringInv =
+        {
+                {
+                        "Cookies",{{"Name", "Cookies"}, {"Picture", "🍪"}, {"Description", "Something to eat! Increase health by 10% "}, {"Type", "Healing"}}
+                },
+
+                {
+                        "Logs",{{"Name", "Logs"}, {"Picture", "🪵"}, {"Description", "Something you can use in the shop for crafting things or to sell "}, {"Type", "Misc"}}
+                },
+
+                {
+                        "Sands",{{"Name", "Sands"}, {"Picture", "🟫"}, {"Description", "Something you can smelt or sell! "}, {"Type", "Misc"}}
+                },
+
+                {
+                        "Rocks",{{"Name", "Rocks"}, {"Picture", "🪨"}, {"Description", "Something you can use in the shop for crafting things, selling, or refining "}, {"Type", "Misc"}}
+                },
+
+                {
+                        "Silvers",{{"Name", "Iron Ore"}, {"Picture", "🪙"}, {"Description", "Something you can use in the shop for crafting things, selling, or fusing "}, {"Type", "Misc"}}
+                },
+
+                {
+                        "Golds",{{"Name", "Golds"}, {"Picture", "🟨"}, {"Description", "Something you can use in the shop for crafting things, selling, or fusing "}, {"Type", "Misc"}}
+                },
+
+                {
+                        "Diamonds",{{"Name", "Diamonds"}, {"Picture", "💎"}, {"Description", "Something you can use in the shop for crafting things, selling, or fusing "}, {"Type", "Misc"}}
+                },
+
+                {
+                        "Emeralds",{{"Name", "Emeralds"}, {"Picture", "🟩"}, {"Description", "Something you can use in the shop for crafting things, selling, or fusing "}, {"Type", "Misc"}}
+                },
+
+                {
+                        "Cactuses",{{"Name", "Cactuses"}, {"Picture", "🌵"}, {"Description", "Something to sell or turn into pointy armour! "}, {"Type", "Misc"}}
+                },
+
+                {
+                        "Golden Saplings",{{"Name", "Golden Saplings"}, {"Picture", "🌲"}, {"Description", "Grows into a golden tree! "}, {"Type", "Misc"}}
+                },
+
+                {
+                        "Golden Logs",{{"Name", "Golden Logs"}, {"Picture", "🌲"}, {"Description", "The most powerful wood, when combined with weapons +10 to all stats! "}, {"Type", "Misc"}}
+                },
+
+                {
+                        "Sand Pails",{{"Name", "Sand Pails"}, {"Picture", "🪣"}, {"Description", "A bucket, maybe you can plant something in here! "}, {"Type", "Misc"}}
+                },
+
+                {
+                        "Potion",{{"Name", "Potion"}, {"Picture", "🧪"}, {"Description", "A potion, maybe you can drink it (Increases health by 20)"}, {"Type", "Healing"}}
+                },
+
+                {
+                        "Apple",{{"Name", "Apple"}, {"Picture", "🍎"}, {"Description", "An apple, maybe you can eat it(Increases health by 10)! "}, {"Type", "Healing"}}
+                },
+
+                {
+                        "Key 1",{{"Name", "Key 1"}, {"Picture", "🔑"}, {"Description", "A key, maybe you can use it to open something! "}, {"Type", "Key"}}
+                },
+
+                {
+                        "Knife",{{"Name", "Knife"}, {"Picture", "🔪"}, {"Description", "A knife, maybe you can use it to attack enemies! "}, {"Type", "Weapon"}, {"Construction", "5 Rocks, 2 Logs, 1 Silvers"}}
+                },
+
+                {
+                        "Parrot",{{"Name", "Parrot"}, {"Picture", "🦜"}, {"Description", "A parrot, does passive damage to enemies! "}, {"Type", "Misc"}, {"Construction", "5 Apple, 3 Logs, 1 Potion"}}
+                },
+
+                {
+                        "Ring",{{"Name", "Ring"}, {"Picture", "💍"}, {"Description", "A ring, increases your stats! "}, {"Type", "Misc"}, {"Construction", "5 Diamonds, 3 Golds, 1 Silvers"}}
+                },
+
+                {
+                        "Cape",{{"Name", "Cape"}, {"Picture", "🧥"}, {"Description", "A cape, increases your stats! "}, {"Type", "Misc"}, {"Construction", "5 Emeralds, 20 Sands"}}
+                },
+
+                {
+                        "Armor",{{"Name", "Armor"}, {"Picture", "🛡️"}, {"Description", "Armor, increases your stats! "}, {"Type", "Misc"}, {"Construction", "20 Rocks"}}
+                },
+
+                {
+                        "Water Guns",{{"Name", "Water Guns"}, {"Picture", "🔫"}, {"Description", "Water Gun, maybe you can use it to attack enemies! "}, {"Type", "Misc"}, {"Construction", "1 Sands, 1 Potion"}}
+                }
+        };
+
+        numInv =
+        {
+                {
+                        "Cookies",{{"Number", 0}, {"BuyValue", 1214}, {"SellValue", 971}, {"Questlevel", 1}}
+                },
+
+                {
+                        "Logs",{{"Number", 0}, {"BuyValue", 12429}, {"SellValue", 9943}, {"Questlevel", 1}}
+                },
+
+                {
+                        "Sands",{{"Number", 0}, {"BuyValue", 2}, {"SellValue", 1}, {"Questlevel", 1}}
+                },
+
+                {
+                        "Rocks",{{"Number", 0}, {"BuyValue", 256}, {"SellValue", 206}, {"Questlevel", 1}}
+                },
+
+                {
+                        "Silvers",{{"Number", 0}, {"BuyValue", 86309}, {"SellValue", 81993}, {"Questlevel", 4}}
+                },
+
+                {
+                        "Golds",{{"Number", 0}, {"BuyValue", 751497}, {"SellValue", 747739}, {"Questlevel", 6}}
+                },
+
+                {
+                        "Diamonds",{{"Number", 0}, {"BuyValue", 42237143}, {"SellValue", 42143283}, {"Questlevel", 8}}
+                },
+
+                {
+                        "Emeralds",{{"Number", 0}, {"BuyValue", 35714286}, {"SellValue", 35674603}, {"Questlevel", 10}}
+                },
+
+                {
+                        "Cactuses",{{"Number", 0}, {"BuyValue", 4286}, {"SellValue", 3429}, {"Questlevel", 1}}
+                },
+
+                {
+                        "Golden Saplings",{{"Number", 0}, {"BuyValue", 285714286}, {"SellValue", 285685714}, {"Questlevel", 1}}
+                },
+
+                {
+                        "Golden Logs",{{"Number", 0}, {"BuyValue", 142857143}, {"SellValue", 142851429}, {"Questlevel", 1}}
+                },
+
+                {
+                        "Sand Pails",{{"Number", 0}, {"BuyValue", 114286}, {"SellValue", 108571}, {"Questlevel", 1}}
+                },
+
+                {
+                        "Potion",{{"Number", 0}, {"BuyValue", 26}, {"SellValue", 13}, {"Questlevel", 1}}
+                },
+
+                {
+                        "Apple",{{"Number", 0}, {"BuyValue", 1214}, {"SellValue", 971}, {"Questlevel", 1}}
+                },
+
+                {
+                        "Key 1",{{"Number", 0}, {"Questlevel", 1}}
+                },
+
+                {
+                        "Knife",{{"Number", 0}, {"BuyValue", 2876}, {"Questlevel", 2}} //2
+                },
+
+                {
+                        "Parrot",{{"Number", 0}, {"BuyValue", 7468}, {"Questlevel", 4}} //4
+                },
+
+                {
+                        "Ring",{{"Number", 0}, {"BuyValue", 9765}, {"Questlevel", 4}} //4
+                },
+
+                {
+                        "Cape",{{"Number", 0}, {"BuyValue", 6541}, {"Questlevel", 7}} //7
+                },
+
+                {
+                        "Armor",{{"Number", 0}, {"BuyValue", 142857}, {"Questlevel", 7}} //7
+                },
+
+                {
+                        "Water Guns",{{"Number", 0}, {"BuyValue", 100}, {"Questlevel", 1}} //7
+                },
+
+        };
+
+        useInv =
+        {
+            {
+                "Cookies",{{"Use",
+                                   [&]()
+                                   {
+                                       health += 0.1*health;
+                                       if (health > basehealth)
+                                       {
+                                           health = basehealth;
+                                       }
+                                   }
+                           }}
+            },
+
+            {
+                "Logs",{{"Use",
+                                   [&]()
+                                   {
+                                       return;
+                                   }
+                           }}
+            },
+
+            {
+                "Key 1",{{"Use",
+                                   [&]()
+                                   {
+                                       return;
+                                   }
+                           }}
+            },
+
+            {
+                "Sands",{{"Use",
+                                   [&]()
+                                   {
+                                       return;
+                                   }
+                           }}
+            },
+
+            {
+                "Rocks",{{"Use",
+                                   [&]()
+                                   {
+                                       return;
+                                   }
+                           }}
+            },
+
+            {
+                "Silvers",{{"Use",
+                                   [&]()
+                                   {
+                                       return;
+                                   }
+                           }}
+            },
+
+            {
+                "Golds",{{"Use",
+                                   [&]()
+                                   {
+                                       return;
+                                   }
+                           }}
+            },
+
+            {
+                "Diamonds",{{"Use",
+                                   [&]()
+                                   {
+                                       return;
+                                   }
+                           }}
+            },
+
+            {
+                "Emeralds",{{"Use",
+                                   [&]()
+                                   {
+                                       return;
+                                   }
+                           }}
+            },
+
+            {
+                "Cactuses",{{"Use",
+                                   [&]()
+                                   {
+                                       return;
+                                   }
+                           }}
+            },
+
+            {
+                "Golden Saplings",{{"Use",
+                                   [&]()
+                                   {
+                                       return;
+                                   }
+                           }}
+            },
+
+            {
+                "Golden Logs",{{"Use",
+                                   [&]()
+                                   {
+                                       return;
+                                   }
+                           }}
+            },
+
+            {
+                "Sand Pails",{{"Use",
+                                   [&]()
+                                   {
+                                       return;
+                                   }
+                           }}
+            },
+
+            {
+                "Potion",{{"Use",
+                                   [&]()
+                                   {
+                                       health += 20;
+                                       if (this->health > basehealth)
+                                       {
+                                           health = basehealth;
+                                       }
+                                   }
+                           }}
+            },
+
+            {
+                "Apple",{{"Use",
+                                   [&]()
+                                   {
+                                       health += 0.25*health;
+                                       if (this->health > basehealth)
+                                       {
+                                           health = basehealth;
+                                       }
+                                   }
+                           }}
+            },
+
+            {
+                "Knife",{{"Use",
+                                    [&]()
+                                    {
+                                        return;
+                                    }
+                        }}
+            },
+
+            {
+                "Parrot",{{"Use",
+                                    [&]()
+                                    {
+                                        return;
+                                    }
+                        }}
+            },
+
+            {
+                "Ring",{{"Use",
+                                    [&]()
+                                    {
+                                        return;
+                                    }
+                        }}
+            },
+
+            {
+                "Cape",{{"Use",
+                                    [&]()
+                                    {
+                                        return;
+                                    }
+                        }}
+            },
+
+            {
+                "Armor",{{"Use",
+                                    [&]()
+                                    {
+                                        return;
+                                    }
+                        }}
+            },
+
+            {
+                "Water Guns",{{"Use",
+                                    [&]()
+                                    {
+                                        return;
+                                    }
+                        }}
+            }
+        };
+    }
+
+    Role::~Role()
+    {
+        //empty
+    }
+
+    //void Role::increaseExp(double exp) //Definition
+    //{
+    //    currExp += netExp;
+    //    while (currExp > LevelExp)
+    //    {
+    //        currLevel++; // Increase the level of the role
+    //        netExp = currExp - LevelExp;
+    //        LevelExp = ExpLevelFunc(currLevel + 1);
+    //        currExp = 0;
+    //        currExp += netExp;
+    //    }
+    //}
+
+    bool HasSellableItems(std::unordered_map<std::string, std::unordered_map<std::string,double>>& inventory)
+    {
+        for (auto &i : inventory)
+        {
+            if ((i.second.find("SellValue") != i.second.end()) && i.second["Number"] > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ''')
+from cppyy.gbl import Role, BadNPC, badNPCs, HasSellableItems
+
+
+# Takes in a C++ string, and returns a correct python string
+def cppStringConvert(string):
+    temp = ""
+    for i in range(string.length()):
+        temp = temp + string[i]
+    return temp  # a python string
 
 
 def HealthBar(character):
@@ -401,6 +1078,8 @@ class PercyJackson(Role):
         self.defense = 100
         self.attackStamina = 0.1
         self.defenseStamina = 0.2
+        self.ExpLevelFunc = lambda x: x ** 2.5
+        self.LevelExp = self.ExpLevelFunc(self.currLevel + 1)
         self.money = 50  # because the economy in italy is so bad :)
 
 
@@ -418,8 +1097,10 @@ class Elf(Role):
         self.health = 50
         self.baseDefense = 200
         self.defense = 200
-        self.attackStamina = 2
+        self.attackStamina = 1
         self.defenseStamina = 0.4
+        self.ExpLevelFunc = lambda x: x ** 1.5
+        self.LevelExp = self.ExpLevelFunc(self.currLevel + 1)
         self.money = 200
 
 
@@ -435,25 +1116,48 @@ class Zelda(Role):
         self.defense = 50
         self.attackStamina = 0.15
         self.defenseStamina = 0.25
+        self.ExpLevelFunc = lambda x: x ** 2
+        #        https://www.thoughtco.com/calculate-decay-factor-2312218
+        #        self.AttackLevelFunc = lambda x: 20*(1-0.05)**x
+        self.LevelExp = self.ExpLevelFunc(self.currLevel + 1)
         self.money = 100
 
 
-class NPC:
-    # enemy.health -= (Defense(enemy.defense)*self.attackpower)
-    def attack(self, enemy):
-        #        enemy.health -= self.attackpower
-        enemy.health -= (Defense(enemy.defense) * self.attackpower)
-
-
-class GoodNPC(NPC):
+class GoodNPC:
     pass
 
 
-class NeutralNPC(NPC):
+class NeutralNPC:
     def __init__(self):
         global neutralNPCs, randint
         self.role = neutralNPCs[randint(0, len(neutralNPCs) - 1)]
-        self.picture = "⛏" if self.role == "MINER" else "🪓"
+        if self.role == "MINER":
+            self.picture = "⛏"
+            self.expYield = 0.1 + random() / 20  # random number from 0.1 - 0.15
+        elif self.role == "WOODCHUCKER":
+            self.picture = "🪓"
+            self.expYield = 0.12 + random() / 50  # random number from 0.12 - 0.14
+
+
+def increaseStats(role):
+    role.attackpower += role.AttackLevelFunc(role.currLevel)
+    role.basehealth += role.HealthLevelFunc(role.currLevel)
+    role.health += role.HealthLevelFunc(role.currLevel)
+    role.baseDefense += role.DefenseLevelFunc(role.currLevel)
+    role.attackStamina -= role.StaminaLevelFunc(role.currLevel)
+    role.defenseStamina -= role.StaminaLevelFunc(role.currLevel)
+    role.defense = role.baseDefense
+
+
+def increaseExp(role, netExp):
+    role.currExp += netExp
+    while role.currExp > role.LevelExp:
+        role.currLevel += 1  # Increase the level of the role
+        increaseStats(role)
+        netExp = role.currExp - role.LevelExp
+        role.LevelExp = role.ExpLevelFunc(role.currLevel + 1)
+        role.currExp = 0
+        role.currExp += netExp
 
 
 def Mine(role, setting):
@@ -493,7 +1197,7 @@ def Mine(role, setting):
             totalplayerscore -= 1
             botavg.append(npcTime)
             playeravg.append(Time)
-        elif Time == npcTime:
+        elif Time == npcTime:  # Probably never happen
             print("Draw")
             draws += 1
             botavg.append(npcTime)
@@ -503,6 +1207,19 @@ def Mine(role, setting):
     botavglen = (len(botavg)) if len(botavg) != 0 else 1
     botavg = sum(botavg)
     points = wins - losses
+
+    netExp = points * Opponent.expYield if points >= 0 else 0
+
+    #    role.currExp += netExp
+    #    while role.currExp > role.LevelExp:
+    #        role.currLevel += 1 #Increase the level of the role
+    #        netExp = role.currExp - role.LevelExp
+    #        role.LevelExp = role.ExpLevelFunc(role.currLevel+1)
+    #        role.currExp = 0
+    #        role.currExp += netExp
+
+    increaseExp(role, netExp)
+
     if playeravg / playeravglen < botavg / botavglen:
         print(f"You get 5 extra resources because your avg was better than the {Opponent.role} {Opponent.picture}!")
         points += 5
@@ -521,7 +1238,7 @@ def Mine(role, setting):
     #        sand pails          5       .001
 
     if TheSetting == "BEACH":
-        role.inventory["Sands"]["Number"] += points
+        role.numInv["Sands"]["Number"] += points
 
     #    3 <= x <= 5 #x is between 3 and 5 inclusive
     #    3 < x < 5 #x is between 3 and 5 exclusive
@@ -529,43 +1246,39 @@ def Mine(role, setting):
         for i in range(points):
             Temprand = randint(1, 1e8)
             if Temprand == 1e8:
-                role.inventory["Golden Saplings"]["Number"] += 1
+                role.numInv["Golden Saplings"]["Number"] += 1
             elif Temprand == 1:
-                role.inventory["Golden Logs"]["Number"] += 1
+                role.numInv["Golden Logs"]["Number"] += 1
             elif 10000 <= Temprand <= 100000:
-                role.inventory["Logs"]["Number"] += 1
-
+                role.numInv["Logs"]["Number"] += 1
 
     elif TheSetting == "HOUSE":
         for i in range(points):
             Temprand = randint(1, 1000)
             if 1 <= Temprand <= 5:
-                role.inventory["Cookies"]["Number"] += 1
-
+                role.numInv["Cookies"]["Number"] += 1
 
     elif TheSetting == "MOUNTAIN":
         for i in range(points):
             Temprand = randint(1, 1e7)
             if 1 <= Temprand <= 1000:
-                role.inventory["Silvers"]["Number"] += 1
+                role.numInv["Silvers"]["Number"] += 1
             elif 1001 <= Temprand <= 1100:
-                role.inventory["Golds"]["Number"] += 1
+                role.numInv["Golds"]["Number"] += 1
             elif Temprand == 1101:
-                role.inventory["Diamonds"]["Number"] += 1
+                role.numInv["Diamonds"]["Number"] += 1
             elif Temprand == 1102:
-                role.inventory["Emeralds"]["Number"] += 1
+                role.numInv["Emeralds"]["Number"] += 1
                 # 10000
             elif 1103 <= Temprand <= 101102:
-                role.inventory["Rocks"]["Number"] += 1
-
-
+                role.numInv["Rocks"]["Number"] += 1
 
     elif TheSetting == "DESERT":
-        role.inventory["Sands"]["Number"] += points
+        role.numInv["Sands"]["Number"] += points
         for i in range(points):
             Temprand = randint(1, 1000)
             if Temprand == 1:
-                role.inventory["Cactuses"]["Number"] += 1
+                role.numInv["Cactuses"]["Number"] += 1
 
     print("The player average is {:.2f} seconds".format(playeravg / playeravglen))
     print("The {} {} average is {:.2f} seconds".format(Opponent.role, Opponent.picture, botavg / botavglen))
@@ -575,52 +1288,6 @@ def Mine(role, setting):
     print("{} is the number of games that drawed!".format(draws))
 
     return points
-
-
-class BadNPC(NPC):
-    def __init__(self, name):
-        global badNPCs, randint
-        self.role = name
-        if self.role == "NINJA":
-            self.picture = "🥷"
-            self.attackpower = 10
-            self.health = 100
-            self.defense = 50
-        elif self.role == "OGRE":
-            self.picture = "👹"
-            self.attackpower = 10
-            self.health = 500
-            self.defense = 100
-        elif self.role == "DEMON":
-            self.picture = "👿"
-            self.attackpower = 5
-            self.health = 100
-            self.defense = 20
-
-    '''
-    x   y
-    -   --
-    0   1
-    1   1.2
-    2   1.4
-    3   1.6
-    4   1.8
-    5   2.0
-
-    y = m*x+b
-
-    m = 0.2
-    b = 1
-
-    x = 1:  y = 0.2*1+1 = 1.2
-    x = 1.2: y = 0.2*1.2+1 = 1.24
-    '''
-
-    def statboost(self, RoleHero):
-        multiplier = (0.2 * RoleHero.questLevel) + 1
-        self.attackpower = multiplier * self.attackpower
-        self.health = multiplier * self.health
-        self.defense = multiplier * self.defense
 
 
 # Setting Types
@@ -664,13 +1331,13 @@ class Desert(Setting):
         self.places = ("LANDSCAPE", "HILLSIDE")  # Fill this up
 
 
-def displayHeroes():
-    print("------")
-    print("Heroes")
-    print("------")
+def displayHeroes(printing=False):
+    lines = ["------", "Heroes", "------"]
     for hero in heroes:
-        print(hero)
-    print()
+        lines.append(hero)
+    lines.append("")
+    print("\n".join(lines)) if not printing else print()
+    return lines
 
 
 def map():
@@ -685,7 +1352,8 @@ def map():
 def search(setting, role):
     currentTime = time()
     if currentTime - role.searchTime < 86400:
-        print("Sorry, you cannot search at this point! ")
+        print(
+            f"Sorry, you cannot search at this point!\nTime until you can search again = {86400 - (currentTime - role.searchTime):.2f} seconds")
         return
 
     print("------")
@@ -717,27 +1385,27 @@ def search(setting, role):
 
     if place == "SANDBAR":
         Chances = randint(1, 100000)
-        role.inventory["Sands"]["Number"] += 1
+        role.numInv["Sands"]["Number"] += 1
         print("You got SAND!")
         if Chances == 1:
-            role.inventory["Sand Pails"]["Number"] += 1
+            role.numInv["Sand Pails"]["Number"] += 1
             print("You got a Sand Pail!")
 
     elif place == "HILLSIDE":
         Chances = randint(1, 1000)
-        role.inventory["Sands"]["Number"] += 1
+        role.numInv["Sands"]["Number"] += 1
         print("You got SAND!")
         if Chances == 1:
-            role.inventory["Cactuses"]["Number"] += 1
+            role.numInv["Cactuses"]["Number"] += 1
             print("You found a cactus!")
 
     elif place == "CASTLE":
         Chances = randint(1, 1e8)
         if Chances == 1:
-            role.inventorty["Golden Logs"] += 1
+            role.numInv["Golden Logs"] += 1
             print("SUPER RARE DROP: Golden Log!")
         elif 2 <= Chances <= 11:
-            role.inventory["Emeralds"]["Number"] += 1
+            role.numInv["Emeralds"]["Number"] += 1
             print("You got an emerald.")
         else:
             print("Nothing Found.")
@@ -745,14 +1413,14 @@ def search(setting, role):
     elif place == "OCEAN":
         Chances = randint(1, 1e5)
         if Chances == 1:
-            role.inventory["Golds"]["Number"] += 1
+            role.numInv["Golds"]["Number"] += 1
             print("You got gold!")
         else:
             print("Nothing Found.")
     elif place == "FRIDGE":
         Chances = randint(1, 1000)
         if 1 <= Chances <= 5:
-            role.inventory["Cookies"]["Number"] += 1
+            role.numInv["Cookies"]["Number"] += 1
             print("You got a cookie!")
         else:
             print("Nothing Found.")
@@ -760,7 +1428,7 @@ def search(setting, role):
     elif place == "TREE":
         Chances = randint(1, 1000)
         if 1 <= Chances <= 5:
-            role.inventory["Apple"]["Number"] += 1
+            role.numInv["Apple"]["Number"] += 1
             print("You got an apple!")
         else:
             print("Nothing Found.")
@@ -769,10 +1437,10 @@ def search(setting, role):
     elif place == "CAVE":
         Chances = randint(1, 10000)
         if Chances == 1:
-            role.inventory["Silvers"]["Number"] += 1
+            role.numInv["Silvers"]["Number"] += 1
             print("You got a piece of silver!")
         elif 2 <= Chances <= 101:
-            role.inventory["Rocks"]["Number"] += 1
+            role.numInv["Rocks"]["Number"] += 1
             print("You got a rock!")
         else:
             print("Nothing Found.")
@@ -782,14 +1450,14 @@ def search(setting, role):
     elif place == "TOP":
         Chances = randint(1, 1e5)
         if Chances == 1:
-            role.inventory["Golds"]["Number"] += 1
+            role.numInv["Golds"]["Number"] += 1
             print("You got a piece of gold!")
         elif 2 <= Chances <= 11:
-            role.inventory["Silvers"]["Number"] += 1
+            role.numInv["Silvers"]["Number"] += 1
             print("You got a piece of silver!")
 
         elif 12 <= Chances <= 1011:
-            role.inventory["Rocks"]["Number"] += 1
+            role.numInv["Rocks"]["Number"] += 1
             print("You got a rock!")
         else:
             print("Nothing Found.")
@@ -797,13 +1465,13 @@ def search(setting, role):
 
     elif place == "LANDSCAPE":
         Chances = randint(1, 100000)
-        role.inventory["Sands"]["Number"] += 1
+        role.numInv["Sands"]["Number"] += 1
         print("You got SAND!")
         if Chances == 1:
-            role.inventory["Sand Pails"]["Number"] += 1
+            role.numInv["Sand Pails"]["Number"] += 1
             print("You found a sand pail!")
         elif 2 <= Chances <= 11:
-            role.inventory["Cactuses"]["Number"] += 1
+            role.numInv["Cactuses"]["Number"] += 1
             print("You found a cactus!")
         else:
             print("Nothing Found.")
@@ -812,25 +1480,64 @@ def search(setting, role):
     return place
 
 
-def HasSellableItems(inventory):
-    for item in inventory:
-        if item == "Keys":
-            continue
-        elif inventory[item]["Number"] > 0:
-            return True
-    return False
+def DictKeyFormatter(str):
+    return " ".join([temp[0] + temp[1:].lower() for temp in str])
+
+
+#            TODO: Create a boolean function that takes AmountToTradeFor, AmountToTradeFor, and SellInfo, and returns true if it can be traded for and false otherwise. If the user already has one, don't let the user buy another one.
+# TODO: have an upgrade function for the tradeitem
+
+def TradeFor(Role, SellInfo, RequiredTradeItems, TradeOption):
+    # Check if the user already has the item (TradeOption)
+    if Role.numInv[TradeOption]["Number"] > 0:
+        print(f"Sorry, you seem to already have {TradeOption}")
+        return
+
+    # Checking if the user has everything that's need to trade for it
+    for i in RequiredTradeItems:
+        tradeItem = cppStringConvert(i.first)
+
+        if tradeItem == "Money":
+            # Check if the user has enough money
+            if Role.money < RequiredTradeItems["Money"]:
+                print("Sorry, you do not have enough money!")
+                return
+        # Check that the user has the given required item
+        elif tradeItem not in SellInfo:
+            print(f"Sorry, you do not have any {tradeItem}")
+            return
+        # Check that the user has enough of the given required item
+        elif Role.numInv[tradeItem]["Number"] < int(i.second):
+            print(
+                f'Sorry, you do not have enough {tradeItem}. You only have {Role.numInv[tradeItem]["Number"]} out of {i.second:0.0f}')
+            return
+
+    # Get the items from the user
+    for i in RequiredTradeItems:
+        tradeItem = cppStringConvert(i.first)
+        if tradeItem == "Money":
+            Role.money -= RequiredTradeItems["Money"]
+        else:
+            # decrease item in user's inventory by 1
+            Role.numInv[tradeItem]["Number"] -= 1
+
+    # Give the user the item
+    Role.numInv[TradeOption]["Number"] += 1
 
 
 # User can buy or sell as many items as they wish, given that they have enough
 # money
 def shop(Role):
-    inventory = Role.inventory  # alias
+    #    inventory = Role.inventory  # alias
     while True:
-        option = cS(input("Would you like to buy or sell today (type 'exit' to exit)? "))
+        print("What would you like to do today? (Type 'exit' to exit)")
+        print("======================================================")
+        print("Buy\nSell\nTrade\n")
+        option = cS(input())
         # Input validation
-        while option != "BUY" and option != "SELL" and option != "EXIT":
+        while option != "BUY" and option != "SELL" and option != "EXIT" and option != "TRADE":
             print("Try again!")
-            option = cS(input("Would you like to buy or sell today? "))
+            option = cS(input("Enter either 'buy', 'sell', 'trade' or 'exit': "))
 
         if option == "EXIT":
             return
@@ -850,8 +1557,7 @@ def shop(Role):
             buyableItems = Role.printBuyItems()
             BuyOption = cS(input("What would you like to buy today? "))
 
-            #            print(buyableItems)
-            while BuyOption not in buyableItems:
+            while buyableItems.find(BuyOption) == buyableItems.end():
                 print(f"Error! {BuyOption} is not one of your buyable items")
                 BuyOption = cS(input("What would you like to buy today? "))
             AmountToBuy = input(f"How many {BuyOption} would you like to buy? ")
@@ -866,25 +1572,24 @@ def shop(Role):
             ATB = int(AmountToBuy)
             # Converting from all caps to first letter uppercase of each word
             # (rest lowercase)
-            BuyOption = BuyOption.split()
-            BuyOption = " ".join([temp[0] + temp[1:].lower() for temp in BuyOption])
+            BuyOption = DictKeyFormatter(BuyOption.split())
 
-            TTS = Role.inventory[BuyOption]["BuyValue"]
+            TTS = Role.numInv[BuyOption]["BuyValue"]
             Role.money = Role.money - ATB * TTS
 
-            Role.inventory[BuyOption]["Number"] += ATB
+            Role.numInv[BuyOption]["Number"] += ATB
 
         elif option == "SELL":
-            if not HasSellableItems(inventory):
+            if not HasSellableItems(Role.numInv):
                 print("You don't have any sellable items!")
                 continue
 
-            sellableItems = Role.printSellItems()
+            sellableItems = Role.printSellItems(True)
             print(f"\nYour Money = {Role.money:0.2f}\n")
             SellOption = cS(input("What would you like to sell today? "))
 
             # Check if SellOption is a sellable item: Input validation
-            while SellOption not in sellableItems:
+            while sellableItems.find(SellOption) == sellableItems.end():
                 print(f"Error! {SellOption} is not one of your sellable items")
                 SellOption = cS(input("What would you like to sell today? "))
 
@@ -902,14 +1607,57 @@ def shop(Role):
             ATS = int(AmountToSell)
             # Converting from all caps to first letter uppercase of each word
             # (rest lowercase)
-            SellOption = SellOption.split()
-            SellOption = " ".join([temp[0] + temp[1:].lower() for temp in SellOption])
+            SellOption = DictKeyFormatter(SellOption.split())
 
-            TTS = Role.inventory[SellOption]["SellValue"]
+            TTS = Role.numInv[SellOption].at("SellValue")
             Role.money = Role.money + ATS * TTS
 
-            Role.inventory[SellOption]["Number"] -= ATS
+            # SyntaxError: 'function call' is an illegal expression for augmented assignment
+            #            Role.numInv[SellOption].at("Number")
+            Role.numInv[SellOption]["Number"] -= ATS
 
+        elif option == "TRADE":
+            if not HasSellableItems(Role.numInv):
+                print("You don't have any tradable items!")
+                continue
+            Info = Role.printTradeInfo()
+            TradeInfo = Info.first
+            SellInfo = Info.second
+
+            print(f"\nYour Money = {Role.money:0.2f}\n")
+            TradeOption = cS(input("What would you like to trade for today? ")).title()
+
+            while TradeInfo.find(TradeOption) == TradeInfo.end():
+                print(f"Error! {TradeOption} is not one of the tradeable items.")
+                TradeOption = cS(input("What would you like to trade for today? ")).title()
+
+            RequiredTradeItems = TradeInfo[TradeOption]
+
+            TradeFor(Role, SellInfo, RequiredTradeItems, TradeOption)
+
+
+#            TODO: Create a boolean function that takes WhatToTradeFor, and SellInfo, and returns true if it can be traded for and false otherwise.
+
+#
+#        1. Figure out if the item the user enters is a tradeable item
+#            -> A list of the tradeable items
+#        2. How many of said tradeable item the user wants to trade for
+#            -> Input validation, as before
+#        3. Check if the user has enough money and the necessary items to trade for x number of said item.
+#            -> Calculate how much x of said items cost
+#            -> See if user has enough money
+#            -> See if user has enough items to trade for x of said items
+#
+#
+#        Things we need
+#        ==============
+#        1. A list of sellable items: vector<string>
+#        2. unordered_map<string, unordered_map<string, double>> ✅
+
+
+#            User Inventory                      Stuff you can trade for
+#            ==============                      =======================
+#            Sands: 🟫 x 1                       Armor 🛡️: 🪨 x 20, ..., $ = 142857
 
 def GetMenuOption():
     option = cS(input(
@@ -919,6 +1667,35 @@ def GetMenuOption():
         option = cS(input(
             "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
     return option
+
+
+def ProcessInvRequest(role):
+    currentInventory = role.printInventory()
+    if not currentInventory:  # checking if it's empty
+        print("Empty Inventory!\n")
+        return
+    option = cS(input("Select one of the above items: "))
+    #    print(*[j+"\n" if i > 0 else " "+j+"\n"  for i, j in enumerate(currentInventory)])
+    while option not in currentInventory:
+        print("Select one of the following items\n=================================")
+        currentInventory = role.printInventory()
+        option = cS(input())
+    todo = cS(input("Enter either 'description' for a description of the item, or 'use' to use the item: "))
+    # Entry controlled loop
+    options = ("DESCRIPTION", "USE")
+    while todo not in options:
+        print("Try again!")
+        todo = cS(input("Enter either 'description' for a description of the item, or 'use' to use the item: "))
+
+    option = option.split()
+    if todo == "DESCRIPTION":
+        print()
+        print(role.stringInv[DictKeyFormatter(option)]["Description"])
+        print()
+    elif todo == "USE":
+        print()
+        role.useInv[DictKeyFormatter(option)]["Use"]()
+        print()
 
 
 def Menu(role, setting):
@@ -944,13 +1721,13 @@ def Menu(role, setting):
 
         '''
         option = cS(input(
-            "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
+            "Enter one of the following options\n==================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
 
         # Input validation
         while option not in ("MAP", "SEARCH", "QUESTS", "MINE", "INV", "SHOP", "STATS"):
             print("Try again!")
             option = cS(input(
-                "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
+                "Enter one of the following options\n==================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
 
         while option in ("MAP", "SEARCH", "MINE", "INV", "SHOP", "STATS"):
             if option == "MAP":
@@ -966,8 +1743,7 @@ def Menu(role, setting):
                 Mine(role, setting)
                 option = GetMenuOption()
             elif option == "INV":
-                role.printInventory()
-
+                ProcessInvRequest(role)
                 option = GetMenuOption()
             elif option == "SHOP":
                 if Shop == True:
@@ -991,7 +1767,8 @@ def Quest1(RoleHero):
     #    Stack9 = False
     #    Stack10 = False
 
-    Stacks = [False] * 2
+    Stacks = [False] * (
+            RoleHero.currLevel + 1)  # Maybe change this if it becomes possible to increase level before this quest
 
     def DefenseWait(index):
         sleep(5)
@@ -1002,6 +1779,7 @@ def Quest1(RoleHero):
 
     global badNPCs  # we're saying that we will be using the global variable badNPCs
     NumberDefeated = 0
+    expEarned = 0
     while NumberDefeated < 10 or RoleHero.health <= 0:
         randnum = randint(1, 100)
         start = 1
@@ -1009,11 +1787,10 @@ def Quest1(RoleHero):
         #        {"NINJA":0.05,"OGRE":0.01, "DEMON":0.94}
         #
         for b in badNPCs:
-            end += int(badNPCs[b] * 100)  # probability of spawning
+            end += int(b.second * 100)  # probability of spawning
             if start <= randnum <= end:
                 # Fight!
-                a = BadNPC(b)  # we are spawning an enemy here
-
+                a = BadNPC(cppStringConvert(b.first))  # we are spawning an enemy here
                 a.statboost(RoleHero)
 
                 HealthBar(a)
@@ -1073,12 +1850,16 @@ def Quest1(RoleHero):
                     print("You are destroyed!")
                     return
                 NumberDefeated += 1
+                expEarned += a.expYield
 
             start = end + 1
     print("You have completed the quest!")
-    RoleHero.inventory["Keys"]["Key 1"]["Number"] = 1
+    RoleHero.defense = RoleHero.baseDefense  # Resetting the defense
+    RoleHero.numInv["Key 1"]["Number"] = 1
     print("You now have access to the shop")
     RoleHero.questLevel += 1
+    RoleHero.numInv["Potion"]["Number"] += 1
+    increaseExp(RoleHero, expEarned)
 
 
 def HeroGame(playerhero):
@@ -1134,14 +1915,86 @@ def HeroGame(playerhero):
 def game():
     # TODO: uncomment next line in actual game
     # slowPrint("Welcome to the Game!")
-    print("Welcome to the Game!")
-    # Animation
-    displayHeroes()
-    playerhero = (cS(input("What hero do you want to be? ")))
-    while playerhero not in heroes:
-        print("Error: Please try again")
-        playerhero = (cS(input("What hero do you want to be? ")))
-    HeroGame(playerhero)
+    pygame.init()
+    try:
+
+        white = (255, 255, 255)
+        green = (0, 255, 0)
+        blue = (0, 0, 128)
+        black = (0, 0, 0)
+        yellow = (255, 255, 0)
+        light_pink = (255, 182, 193)
+        X = 400
+        Y = 400
+        display_surface = pygame.display.set_mode((X, Y))
+
+        pygame.display.set_caption('Game Window')
+        font = pygame.font.Font('freesansbold.ttf', 32)
+        text = font.render('Welcome to the Game!', True, black, light_pink)
+        textRect = text.get_rect()
+        textRect.center = (X // 2, Y // 2)
+        start = time()
+        started = False
+        displayedHeroes = False
+        heroNumber = 3  # (3, 4, or 5)
+        updated = False
+        playerhero = ""  # declare the hero that the user wants to be
+        heroes = displayHeroes()
+
+        while True:
+            pygame.display.update()
+            for event in pygame.event.get():  # Can only call pygame.event.get() once per iteration
+                if not started:
+                    display_surface.fill(light_pink)
+                    display_surface.blit(text, textRect)
+                    pygame.display.update()
+                    started = True
+                elif event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                elif displayedHeroes:
+                    if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                        if event.key == pygame.K_DOWN:
+                            heroNumber = heroNumber + 1 if heroNumber != 5 else 3
+                            updated = False
+                        elif event.key == pygame.K_UP:
+                            heroNumber = heroNumber - 1 if heroNumber != 3 else 5
+                            updated = False
+                        elif event.key == pygame.K_RETURN:
+                            playerhero = heroes[heroNumber]
+                            rsp = requests.get('https://w7.pngwing.com/pngs/338/829/png-transparent-chest-lock-chain-box-treasure-technic-wood-wooden-box-thumbnail.png')
+                            pilimage = Image.open(BytesIO(rsp.content)).convert("RGBA")
+                            pgimg = pygame.image.fromstring(pilimage.tobytes(), pilimage.size, pilimage.mode)
+
+                            display_surface.fill((255, 255, 255))
+                            display_surface.blit(pgimg, ((400 - pgimg.get_rect().width)/24 , (125 - pgimg.get_rect().height) /8))
+                            pygame.display.update()
+
+            if time() - start > 1 and not updated:
+                count = 0
+                display_surface.fill(light_pink)
+                for num, hero in enumerate(heroes):
+                    text = font.render(hero, True, yellow, light_pink) if num == heroNumber else font.render(hero, True,
+                                                                                                             black,
+                                                                                                             light_pink)
+                    textRect = text.get_rect()
+                    textRect.center = (X // 2, Y // 4 + count)
+                    display_surface.blit(text, textRect)
+                    pygame.display.update()
+                    count += 40
+
+                updated = True
+                displayedHeroes = True
+
+        # Animation
+        print(playerhero)
+        displayHeroes()
+
+        HeroGame(playerhero)
+
+    except KeyboardInterrupt:
+        print("\nBye")
+        # TODO: Save Here
 
 
 game()
