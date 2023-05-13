@@ -1940,7 +1940,7 @@ def updateHeroList(heroes, heroNumber):
         count += 40
 
 
-def displayChest():
+def displayImage(Photo):
     display_surface.fill(white)
     text = font.render("Where am I?", True, black, white)
     textRect = text.get_rect()
@@ -1951,7 +1951,7 @@ def displayChest():
     #                            sleep(1)
     pygame.time.delay(1000)
 
-    rsp = "treasure_chest.png"
+    rsp = Photo
     pilimage = Image.open(rsp).convert("RGBA")
     pgimg = pygame.image.fromstring(pilimage.tobytes(), pilimage.size, pilimage.mode)
 
@@ -1961,33 +1961,6 @@ def displayChest():
 
     pygame.time.delay(2000)
 
-    text = font.render("You see a chest", True, black, white)
-    textRect = text.get_rect()
-    textRect.center = (X // 2, Y // 1.5)
-    display_surface.blit(text, textRect)
-    pygame.display.update()
-
-    pygame.time.delay(2000)
-
-    text = font.render("Do you open the chest?", True, black, white)
-    textRect = text.get_rect()
-    textRect.center = (X // 2, Y // 1.5)
-    display_surface.blit(text, textRect)
-    pygame.display.update()
-
-    pygame.time.delay(250)
-
-    text = font.render("Yes", True, black, white)
-    textRect = text.get_rect()
-    textRect.center = (X // 2, Y // 1.5 + 60)
-    display_surface.blit(text, textRect)
-    pygame.display.update()
-
-    text = font.render("No", True, black, white)
-    textRect = text.get_rect()
-    textRect.center = (X // 2, Y // 1.5 + 100)
-    display_surface.blit(text, textRect)
-    pygame.display.update()
 
 
 def game():
@@ -2032,7 +2005,36 @@ def game():
                             updateHeroList(heroes, heroNumber)  # update screen
                         elif event.key == pygame.K_RETURN:
                             playerhero = heroes[heroNumber]
-                            displayChest()
+                            x = (r'\Game\Game\Assets\treasure_chest.png')
+                            displayImage(x)
+
+                            text = font.render("You see a chest", True, black, white)
+                            textRect = text.get_rect()
+                            textRect.center = (X // 2, Y // 1.5)
+                            display_surface.blit(text, textRect)
+                            pygame.display.update()
+
+                            pygame.time.delay(2000)
+
+                            text = font.render("Do you open the chest?", True, black, white)
+                            textRect = text.get_rect()
+                            textRect.center = (X // 2, Y // 1.5)
+                            display_surface.blit(text, textRect)
+                            pygame.display.update()
+
+                            pygame.time.delay(250)
+
+                            text = font.render("Yes", True, black, white)
+                            textRect = text.get_rect()
+                            textRect.center = (X // 2, Y // 1.5 + 60)
+                            display_surface.blit(text, textRect)
+                            pygame.display.update()
+
+                            text = font.render("No", True, black, white)
+                            textRect = text.get_rect()
+                            textRect.center = (X // 2, Y // 1.5 + 100)
+                            display_surface.blit(text, textRect)
+                            pygame.display.update()
                             dispayedChest = True
                 elif dispayedChest:
                     if event.type == pygame.KEYDOWN:  # checking if any key was selected
