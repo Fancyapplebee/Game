@@ -10,6 +10,7 @@ import pygame
 from io import BytesIO
 import requests
 from PIL import Image
+import os
 
 Quests = False
 Shop = False
@@ -1921,37 +1922,30 @@ blue = (0, 0, 128)
 black = (0, 0, 0)
 yellow = (255, 255, 0)
 light_pink = (255, 182, 193)
+orange = (255, 165, 0)
 X = 400
 Y = 400
 display_surface = pygame.display.set_mode((X, Y))
 font = pygame.font.Font('freesansbold.ttf', 32)
 
 
-def updateHeroList(heroes, heroNumber):
+def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = 40, height: float = 4,
+               new_screen=True) -> None:
     count = 0
-    display_surface.fill(light_pink)
-    for num, hero in enumerate(heroes):
-        text = font.render(hero, True, yellow, light_pink) if num == heroNumber else font.render(hero, True, black,
-                                                                                                 light_pink)
+    display_surface.fill(color) if new_screen else True
+    for num, item in enumerate(items):
+        text = font.render(item, True, yellow, color) if num == selectNumber else font.render(item, True, black,
+                                                                                              color)
         textRect = text.get_rect()
-        textRect.center = (X // 2, Y // 4 + count)
+        textRect.center = (X // 2, Y // height + count)
         display_surface.blit(text, textRect)
         pygame.display.update()
-        count += 40
+        count += inc
 
 
-def displayImage(Photo):
-    display_surface.fill(white)
-    text = font.render("Where am I?", True, black, white)
-    textRect = text.get_rect()
-    textRect.center = (X // 2, Y // 1.5)
-    display_surface.blit(text, textRect)
-    pygame.display.update()
-
-    #                            sleep(1)
-    pygame.time.delay(1000)
-
-    rsp = Photo
+# all images are in /Game/Game/Assets
+def displayImage(rsp):
+    rsp = os.getcwd() + "/Assets/" + rsp
     pilimage = Image.open(rsp).convert("RGBA")
     pgimg = pygame.image.fromstring(pilimage.tobytes(), pilimage.size, pilimage.mode)
 
@@ -1959,8 +1953,19 @@ def displayImage(Photo):
     display_surface.blit(pgimg, ((X - pgimg.get_rect().width) // 2, (125 - pgimg.get_rect().height) / 8))
     pygame.display.update()
 
-    pygame.time.delay(2000)
 
+def openChestOption(optionNumber=None):
+    text = font.render("Yes", True, orange, white) if optionNumber == 0 else font.render("Yes", True, black, white)
+    textRect = text.get_rect()
+    textRect.center = (X // 2, Y // 1.5 + 60)
+    display_surface.blit(text, textRect)
+    pygame.display.update()
+
+    text = font.render("No", True, orange, white) if optionNumber == 1 else font.render("No", True, black, white)
+    textRect = text.get_rect()
+    textRect.center = (X // 2, Y // 1.5 + 100)
+    display_surface.blit(text, textRect)
+    pygame.display.update()
 
 
 def game():
@@ -1975,10 +1980,11 @@ def game():
         started = False
         displayedHeroes = False
         dispayedChest = False
-        heroNumber = 3  # (3, 4, or 5)
+        optionNumber = 3  # (3, 4, or 5)
         updated = False
         playerhero = ""  # declare the hero that the user wants to be
         heroes = displayHeroes()
+        YesNo = ("Yes", "No")
 
         while True:
             pygame.display.update()
@@ -1993,20 +1999,37 @@ def game():
                     quit()
                 elif not displayedHeroes:
                     pygame.time.delay(1000)
-                    updateHeroList(heroes, heroNumber)
+                    updateList(heroes, optionNumber)
                     displayedHeroes = True
                 elif displayedHeroes and not dispayedChest:
                     if event.type == pygame.KEYDOWN:  # checking if any key was selected
                         if event.key == pygame.K_DOWN:
-                            heroNumber = heroNumber + 1 if heroNumber != 5 else 3
-                            updateHeroList(heroes, heroNumber)  # update screen
+                            optionNumber = optionNumber + 1 if optionNumber != 5 else 3
+                            updateList(heroes, optionNumber)  # update screen
                         elif event.key == pygame.K_UP:
-                            heroNumber = heroNumber - 1 if heroNumber != 3 else 5
-                            updateHeroList(heroes, heroNumber)  # update screen
+                            optionNumber = optionNumber - 1 if optionNumber != 3 else 5
+                            updateList(heroes, optionNumber)  # update screen
                         elif event.key == pygame.K_RETURN:
-                            playerhero = heroes[heroNumber]
-                            x = (r'\Game\Game\Assets\treasure_chest.png')
-                            displayImage(x)
+                            optionNumber = 0  # set the variable for the next option menu
+                            playerhero = heroes[optionNumber]
+                            if optionNumber == 3:
+                                displayImage("percy-start.png")
+                            elif optionNumber == 4:
+                                displayImage("elf-start.png")
+                            elif optionNumber == 5:
+                                displayImage("zelda-start.png")
+                            #sleep(5)
+                            pygame.time.delay(2000)
+                            # TODO: display the hero that the user chose, stored in `playerhero`
+                            display_surface.fill(white)
+                            text = font.render("Where am I?", True, black, white)
+                            textRect = text.get_rect()
+                            textRect.center = (X // 2, Y // 1.5)
+                            display_surface.blit(text, textRect)
+                            pygame.display.update()
+                            pygame.time.delay(1000)
+                            displayImage("treasure_chest.png")
+                            pygame.time.delay(2000)
 
                             text = font.render("You see a chest", True, black, white)
                             textRect = text.get_rect()
@@ -2014,7 +2037,7 @@ def game():
                             display_surface.blit(text, textRect)
                             pygame.display.update()
 
-                            pygame.time.delay(2000)
+                            pygame.time.delay(1000)  # Can change later
 
                             text = font.render("Do you open the chest?", True, black, white)
                             textRect = text.get_rect()
@@ -2023,23 +2046,35 @@ def game():
                             pygame.display.update()
 
                             pygame.time.delay(250)
-
-                            text = font.render("Yes", True, black, white)
-                            textRect = text.get_rect()
-                            textRect.center = (X // 2, Y // 1.5 + 60)
-                            display_surface.blit(text, textRect)
-                            pygame.display.update()
-
-                            text = font.render("No", True, black, white)
-                            textRect = text.get_rect()
-                            textRect.center = (X // 2, Y // 1.5 + 100)
-                            display_surface.blit(text, textRect)
-                            pygame.display.update()
+                            openChestOption(optionNumber)
                             dispayedChest = True
+
                 elif dispayedChest:
+
                     if event.type == pygame.KEYDOWN:  # checking if any key was selected
-                        pass
-                        # TODO: Highlight yes and then update it similar to displaying the heroes
+                        # optionNumber: Yes = 0, No = 1
+                        if event.key == pygame.K_DOWN:
+                            optionNumber = optionNumber + 1 if optionNumber != 1 else 0
+                            openChestOption(optionNumber)
+
+                        elif event.key == pygame.K_UP:
+                            optionNumber = optionNumber - 1 if optionNumber != 0 else 1
+                            openChestOption(optionNumber)
+
+                        elif event.key == pygame.K_RETURN:
+                            if optionNumber == 0:  # Yes
+                                displayImage("treasure_chest.png")
+
+                                text = font.render("You do not have the key!", True, black, white)
+                                textRect = text.get_rect()
+                                textRect.center = (X // 2, Y // 1.5)
+                                display_surface.blit(text, textRect)
+                                pygame.display.update()
+                                pygame.time.delay(1000)  # Can change later
+
+                            display_surface.fill(white)
+                            pygame.display.update()
+                            # TODO: List options of where to go
 
         # Animation
 
