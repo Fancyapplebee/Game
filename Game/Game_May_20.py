@@ -1929,33 +1929,19 @@ display_surface = pygame.display.set_mode((X, Y))
 font = pygame.font.Font('freesansbold.ttf', 32)
 
 
-<<<<<<< HEAD
 def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = 40, height: float = 4, new_screen = True) -> None:
-=======
-def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = 40, height: float = 4,
-               new_screen=True) -> None:
->>>>>>> origin/master
     count = 0
     display_surface.fill(color) if new_screen else True
     for num, item in enumerate(items):
         text = font.render(item, True, yellow, color) if num == selectNumber else font.render(item, True, black,
-<<<<<<< HEAD
                                                                                                  color)
-=======
-                                                                                              color)
->>>>>>> origin/master
         textRect = text.get_rect()
         textRect.center = (X // 2, Y // height + count)
         display_surface.blit(text, textRect)
         pygame.display.update()
         count += inc
 
-<<<<<<< HEAD
 #all images are in /Game/Game/Assets
-=======
-
-# all images are in /Game/Game/Assets
->>>>>>> origin/master
 def displayImage(rsp):
     rsp = os.getcwd() + "/Assets/" + rsp
     pilimage = Image.open(rsp).convert("RGBA")
@@ -1965,26 +1951,12 @@ def displayImage(rsp):
     display_surface.blit(pgimg, ((X - pgimg.get_rect().width) // 2, (125 - pgimg.get_rect().height) / 8))
     pygame.display.update()
 
-<<<<<<< HEAD
 def openChestOption(optionNumber = None):
-=======
-
-def openChestOption(optionNumber=None):
->>>>>>> origin/master
     text = font.render("Yes", True, orange, white) if optionNumber == 0 else font.render("Yes", True, black, white)
     textRect = text.get_rect()
     textRect.center = (X // 2, Y // 1.5 + 60)
     display_surface.blit(text, textRect)
     pygame.display.update()
-<<<<<<< HEAD
-=======
-
-    text = font.render("No", True, orange, white) if optionNumber == 1 else font.render("No", True, black, white)
-    textRect = text.get_rect()
-    textRect.center = (X // 2, Y // 1.5 + 100)
-    display_surface.blit(text, textRect)
-    pygame.display.update()
->>>>>>> origin/master
 
     text = font.render("No", True, orange, white) if optionNumber == 1 else font.render("No", True, black, white)
     textRect = text.get_rect()
@@ -2034,23 +2006,9 @@ def game():
                             optionNumber = optionNumber - 1 if optionNumber != 3 else 5
                             updateList(heroes, optionNumber)  # update screen
                         elif event.key == pygame.K_RETURN:
-<<<<<<< HEAD
                             optionNumber = 0 #set the variable for the next option menu
                             playerhero = heroes[optionNumber]
                             #TODO: display the hero that the user chose, stored in `playerhero`
-=======
-                            optionNumber = 0  # set the variable for the next option menu
-                            playerhero = heroes[optionNumber]
-                            if optionNumber == 3:
-                                displayImage("percy-start.png")
-                            elif optionNumber == 4:
-                                displayImage("elf-start.png")
-                            elif optionNumber == 5:
-                                displayImage("zelda-start.png")
-                            #sleep(5)
-                            pygame.time.delay(2000)
-                            # TODO: display the hero that the user chose, stored in `playerhero`
->>>>>>> origin/master
                             display_surface.fill(white)
                             text = font.render("Where am I?", True, black, white)
                             textRect = text.get_rect()
@@ -2067,11 +2025,7 @@ def game():
                             display_surface.blit(text, textRect)
                             pygame.display.update()
 
-<<<<<<< HEAD
                             pygame.time.delay(1000) #Can change later
-=======
-                            pygame.time.delay(1000)  # Can change later
->>>>>>> origin/master
 
                             text = font.render("Do you open the chest?", True, black, white)
                             textRect = text.get_rect()
@@ -2084,7 +2038,6 @@ def game():
                             dispayedChest = True
 
                 elif dispayedChest:
-<<<<<<< HEAD
                 
                     if event.type == pygame.KEYDOWN:  # checking if any key was selected
                         #optionNumber: Yes = 0, No = 1
@@ -2098,21 +2051,6 @@ def game():
                             
                         elif event.key == pygame.K_RETURN:
                             if optionNumber == 0: #Yes
-=======
-
-                    if event.type == pygame.KEYDOWN:  # checking if any key was selected
-                        # optionNumber: Yes = 0, No = 1
-                        if event.key == pygame.K_DOWN:
-                            optionNumber = optionNumber + 1 if optionNumber != 1 else 0
-                            openChestOption(optionNumber)
-
-                        elif event.key == pygame.K_UP:
-                            optionNumber = optionNumber - 1 if optionNumber != 0 else 1
-                            openChestOption(optionNumber)
-
-                        elif event.key == pygame.K_RETURN:
-                            if optionNumber == 0:  # Yes
->>>>>>> origin/master
                                 displayImage("treasure_chest.png")
 
                                 text = font.render("You do not have the key!", True, black, white)
@@ -2120,20 +2058,12 @@ def game():
                                 textRect.center = (X // 2, Y // 1.5)
                                 display_surface.blit(text, textRect)
                                 pygame.display.update()
-<<<<<<< HEAD
                                 pygame.time.delay(1000) #Can change later
                             
                             display_surface.fill(white)
                             pygame.display.update()
                             #TODO: List options of where to go
                             
-=======
-                                pygame.time.delay(1000)  # Can change later
-
-                            display_surface.fill(white)
-                            pygame.display.update()
-                            # TODO: List options of where to go
->>>>>>> origin/master
 
         # Animation
 
