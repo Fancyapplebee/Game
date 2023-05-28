@@ -1944,13 +1944,14 @@ def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: i
 
 
 # all images are in /Game/Game/Assets
-def displayImage(rsp):
+def displayImage(rsp, height: bool = False):
     rsp = os.getcwd() + "/Assets/" + rsp
     pilimage = Image.open(rsp).convert("RGBA")
     pgimg = pygame.image.fromstring(pilimage.tobytes(), pilimage.size, pilimage.mode)
-
+    if not height:
+        height = (125 - pgimg.get_rect().height) / 8
     display_surface.fill(white)
-    display_surface.blit(pgimg, ((X - pgimg.get_rect().width) // 2, (125 - pgimg.get_rect().height) / 8))
+    display_surface.blit(pgimg, ((X - pgimg.get_rect().width) // 2, height))
     pygame.display.update()
 
 
@@ -1968,9 +1969,45 @@ def openChestOption(optionNumber=None):
     pygame.display.update()
 
 
+def PlaceOption(optionNumber=None):
+    text = font.render("House", True, orange, white) if optionNumber == 0 else font.render("House", True, black, white)
+    textRect = text.get_rect()
+    textRect.center = (X // 2, 150)
+    display_surface.blit(text, textRect)
+    pygame.display.update()
+
+    text = font.render("Beach", True, orange, white) if optionNumber == 1 else font.render("Beach", True, black, white)
+    textRect = text.get_rect()
+    textRect.center = (X // 2, 190)
+    display_surface.blit(text, textRect)
+    pygame.display.update()
+
+    text = font.render("Forest", True, orange, white) if optionNumber == 2 else font.render("Forest", True, black,
+                                                                                            white)
+    textRect = text.get_rect()
+    textRect.center = (X // 2, 230)
+    display_surface.blit(text, textRect)
+    pygame.display.update()
+
+    text = font.render("Mountain", True, orange, white) if optionNumber == 3 else font.render("Mountain", True, black,
+                                                                                              white)
+    textRect = text.get_rect()
+    textRect.center = (X // 2, 270)
+    display_surface.blit(text, textRect)
+    pygame.display.update()
+
+    text = font.render("Desert", True, orange, white) if optionNumber == 4 else font.render("Desert", True, black,
+                                                                                            white)
+    textRect = text.get_rect()
+    textRect.center = (X // 2, 310)
+    display_surface.blit(text, textRect)
+    pygame.display.update()
+
+
 def game():
     # TODO: uncomment next line in actual game
     # slowPrint("Welcome to the Game!")
+    global font
     try:
         pygame.display.set_caption('Game Window')
         text = font.render('Welcome to the Game!', True, black, light_pink)
@@ -1980,6 +2017,8 @@ def game():
         started = False
         displayedHeroes = False
         dispayedChest = False
+        displayedPlaces = False
+        questsUnlocked = False
         optionNumber = 3  # (3, 4, or 5)
         updated = False
         playerhero = ""  # declare the hero that the user wants to be
@@ -2010,17 +2049,19 @@ def game():
                             optionNumber = optionNumber - 1 if optionNumber != 3 else 5
                             updateList(heroes, optionNumber)  # update screen
                         elif event.key == pygame.K_RETURN:
-                            optionNumber = 0  # set the variable for the next option menu
                             playerhero = heroes[optionNumber]
-                            if optionNumber == 3:
+                            if playerhero == "PERCY JACKSON":
                                 displayImage("percy-start.png")
-                            elif optionNumber == 4:
+                                pygame.time.delay(2000)
+                            elif playerhero == "ELF":
                                 displayImage("elf-start.png")
-                            elif optionNumber == 5:
-                                displayImage("zelda-start.png")
-                            #sleep(5)
-                            pygame.time.delay(2000)
-                            # TODO: display the hero that the user chose, stored in `playerhero`
+                                pygame.time.delay(2000)
+                            elif playerhero == "ZELDA":
+                                displayImage("zelda-start.png", height=100)
+                                pygame.time.delay(2000)
+
+                            optionNumber = 0  # set the variable for the next option menu
+
                             display_surface.fill(white)
                             text = font.render("Where am I?", True, black, white)
                             textRect = text.get_rect()
@@ -2049,7 +2090,7 @@ def game():
                             openChestOption(optionNumber)
                             dispayedChest = True
 
-                elif dispayedChest:
+                elif dispayedChest and not displayedPlaces:
 
                     if event.type == pygame.KEYDOWN:  # checking if any key was selected
                         # optionNumber: Yes = 0, No = 1
@@ -2074,7 +2115,54 @@ def game():
 
                             display_surface.fill(white)
                             pygame.display.update()
-                            # TODO: List options of where to go
+                            displayedPlaces = True
+                            optionNumber = 0
+
+                elif displayedPlaces and not questsUnlocked:
+                    font = pygame.font.Font('freesansbold.ttf', 28)
+                    text = font.render("Where do you want to go?", True, black, white)
+                    textRect = text.get_rect()
+                    textRect.center = (X // 2, 50)
+                    display_surface.blit(text, textRect)
+                    text = font.render("========================", True, black, white)
+                    textRect = text.get_rect()
+                    textRect.center = (X // 2, 90)
+                    display_surface.blit(text, textRect)
+                    font = pygame.font.Font('freesansbold.ttf', 32)
+                    PlaceOption(optionNumber)
+                    pygame.display.update()
+                    if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                        if event.key == pygame.K_DOWN:
+                            optionNumber = optionNumber + 1 if optionNumber != 4 else 0
+                            PlaceOption(optionNumber)  # update screen
+                        elif event.key == pygame.K_UP:
+                            optionNumber = optionNumber - 1 if optionNumber != 0 else 4
+                            PlaceOption(optionNumber)  # update screen
+                        elif event.key == pygame.K_RETURN:
+                            if optionNumber == 0:
+                                print("House")
+                                displayImage("StartHouse.png")
+                                pygame.time.delay(2000)
+                            elif optionNumber == 1:
+                                print("Beach")
+                                displayImage("StartBeach.png")
+                                pygame.time.delay(2000)
+                            elif optionNumber == 2:
+                                print("Forest")
+                                displayImage("StartForest.png")
+                                pygame.time.delay(2000)
+                            elif optionNumber == 3:
+                                print("Mountain")
+                                displayImage("StartMountain.png")
+                                pygame.time.delay(2000)
+                            elif optionNumber == 4:
+                                print("Desert")
+                                displayImage("StartDesert.png")
+                                pygame.time.delay(2000)
+                            questsUnlocked = True
+                            pygame.display.update()
+                elif questsUnlocked:
+                    pass
 
         # Animation
 
