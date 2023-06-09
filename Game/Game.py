@@ -1905,6 +1905,14 @@ Y = 750
 display_surface = pygame.display.set_mode((X, Y))
 font = pygame.font.Font('freesansbold.ttf', 32)
 
+
+def pygame_print(text, loc, color=black):
+    text = font.render(text, True, color, white)
+    textRect = text.get_rect()
+    textRect.center = (X // 2, loc)
+    display_surface.blit(text, textRect)
+
+
 def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = 40, height: float = 4,
                new_screen=True) -> None:
     count = 0
@@ -1923,7 +1931,7 @@ def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: i
 def displayImage(rsp, height: bool = False):
     rsp = os.getcwd() + "/Assets/" + rsp
     pilimage = Image.open(rsp).convert("RGBA")
-    pilimage = pygame.transform.scale(pilimage, (350, 350))
+    pilimage = pilimage.resize((350, 350))
     pgimg = pygame.image.fromstring(pilimage.tobytes(), pilimage.size, pilimage.mode)
     if not height:
         height = (125 - pgimg.get_rect().height) / 8
@@ -1987,25 +1995,14 @@ class Setting:
         global font, white, black
 
         display_surface.fill(white)
-        text = font.render("--------", True, black, white)
-        textRect = text.get_rect()
-        textRect.center = (X // 2, 90)
-        display_surface.blit(text, textRect)
-        text = font.render("Places", True, black, white)
-        textRect = text.get_rect()
-        textRect.center = (X // 2, 130)
-        display_surface.blit(text, textRect)
-        text = font.render("--------", True, black, white)
-        textRect = text.get_rect()
-        textRect.center = (X // 2, 170)
-        display_surface.blit(text, textRect)
+        pygame_print("--------", 90)
+        pygame_print("Places", 130)
+        pygame_print("--------", 170)
+
         currHeight = 210
         font = pygame.font.Font('freesansbold.ttf', 28)
         for place in self.places:
-            text = font.render(place.title(), True, black, white)
-            textRect = text.get_rect()
-            textRect.center = (X // 2, currHeight)
-            display_surface.blit(text, textRect)
+            pygame_print(place.title(), currHeight)
             currHeight += 40
         font = pygame.font.Font('freesansbold.ttf', 32)
         pygame.display.update()
@@ -2045,6 +2042,186 @@ class Desert(Setting):
     def __init__(self):
         self.name = "Desert"
         self.places = ("LANDSCAPE", "HILLSIDE")  # Fill this up
+
+
+def search(setting, role):
+    currentTime = time()
+    if currentTime - role.searchTime < 86400:
+        display_surface.fill(white)
+        time_til_search = (86400 - (currentTime - role.searchTime)) / 60
+        message = f"Sorry, you cannot search at this point! Time until you can search again = {time_til_search:.2f} minutes"
+        temp = ""
+        count = 0
+        print(message)
+        length = len(message)
+        for i in range(length):
+            temp += message[i]
+            # displaying a new line every 24 characters
+            if ((i + 1) % 24 == 0 and i != 0) or (i == length - 1):
+                pygame_print(temp, 90 + count)
+                temp = ""
+                count += 50
+
+        pygame.display.update()
+        pygame.time.delay(1000)
+
+        return
+
+    optionNumber = 0
+    numOptions = len(setting.places)
+    while True:
+        display_surface.fill(white)  # clear the screen
+
+        currHeight = 90
+        Question = f"Where in the {setting.name} do you want to explore?"
+        pygame_print(Question[0:Question.index("do") - 1], currHeight)
+        currHeight += 40
+        pygame_print(Question[Question.index("do"):], currHeight)
+        currHeight += 60
+        pygame_print("------", currHeight)
+        currHeight += 40
+        pygame_print("Places", currHeight)
+        currHeight += 40
+        pygame_print("------", currHeight)
+
+        currHeight += 40
+        currentOption = 0
+        for place in setting.places:
+            pygame_print(place.title(), currHeight, orange) if optionNumber == currentOption else pygame_print(
+                place.title(), currHeight)
+            currHeight += 40
+            currentOption += 1
+        pygame_print("------", currHeight)
+        pygame.display.update()
+
+        for event in pygame.event.get():  # update the option number if necessary
+            if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                if event.key == pygame.K_DOWN:
+                    optionNumber = optionNumber + 1 if optionNumber != numOptions - 1 else 0
+                elif event.key == pygame.K_UP:
+                    optionNumber = optionNumber - 1 if optionNumber != 0 else numOptions - 1
+                elif event.key == pygame.K_RETURN:
+                    print(setting.places[optionNumber])
+                    return
+                    # TODO: Finish search function and find images to display
+                    display_surface.fill(white)  # clear the screen
+
+    place = cS(input(f"Where in the {setting.name} do you want to explore? "))
+    while place not in setting.places:
+        print("Try again!")
+        place = cS(input(f"Where in the {setting.name} do you want to explore? "))
+
+    #        item                OM      prob (percentage out of 100)
+    #
+    #
+    #        cookie              2-3     1-.1
+    #        logs                3-4     .1-.01
+    #        sands               0       100
+    #        rocks               2       1
+    #        silvers             4       .01
+    #        golds               5       .001
+    #        diamonds            7       .00001
+    #        emeralds            7       .00001
+    #        cactuses            3       .1
+    #        golden saplings     8       .000001
+    #        golden logs         8       .000001
+    #        sand pails          5       .001
+
+    if place == "SANDBAR":
+        Chances = randint(1, 100000)
+        role.numInv["Sands"]["Number"] += 1
+        print("You got SAND!")
+        if Chances == 1:
+            role.numInv["Sand Pails"]["Number"] += 1
+            print("You got a Sand Pail!")
+
+    elif place == "HILLSIDE":
+        Chances = randint(1, 1000)
+        role.numInv["Sands"]["Number"] += 1
+        print("You got SAND!")
+        if Chances == 1:
+            role.numInv["Cactuses"]["Number"] += 1
+            print("You found a cactus!")
+
+    elif place == "CASTLE":
+        Chances = randint(1, 1e8)
+        if Chances == 1:
+            role.numInv["Golden Logs"] += 1
+            print("SUPER RARE DROP: Golden Log!")
+        elif 2 <= Chances <= 11:
+            role.numInv["Emeralds"]["Number"] += 1
+            print("You got an emerald.")
+        else:
+            print("Nothing Found.")
+
+    elif place == "OCEAN":
+        Chances = randint(1, 1e5)
+        if Chances == 1:
+            role.numInv["Golds"]["Number"] += 1
+            print("You got gold!")
+        else:
+            print("Nothing Found.")
+    elif place == "FRIDGE":
+        Chances = randint(1, 1000)
+        if 1 <= Chances <= 5:
+            role.numInv["Cookies"]["Number"] += 1
+            print("You got a cookie!")
+        else:
+            print("Nothing Found.")
+
+    elif place == "TREE":
+        Chances = randint(1, 1000)
+        if 1 <= Chances <= 5:
+            role.numInv["Apple"]["Number"] += 1
+            print("You got an apple!")
+        else:
+            print("Nothing Found.")
+
+
+    elif place == "CAVE":
+        Chances = randint(1, 10000)
+        if Chances == 1:
+            role.numInv["Silvers"]["Number"] += 1
+            print("You got a piece of silver!")
+        elif 2 <= Chances <= 101:
+            role.numInv["Rocks"]["Number"] += 1
+            print("You got a rock!")
+        else:
+            print("Nothing Found.")
+
+    #    100000/10 = 10000 -> 1e5/10 = 1e4
+    #   1/100 = 10/1000 = 100/10000 = 1000/100000
+    elif place == "TOP":
+        Chances = randint(1, 1e5)
+        if Chances == 1:
+            role.numInv["Golds"]["Number"] += 1
+            print("You got a piece of gold!")
+        elif 2 <= Chances <= 11:
+            role.numInv["Silvers"]["Number"] += 1
+            print("You got a piece of silver!")
+
+        elif 12 <= Chances <= 1011:
+            role.numInv["Rocks"]["Number"] += 1
+            print("You got a rock!")
+        else:
+            print("Nothing Found.")
+
+
+    elif place == "LANDSCAPE":
+        Chances = randint(1, 100000)
+        role.numInv["Sands"]["Number"] += 1
+        print("You got SAND!")
+        if Chances == 1:
+            role.numInv["Sand Pails"]["Number"] += 1
+            print("You found a sand pail!")
+        elif 2 <= Chances <= 11:
+            role.numInv["Cactuses"]["Number"] += 1
+            print("You found a cactus!")
+        else:
+            print("Nothing Found.")
+
+    role.searchTime = time()
+    return place
 
 
 def Menu(role, setting):
@@ -2092,7 +2269,7 @@ def Menu(role, setting):
                         if optionNumber == 0:  # Map
                             setting.map()
                         elif optionNumber == 1:  # Search
-                            pass
+                            search(setting, role)
                         elif optionNumber == 2:  # Stats
                             pass
                         return
