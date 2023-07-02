@@ -2112,14 +2112,14 @@ def search(setting, role):
         Chances = randint(1, 100000)
         role.numInv["Sands"]["Number"] += 1
         pygame_print("You got SAND!", 200)
-        displayImage("sand.png", height=400, p=0)
+        displayImage("sand.png", p=0)
         pygame.display.update()
         pygame.time.delay(1000)  # waiting one second
         if Chances == 1:
             role.numInv["Sand Pails"]["Number"] += 1
             display_surface.fill(white)  # clear the screen
             pygame_print("You got a Sand Pail!", 200)
-            displayImage("sand-pail.png", height=400, p=0)
+            displayImage("sand-pail.png", p=0)
             pygame.display.update()
             pygame.time.delay(1000)  # waiting one second
 
@@ -2127,14 +2127,14 @@ def search(setting, role):
         Chances = randint(1, 1000)
         role.numInv["Sands"]["Number"] += 1
         pygame_print("You got SAND!", 200)
-        displayImage("hillside.png", height=400, p=0)
+        displayImage("hillside.png", p=0)
         pygame.display.update()
         pygame.time.delay(1000)  # waiting one second
         if Chances == 1:
             role.numInv["Cactuses"]["Number"] += 1
             display_surface.fill(white)  # clear the screen
             pygame_print("You found a cactus!", 200)
-            displayImage("cactus.png", height=400, p=0)
+            displayImage("cactus.png", p=0)
             pygame.display.update()
             pygame.time.delay(1000)  # waiting one second
 
@@ -2143,10 +2143,10 @@ def search(setting, role):
         if Chances == 1:
             role.numInv["Golden Logs"] += 1
             pygame_print("SUPER RARE DROP: Golden Log!", 200)
-            displayImage("Golden log.png", height=400, p=0)
+            displayImage("Golden log.png", p=0)
         elif 2 <= Chances <= 11:
             role.numInv["Emeralds"]["Number"] += 1
-            displayImage("emerald.png", height=400, p=0)
+            displayImage("emerald.png", p=0)
             pygame_print("You got an emerald.", 200)
         else:
             pygame_print("Nothing found.", 200)
@@ -2157,7 +2157,7 @@ def search(setting, role):
         Chances = randint(1, 1e5)
         if Chances == 1:
             role.numInv["Golds"]["Number"] += 1
-            displayImage("gold.png", height=400, p=0)
+            displayImage("gold.png", p=0)
             pygame_print("You got gold!", 200)
         else:
             pygame_print("Nothing found.", 200)
@@ -2168,7 +2168,7 @@ def search(setting, role):
         Chances = randint(1, 1000)
         if 1 <= Chances <= 5:
             role.numInv["Cookies"]["Number"] += 1
-            displayImage("cookie.png", height=400, p=0)
+            displayImage("cookie.png", p=0)
             pygame_print("You got a cookie!", 200)
         else:
             pygame_print("Nothing found.", 200)
@@ -2179,7 +2179,7 @@ def search(setting, role):
         Chances = randint(1, 1000)
         if 1 <= Chances <= 5:
             role.numInv["Apple"]["Number"] += 1
-            displayImage("apple.png", height=400, p=0)
+            displayImage("apple.png", p=0)
             pygame_print("You got an apple!", 200)
         else:
             pygame_print("Nothing found.", 200)
@@ -2191,11 +2191,11 @@ def search(setting, role):
         Chances = randint(1, 10000)
         if Chances == 1:
             role.numInv["Silvers"]["Number"] += 1
-            displayImage("silver.png", height=400, p=0)
+            displayImage("silver.png", p=0)
             pygame_print("You got a piece of silver!", 200)
         elif 2 <= Chances <= 101:
             role.numInv["Rocks"]["Number"] += 1
-            displayImage("rock.png", height=400, p=0)
+            displayImage("rock.png", p=0)
             pygame_print("You got a rock!", 200)
         else:
             pygame_print("Nothing found.", 200)
@@ -2208,16 +2208,16 @@ def search(setting, role):
         Chances = randint(1, 1e5)
         if Chances == 1:
             role.numInv["Golds"]["Number"] += 1
-            displayImage("gold.png", height=400, p=0)
+            displayImage("gold.png", p=0)
             pygame_print("You got a piece of gold!", 200)
         elif 2 <= Chances <= 11:
             role.numInv["Silvers"]["Number"] += 1
-            displayImage("silver.png", height=400, p=0)
+            displayImage("silver.png", p=0)
             pygame_print("You got a piece of silver!", 200)
 
         elif 12 <= Chances <= 1011:
             role.numInv["Rocks"]["Number"] += 1
-            displayImage("rock.png", height=400, p=0)
+            displayImage("rock.png", p=0)
             pygame_print("You got a rock!", 200)
         else:
             pygame_print("Nothing found.", 200)
@@ -2228,17 +2228,17 @@ def search(setting, role):
     elif setting.places[optionNumber] == "LANDSCAPE":
         Chances = randint(1, 100000)
         role.numInv["Sands"]["Number"] += 1
-        displayImage("sand.png", height=400, p=0)
+        displayImage("sand.png", p=0)
         pygame_print("You got SAND!", 200)
         pygame.display.update()
         pygame.time.delay(1000)  # waiting one second
         if Chances == 1:
             role.numInv["Sand Pails"]["Number"] += 1
-            displayImage("sand pail.png", height=400, p=0)
+            displayImage("sand pail.png", p=0)
             pygame_print("You found a sand pail!", 200)
         elif 2 <= Chances <= 11:
             role.numInv["Cactuses"]["Number"] += 1
-            displayImage("cactus.png", height=400, p=0)
+            displayImage("cactus.png", p=0)
             pygame_print("You found a cactus!", 200, 0)
         else:
             pygame_print("Nothing else found.", 200)
