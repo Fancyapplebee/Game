@@ -1906,8 +1906,8 @@ display_surface = pygame.display.set_mode((X, Y))
 font = pygame.font.Font('freesansbold.ttf', 32)
 
 
-def pygame_print(text, loc, color=black):
-    text = font.render(text, True, color, white)
+def pygame_print(text, loc, color=black, background_color=white):
+    text = font.render(text, True, color, background_color)
     textRect = text.get_rect()
     textRect.center = (X // 2, loc)
     display_surface.blit(text, textRect)
@@ -1918,20 +1918,20 @@ def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: i
     count = 0
     display_surface.fill(color) if new_screen else True
     for num, item in enumerate(items):
-        text = font.render(item, True, yellow, color) if num == selectNumber else font.render(item, True, black,
-                                                                                              color)
-        textRect = text.get_rect()
-        textRect.center = (X // 2, Y // height + count)
-        display_surface.blit(text, textRect)
+        pygame_print(item, Y // height + count, color=(yellow if num == selectNumber else black),
+                     background_color=color)
         pygame.display.update()
         count += inc
 
 
 # all images are in /Game/Game/Assets
-def displayImage(rsp, height: bool = False):
+def displayImage(rsp, height: bool = False, p: int = 0):
     rsp = os.getcwd() + "/Assets/" + rsp
     pilimage = Image.open(rsp).convert("RGBA")
-    pilimage = pilimage.resize((350, 350))
+    if p == 0:
+        pilimage = pilimage.resize((350, 350))
+    elif p == 1:
+        pilimage = pilimage.resize((800, 750))
     pgimg = pygame.image.fromstring(pilimage.tobytes(), pilimage.size, pilimage.mode)
     if not height:
         height = (125 - pgimg.get_rect().height) / 8
@@ -1941,51 +1941,29 @@ def displayImage(rsp, height: bool = False):
 
 
 def openChestOption(optionNumber=None):
-    text = font.render("Yes", True, orange, white) if optionNumber == 0 else font.render("Yes", True, black, white)
-    textRect = text.get_rect()
-    textRect.center = (X // 2, Y // 1.5 + 60)
-    display_surface.blit(text, textRect)
+    pygame_print("Yes", Y // 1.5 + 60,
+                 color=(orange if optionNumber == 0 else black)) if optionNumber == 0 else pygame_print("Yes",
+                                                                                                        Y // 1.5 + 60,
+                                                                                                        color=black)
     pygame.display.update()
-
-    text = font.render("No", True, orange, white) if optionNumber == 1 else font.render("No", True, black, white)
-    textRect = text.get_rect()
-    textRect.center = (X // 2, Y // 1.5 + 100)
-    display_surface.blit(text, textRect)
+    pygame_print("No", Y // 1.5 + 100, color=(orange if optionNumber == 1 else black))
     pygame.display.update()
 
 
 def PlaceOption(optionNumber=None):
-    text = font.render("House", True, orange, white) if optionNumber == 0 else font.render("House", True, black, white)
-    textRect = text.get_rect()
-    textRect.center = (X // 2, 150)
-    display_surface.blit(text, textRect)
+    pygame_print("House", 150, color=(orange if optionNumber == 0 else black))
     pygame.display.update()
 
-    text = font.render("Beach", True, orange, white) if optionNumber == 1 else font.render("Beach", True, black, white)
-    textRect = text.get_rect()
-    textRect.center = (X // 2, 190)
-    display_surface.blit(text, textRect)
+    pygame_print("Beach", 190, color=(orange if optionNumber == 1 else black))
     pygame.display.update()
 
-    text = font.render("Forest", True, orange, white) if optionNumber == 2 else font.render("Forest", True, black,
-                                                                                            white)
-    textRect = text.get_rect()
-    textRect.center = (X // 2, 230)
-    display_surface.blit(text, textRect)
+    pygame_print("Forest", 230, color=(orange if optionNumber == 2 else black))
     pygame.display.update()
 
-    text = font.render("Mountain", True, orange, white) if optionNumber == 3 else font.render("Mountain", True, black,
-                                                                                              white)
-    textRect = text.get_rect()
-    textRect.center = (X // 2, 270)
-    display_surface.blit(text, textRect)
+    pygame_print("Mountain", 270, color=(orange if optionNumber == 3 else black))
     pygame.display.update()
 
-    text = font.render("Desert", True, orange, white) if optionNumber == 4 else font.render("Desert", True, black,
-                                                                                            white)
-    textRect = text.get_rect()
-    textRect.center = (X // 2, 310)
-    display_surface.blit(text, textRect)
+    pygame_print("Desert", 310, color=(orange if optionNumber == 4 else black))
     pygame.display.update()
 
 
@@ -2052,7 +2030,7 @@ def search(setting, role):
         message = f"Sorry, you cannot search at this point! Time until you can search again = {time_til_search:.2f} minutes"
         temp = ""
         count = 0
-        print(message)
+        #        print(message)
         length = len(message)
         for i in range(length):
             temp += message[i]
@@ -2133,16 +2111,15 @@ def search(setting, role):
     if setting.places[optionNumber] == "SANDBAR":
         Chances = randint(1, 100000)
         role.numInv["Sands"]["Number"] += 1
-        displayImage("percy-start.png", height=400)
         pygame_print("You got SAND!", 200)
-        displayImage("sand.png", height=400)
+        displayImage("sand.png", height=400, p=0)
         pygame.display.update()
         pygame.time.delay(1000)  # waiting one second
         if Chances == 1:
             role.numInv["Sand Pails"]["Number"] += 1
             display_surface.fill(white)  # clear the screen
             pygame_print("You got a Sand Pail!", 200)
-            displayImage("sand-pail.png", height=400)
+            displayImage("sand-pail.png", height=400, p=0)
             pygame.display.update()
             pygame.time.delay(1000)  # waiting one second
 
@@ -2150,13 +2127,14 @@ def search(setting, role):
         Chances = randint(1, 1000)
         role.numInv["Sands"]["Number"] += 1
         pygame_print("You got SAND!", 200)
+        displayImage("hillside.png", height=400, p=0)
         pygame.display.update()
         pygame.time.delay(1000)  # waiting one second
         if Chances == 1:
             role.numInv["Cactuses"]["Number"] += 1
             display_surface.fill(white)  # clear the screen
             pygame_print("You found a cactus!", 200)
-            displayImage("cactus.png", height=400)
+            displayImage("cactus.png", height=400, p=0)
             pygame.display.update()
             pygame.time.delay(1000)  # waiting one second
 
@@ -2165,10 +2143,10 @@ def search(setting, role):
         if Chances == 1:
             role.numInv["Golden Logs"] += 1
             pygame_print("SUPER RARE DROP: Golden Log!", 200)
-            displayImage("golden log.png", height=400)
+            displayImage("Golden log.png", height=400, p=0)
         elif 2 <= Chances <= 11:
             role.numInv["Emeralds"]["Number"] += 1
-            displayImage("emerald.png", height=400)
+            displayImage("emerald.png", height=400, p=0)
             pygame_print("You got an emerald.", 200)
         else:
             pygame_print("Nothing found.", 200)
@@ -2179,7 +2157,7 @@ def search(setting, role):
         Chances = randint(1, 1e5)
         if Chances == 1:
             role.numInv["Golds"]["Number"] += 1
-            displaiImage("gold.png", height=400)
+            displayImage("gold.png", height=400, p=0)
             pygame_print("You got gold!", 200)
         else:
             pygame_print("Nothing found.", 200)
@@ -2190,7 +2168,7 @@ def search(setting, role):
         Chances = randint(1, 1000)
         if 1 <= Chances <= 5:
             role.numInv["Cookies"]["Number"] += 1
-            displayImage("cookie.png", height=400)
+            displayImage("cookie.png", height=400, p=0)
             pygame_print("You got a cookie!", 200)
         else:
             pygame_print("Nothing found.", 200)
@@ -2201,7 +2179,7 @@ def search(setting, role):
         Chances = randint(1, 1000)
         if 1 <= Chances <= 5:
             role.numInv["Apple"]["Number"] += 1
-            displayImage("apple.png", height=400)
+            displayImage("apple.png", height=400, p=0)
             pygame_print("You got an apple!", 200)
         else:
             pygame_print("Nothing found.", 200)
@@ -2213,11 +2191,11 @@ def search(setting, role):
         Chances = randint(1, 10000)
         if Chances == 1:
             role.numInv["Silvers"]["Number"] += 1
-            displayImage("silver.png", height=400)
+            displayImage("silver.png", height=400, p=0)
             pygame_print("You got a piece of silver!", 200)
         elif 2 <= Chances <= 101:
             role.numInv["Rocks"]["Number"] += 1
-            displayImage("rock.png", height=400)
+            displayImage("rock.png", height=400, p=0)
             pygame_print("You got a rock!", 200)
         else:
             pygame_print("Nothing found.", 200)
@@ -2230,16 +2208,16 @@ def search(setting, role):
         Chances = randint(1, 1e5)
         if Chances == 1:
             role.numInv["Golds"]["Number"] += 1
-            displayImage("gold.png", height=400)
+            displayImage("gold.png", height=400, p=0)
             pygame_print("You got a piece of gold!", 200)
         elif 2 <= Chances <= 11:
             role.numInv["Silvers"]["Number"] += 1
-            displayImage("silver.png", height=400)
+            displayImage("silver.png", height=400, p=0)
             pygame_print("You got a piece of silver!", 200)
 
         elif 12 <= Chances <= 1011:
             role.numInv["Rocks"]["Number"] += 1
-            displayImage("rock.png", height=400)
+            displayImage("rock.png", height=400, p=0)
             pygame_print("You got a rock!", 200)
         else:
             pygame_print("Nothing found.", 200)
@@ -2250,18 +2228,18 @@ def search(setting, role):
     elif setting.places[optionNumber] == "LANDSCAPE":
         Chances = randint(1, 100000)
         role.numInv["Sands"]["Number"] += 1
-        displayImage("sand.png", height=400)
+        displayImage("sand.png", height=400, p=0)
         pygame_print("You got SAND!", 200)
         pygame.display.update()
         pygame.time.delay(1000)  # waiting one second
         if Chances == 1:
             role.numInv["Sand Pails"]["Number"] += 1
-            displayImage("sand pail.png", height=400)
+            displayImage("sand pail.png", height=400, p=0)
             pygame_print("You found a sand pail!", 200)
         elif 2 <= Chances <= 11:
             role.numInv["Cactuses"]["Number"] += 1
-            displayImage("cactus.png", height=400)
-            pygame_print("You found a cactus!", 200)
+            displayImage("cactus.png", height=400, p=0)
+            pygame_print("You found a cactus!", 200, 0)
         else:
             pygame_print("Nothing else found.", 200)
         pygame.display.update()
@@ -2291,40 +2269,166 @@ def Stats(RoleHero):
                     return
 
 
+def Mine(role, setting):
+    display_surface.fill(white)
+    global time
+    map()
+    TheSetting = setting.name.upper()
+    message = "The objective of this game is to click on the item in time (To stop, type stop)!"
+    Opponent = NeutralNPC()
+    message += f" Get ready, you are about to face"
+
+    count = 0
+    temp = ""
+    length = len(message)
+    for i in range(length):
+        temp += message[i]
+        # displaying a new line every 24 characters
+        if ((i + 1) % 24 == 0 and i != 0) or (i == length - 1):
+            pygame_print(temp, 90 + count)
+            temp = ""
+            count += 40
+
+    pygame_print(f"The {Opponent.role}", 90 + count)
+
+    wins = 0
+    losses = 0
+    draws = 0
+    totalplayerscore = 0
+    playeravg = []
+    botavg = []
+    avgtime = []
+    pygame.display.update()
+    while True:
+        start = time()
+        randletter = choice(ascii_letters)
+        x = input("Enter '{}': (Type 'stop' to stop) ".format(randletter))
+        if cS(x) == "STOP":
+            break
+        stop = time()
+        Time = (stop - start)
+        print("You entered it in {:.2f} seconds!".format(Time))
+        npcTime = 1 + (3 * random())
+
+        if Time < npcTime and x == randletter:
+            print("You passed!")
+            wins += 1
+            totalplayerscore += 1
+            botavg.append(npcTime)
+            playeravg.append(Time)
+        elif Time > npcTime or x != randletter:
+            print("You lost!")
+            losses += 1
+            totalplayerscore -= 1
+            botavg.append(npcTime)
+            playeravg.append(Time)
+        elif Time == npcTime:  # Probably never happen
+            print("Draw")
+            draws += 1
+            botavg.append(npcTime)
+            playeravg.append(Time)
+    playeravglen = (len(playeravg)) if len(playeravg) != 0 else 1
+    playeravg = sum(playeravg)
+    botavglen = (len(botavg)) if len(botavg) != 0 else 1
+    botavg = sum(botavg)
+    points = wins - losses
+
+    netExp = points * Opponent.expYield if points >= 0 else 0
+
+    #    role.currExp += netExp
+    #    while role.currExp > role.LevelExp:
+    #        role.currLevel += 1 #Increase the level of the role
+    #        netExp = role.currExp - role.LevelExp
+    #        role.LevelExp = role.ExpLevelFunc(role.currLevel+1)
+    #        role.currExp = 0
+    #        role.currExp += netExp
+
+    increaseExp(role, netExp)
+
+    if playeravg / playeravglen < botavg / botavglen:
+        print(f"You get 5 extra resources because your avg was better than the {Opponent.role} {Opponent.picture}!")
+        points += 5
+
+    #        cookie              2-3     1-.1
+    #        logs                3-4     .1-.01
+    #        sands               0       100
+    #        rocks               2       1
+    #        silvers             4       .01
+    #        golds               5       .001
+    #        diamonds            7       .00001
+    #        emeralds            7       .00001
+    #        cactuses            3       .1
+    #        golden saplings     8       .000001
+    #        golden logs         8       .000001
+    #        sand pails          5       .001
+
+    if TheSetting == "BEACH":
+        role.numInv["Sands"]["Number"] += points
+
+    #    3 <= x <= 5 #x is between 3 and 5 inclusive
+    #    3 < x < 5 #x is between 3 and 5 exclusive
+    elif TheSetting == "FOREST":
+        for i in range(points):
+            Temprand = randint(1, 1e8)
+            if Temprand == 1e8:
+                role.numInv["Golden Saplings"]["Number"] += 1
+            elif Temprand == 1:
+                role.numInv["Golden Logs"]["Number"] += 1
+            elif 10000 <= Temprand <= 100000:
+                role.numInv["Logs"]["Number"] += 1
+
+    elif TheSetting == "HOUSE":
+        for i in range(points):
+            Temprand = randint(1, 1000)
+            if 1 <= Temprand <= 5:
+                role.numInv["Cookies"]["Number"] += 1
+
+    elif TheSetting == "MOUNTAIN":
+        for i in range(points):
+            Temprand = randint(1, 1e7)
+            if 1 <= Temprand <= 1000:
+                role.numInv["Silvers"]["Number"] += 1
+            elif 1001 <= Temprand <= 1100:
+                role.numInv["Golds"]["Number"] += 1
+            elif Temprand == 1101:
+                role.numInv["Diamonds"]["Number"] += 1
+            elif Temprand == 1102:
+                role.numInv["Emeralds"]["Number"] += 1
+                # 10000
+            elif 1103 <= Temprand <= 101102:
+                role.numInv["Rocks"]["Number"] += 1
+
+    elif TheSetting == "DESERT":
+        role.numInv["Sands"]["Number"] += points
+        for i in range(points):
+            Temprand = randint(1, 1000)
+            if Temprand == 1:
+                role.numInv["Cactuses"]["Number"] += 1
+
+    print("The player average is {:.2f} seconds".format(playeravg / playeravglen))
+    print("The {} {} average is {:.2f} seconds".format(Opponent.role, Opponent.picture, botavg / botavglen))
+    print("You got {} resources in total!".format(points))
+    print("You won {} games!".format(wins))
+    print("You lost {} games!".format(losses))
+    print("{} is the number of games that drawed!".format(draws))
+
+    return points
+
+
 def Menu(role, setting):
     # Only going to execute once
     global Quests, orange, black, white, X
     if Quests == False:
         optionNumber = 0
-        print("hi")
-
         pygame.display.update()
 
         while True:
-            display_surface.fill(white)
-            text = font.render("Choose an option", True, black, white)
-            textRect = text.get_rect()
-            textRect.center = (X // 2, 90)
-            display_surface.blit(text, textRect)
-            text = font.render("================", True, black, white)
-            textRect = text.get_rect()
-            textRect.center = (X // 2, 130)
-            display_surface.blit(text, textRect)
-            text = font.render("Map", True, orange, white) if optionNumber == 0 else font.render("Map", True, black,
-                                                                                                 white)
-            textRect = text.get_rect()
-            textRect.center = (X // 2, 170)
-            display_surface.blit(text, textRect)
-            text = font.render("Search", True, orange, white) if optionNumber == 1 else font.render("Search", True,
-                                                                                                    black, white)
-            textRect = text.get_rect()
-            textRect.center = (X // 2, 210)
-            display_surface.blit(text, textRect)
-            text = font.render("Stats", True, orange, white) if optionNumber == 2 else font.render("Stats", True, black,
-                                                                                                   white)
-            textRect = text.get_rect()
-            textRect.center = (X // 2, 250)
-            display_surface.blit(text, textRect)
+            #            display_surface.fill(white)
+            pygame_print("Choose an option", 90, color=black, background_color=white)
+            pygame_print("================", 130, color=black, background_color=white)
+            pygame_print("Map", 170, color=(orange if optionNumber == 0 else black), background_color=white)
+            pygame_print("Search", 210, color=(orange if optionNumber == 1 else black), background_color=white)
+            pygame_print("Stats", 250, color=(orange if optionNumber == 2 else black), background_color=white)
             pygame.display.update()
             for event in pygame.event.get():  # update the option number if necessary
                 if event.type == pygame.KEYDOWN:  # checking if any key was selected
@@ -2341,18 +2445,6 @@ def Menu(role, setting):
                             Stats(role)
                         return
 
-    #        option = cS(input("Enter either 'Map' or 'Search' or 'Stats' "))
-    #        # Input validation
-    #        while option not in ("MAP", "SEARCH", "STATS"):
-    #            print("Try again!")
-    #            option = cS(input("Enter either 'Map' or 'Search'  or 'Stats' "))
-    #        if option == "MAP":
-    #            setting.map()
-    #        elif option == "SEARCH":
-    #            search(setting, role)
-    #        elif option == "STATS":
-    #            role.baseLineStats()
-
     # Will go on until user enters "Quests"
     elif Quests == True or Shop == True:
         '''
@@ -2360,6 +2452,43 @@ def Menu(role, setting):
         ==================================
 
         '''
+        optionNumber = 0
+        pygame.display.update()
+        while True:
+            display_surface.fill(white)
+            pygame_print("Choose an option", 90, color=black, background_color=white)
+            pygame_print("================", 130, color=black, background_color=white)
+            pygame_print("Map", 170, color=(orange if optionNumber == 0 else black), background_color=white)
+            pygame_print("Search", 210, color=(orange if optionNumber == 1 else black), background_color=white)
+            pygame_print("Mine", 250, color=(orange if optionNumber == 2 else black), background_color=white)
+            pygame_print("Inv", 290, color=(orange if optionNumber == 3 else black), background_color=white)
+            pygame_print("Shop", 330, color=(orange if optionNumber == 4 else black), background_color=white)
+            pygame_print("Quests", 370, color=(orange if optionNumber == 5 else black), background_color=white)
+            pygame_print("Stats", 410, color=(orange if optionNumber == 6 else black), background_color=white)
+            pygame.display.update()
+            for event in pygame.event.get():  # update the option number if necessary
+                if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                    if event.key == pygame.K_DOWN:
+                        optionNumber = optionNumber + 1 if optionNumber != 6 else 0
+                    elif event.key == pygame.K_UP:
+                        optionNumber = optionNumber - 1 if optionNumber != 0 else 6
+                    elif event.key == pygame.K_RETURN:
+                        if optionNumber == 0:  # Map
+                            setting.map()
+                        elif optionNumber == 1:  # Search
+                            search(setting, role)
+                        elif optionNumber == 2:  # Mine
+                            Mine(role, setting)
+                        elif optionNumber == 3:  # Inventory
+                            pass
+                        elif optionNumber == 4:  # Shop
+                            pass
+                        elif optionNumber == 5:  # Quests
+                            pass
+                        elif optionNumber == 6:  # Stats
+                            Stats(role)
+                        return
+
         option = cS(input(
             "Enter one of the following options\n==================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
 
@@ -2442,15 +2571,15 @@ def game():
                         elif event.key == pygame.K_RETURN:
                             playerhero = heroes[optionNumber]
                             if playerhero == "PERCY JACKSON":
-                                displayImage("percy-start.png")
+                                displayImage("percy-start.png", height = 400, p=1)
                                 pygame.time.delay(2000)
                                 RoleHero = PercyJackson(playerhero)
                             elif playerhero == "ELF":
-                                displayImage("elf-start.png")
+                                displayImage("elf-start.png", height=400, p=1)
                                 pygame.time.delay(2000)
                                 RoleHero = Elf(playerhero)
                             elif playerhero == "ZELDA":
-                                displayImage("zelda-start.png", height=100)
+                                displayImage("zelda-start.png", height=400, p=1)
                                 pygame.time.delay(2000)
                                 RoleHero = Zelda(playerhero)
 
@@ -2463,7 +2592,7 @@ def game():
                             display_surface.blit(text, textRect)
                             pygame.display.update()
                             pygame.time.delay(1000)
-                            displayImage("treasure_chest.png")
+                            displayImage("treasure_chest.png", height=400, p=0)
                             pygame.time.delay(2000)
 
                             text = font.render("You see a chest", True, black, white)
@@ -2498,7 +2627,7 @@ def game():
 
                         elif event.key == pygame.K_RETURN:
                             if optionNumber == 0:  # Yes
-                                displayImage("treasure_chest.png")
+                                displayImage("treasure_chest.png", height=400, p=0)
 
                                 text = font.render("You do not have the key!", True, black, white)
                                 textRect = text.get_rect()
@@ -2535,27 +2664,27 @@ def game():
                         elif event.key == pygame.K_RETURN:
                             if optionNumber == 0:
                                 print("House")
-                                displayImage("StartHouse.png")
+                                displayImage("StartHouse.png", p=1)
                                 pygame.time.delay(2000)
                                 Place = House()
                             elif optionNumber == 1:
                                 print("Beach")
-                                displayImage("StartBeach.png")
+                                displayImage("StartBeach.png", p=1)
                                 pygame.time.delay(2000)
                                 Place = Beach()
                             elif optionNumber == 2:
                                 print("Forest")
-                                displayImage("StartForest.png")
+                                displayImage("StartForest.png", p=1)
                                 pygame.time.delay(2000)
                                 Place = Forest()
                             elif optionNumber == 3:
                                 print("Mountain")
-                                displayImage("StartMountain.png")
+                                displayImage("StartMountain.png", p=1)
                                 pygame.time.delay(2000)
                                 Place = Mountain()
                             elif optionNumber == 4:
                                 print("Desert")
-                                displayImage("StartDesert.png")
+                                displayImage("StartDesert.png", p=1)
                                 pygame.time.delay(2000)
                                 Place = Desert()
 
@@ -2587,13 +2716,15 @@ def game():
                             textRect.center = (X // 2, 70)
                             display_surface.blit(text, textRect)
                             pygame.display.update()
+                            pygame.time.delay(500)
                             font = pygame.font.Font('freesansbold.ttf', 28)
                             text = font.render("Select 'Quests' in the menu", True, black, white)
                             textRect = text.get_rect()
                             textRect.center = (X // 2, 120)
                             font = pygame.font.Font('freesansbold.ttf', 32)
                             display_surface.blit(text, textRect)
-
+                            pygame.display.update()
+                            pygame.time.delay(1000)
 
 
                 elif Quests:
