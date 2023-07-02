@@ -2571,15 +2571,15 @@ def game():
                         elif event.key == pygame.K_RETURN:
                             playerhero = heroes[optionNumber]
                             if playerhero == "PERCY JACKSON":
-                                displayImage("percy-start.png", height = 400, p=1)
+                                displayImage("percy-start.png", p=1)
                                 pygame.time.delay(2000)
                                 RoleHero = PercyJackson(playerhero)
                             elif playerhero == "ELF":
-                                displayImage("elf-start.png", height=400, p=1)
+                                displayImage("elf-start.png", p=1)
                                 pygame.time.delay(2000)
                                 RoleHero = Elf(playerhero)
                             elif playerhero == "ZELDA":
-                                displayImage("zelda-start.png", height=400, p=1)
+                                displayImage("zelda-start.png", p=1)
                                 pygame.time.delay(2000)
                                 RoleHero = Zelda(playerhero)
 
