@@ -1897,6 +1897,7 @@ white = (255, 255, 255)
 green = (0, 255, 0)
 blue = (0, 0, 128)
 black = (0, 0, 0)
+red = (255, 0, 0)
 yellow = (255, 255, 0)
 light_pink = (255, 182, 193)
 orange = (255, 165, 0)
@@ -1906,11 +1907,12 @@ display_surface = pygame.display.set_mode((X, Y))
 font = pygame.font.Font('freesansbold.ttf', 32)
 
 
-def pygame_print(text, loc, color=black, background_color=white):
+def pygame_print(text, loc, color=black, background_color=white, xyx: int = 0):
     text = font.render(text, True, color, background_color)
     textRect = text.get_rect()
-    textRect.center = (X // 2, loc)
+    textRect.center = ((X // 2)+xyx, loc)
     display_surface.blit(text, textRect)
+    return textRect
 
 
 def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = 40, height: float = 4,
@@ -2270,13 +2272,21 @@ def Stats(RoleHero):
 
 
 def Mine(role, setting):
+    '''
+    Objective: Click on the object before
+    the NPC snatches the item (before npcTime elapses)
+    '''
+    # TODO: Put "STOP" in red rectangle with border space
+    # TODO: Display the print statements on the Pygame window instead of the terminal
+    # TODO: Make it so the rectangle is actually an item from the list of possible items that the user can mine
+
     display_surface.fill(white)
     global time
     map()
     TheSetting = setting.name.upper()
     message = "The objective of this game is to click on the item in time (To stop, type stop)!"
     Opponent = NeutralNPC()
-    message += f" Get ready, you are about to face"
+    message += " Get ready, you are about to face"
 
     count = 0
     temp = ""
@@ -2299,34 +2309,77 @@ def Mine(role, setting):
     botavg = []
     avgtime = []
     pygame.display.update()
-    while True:
-        start = time()
-        randletter = choice(ascii_letters)
-        x = input("Enter '{}': (Type 'stop' to stop) ".format(randletter))
-        if cS(x) == "STOP":
-            break
-        stop = time()
-        Time = (stop - start)
-        print("You entered it in {:.2f} seconds!".format(Time))
-        npcTime = 1 + (3 * random())
 
-        if Time < npcTime and x == randletter:
+    # Each iteration corresponds to a respawn of an object
+    # on the screen
+    while True:
+        display_surface.fill(white)
+        font = pygame.font.Font('freesansbold.ttf', 26)
+        stop_rect = pygame_print("STOP", 36, background_color=red)
+        font = pygame.font.Font('freesansbold.ttf', 32)
+
+        pygame.draw.line(display_surface, black, (80, 75), (720, 75))  # top edge
+        pygame.draw.line(display_surface, black, (80, 675), (720, 675))  # bottom edge
+        pygame.draw.line(display_surface, black, (80, 75), (80, 675))  # left edge
+        pygame.draw.line(display_surface, black, (720, 75), (720, 675))  # right edge
+
+        pygame.display.update()
+        # Determine coordinates where object will appear on the screen
+
+        buffer_width = 24
+
+        rand_X, rand_Y = randint(80 + buffer_width, 720 - buffer_width), randint(75 + buffer_width, 675 - buffer_width)
+
+        square_rect = pygame.Rect(rand_X, rand_Y, buffer_width, buffer_width)
+
+        pygame.draw.rect(display_surface, black, square_rect)
+
+        pygame.display.update()
+        #
+        #        pygame.time.delay(1000)  # waiting one second
+
+        start = time()
+        npcTime = 1 + (1 * random())
+        botavg.append(npcTime)
+        breakFlag = False
+        playerTime = None
+        mouse_pos = None
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    playerTime = time() - start
+                    breakFlag = True
+                    break
+            if breakFlag:
+                break
+
+        if stop_rect.collidepoint(mouse_pos):
+            break
+
+        elif playerTime < npcTime and square_rect.collidepoint(mouse_pos):
             print("You passed!")
             wins += 1
             totalplayerscore += 1
             botavg.append(npcTime)
-            playeravg.append(Time)
-        elif Time > npcTime or x != randletter:
+            playeravg.append(playerTime)
+        elif playerTime > npcTime or not square_rect.collidepoint(mouse_pos):
             print("You lost!")
             losses += 1
             totalplayerscore -= 1
             botavg.append(npcTime)
-            playeravg.append(Time)
-        elif Time == npcTime:  # Probably never happen
+            playeravg.append(playerTime)
+        elif playerTime == npcTime and square_rect.collidepoint(mouse_pos):  # Probably never happen
             print("Draw")
             draws += 1
             botavg.append(npcTime)
-            playeravg.append(Time)
+            playeravg.append(playerTime)
+
+        print(wins, losses, draws)
+
+    #        pygame.time.delay(1000)  # waiting one second
+
     playeravglen = (len(playeravg)) if len(playeravg) != 0 else 1
     playeravg = sum(playeravg)
     botavglen = (len(botavg)) if len(botavg) != 0 else 1
@@ -2334,14 +2387,6 @@ def Mine(role, setting):
     points = wins - losses
 
     netExp = points * Opponent.expYield if points >= 0 else 0
-
-    #    role.currExp += netExp
-    #    while role.currExp > role.LevelExp:
-    #        role.currLevel += 1 #Increase the level of the role
-    #        netExp = role.currExp - role.LevelExp
-    #        role.LevelExp = role.ExpLevelFunc(role.currLevel+1)
-    #        role.currExp = 0
-    #        role.currExp += netExp
 
     increaseExp(role, netExp)
 
@@ -2592,7 +2637,7 @@ def game():
                             display_surface.blit(text, textRect)
                             pygame.display.update()
                             pygame.time.delay(1000)
-                            displayImage("treasure_chest.png", height=400, p=0)
+                            displayImage("treasure_chest.png", p=1)
                             pygame.time.delay(2000)
 
                             text = font.render("You see a chest", True, black, white)
@@ -2627,7 +2672,7 @@ def game():
 
                         elif event.key == pygame.K_RETURN:
                             if optionNumber == 0:  # Yes
-                                displayImage("treasure_chest.png", height=400, p=0)
+                                displayImage("treasure_chest.png", p=1)
 
                                 text = font.render("You do not have the key!", True, black, white)
                                 textRect = text.get_rect()
