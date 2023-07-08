@@ -11,6 +11,7 @@ from io import BytesIO
 import requests
 from PIL import Image
 import os
+import numpy as np
 
 Quests = False
 Shop = False
@@ -1897,6 +1898,7 @@ white = (255, 255, 255)
 green = (0, 255, 0)
 blue = (0, 0, 128)
 black = (0, 0, 0)
+red = (255, 0, 0)
 yellow = (255, 255, 0)
 light_pink = (255, 182, 193)
 orange = (255, 165, 0)
@@ -1906,11 +1908,12 @@ display_surface = pygame.display.set_mode((X, Y))
 font = pygame.font.Font('freesansbold.ttf', 32)
 
 
-def pygame_print(text, loc, color=black, background_color=white):
+def pygame_print(text, loc, color=black, background_color=white, offset=0):
     text = font.render(text, True, color, background_color)
     textRect = text.get_rect()
-    textRect.center = (X // 2, loc)
+    textRect.center = (X // 2 + offset, loc)
     display_surface.blit(text, textRect)
+    return textRect
 
 
 def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = 40, height: float = 4,
@@ -2269,16 +2272,7 @@ def Stats(RoleHero):
                     return
 
 
-def Mine(role, setting):
-    display_surface.fill(white)
-    global time
-    map()
-    TheSetting = setting.name.upper()
-    message = "The objective of this game is to click on the item in time (To stop, type stop)!"
-    Opponent = NeutralNPC()
-    message += f" Get ready, you are about to face"
-
-    count = 0
+def long_pygame_print(message, count=0):
     temp = ""
     length = len(message)
     for i in range(length):
@@ -2288,6 +2282,25 @@ def Mine(role, setting):
             pygame_print(temp, 90 + count)
             temp = ""
             count += 40
+    return count
+
+
+def Mine(role, setting):
+    '''
+    Objective: Click on the object before
+    the NPC snatches the item (before npcTime elapses)
+    '''
+    # TODO: Make it so the rectangle is actually an item from the list of possible items that the user can mine
+
+    display_surface.fill(white)
+    global time, font
+    map()
+    TheSetting = setting.name.upper()
+    message = "The objective of this game is to click on the item in time (To stop, type stop)!"
+    Opponent = NeutralNPC()
+    message += " Get ready, you are about to face"
+
+    count = long_pygame_print(message)
 
     pygame_print(f"The {Opponent.role}", 90 + count)
 
@@ -2298,35 +2311,106 @@ def Mine(role, setting):
     playeravg = []
     botavg = []
     avgtime = []
+    MinedItems = {}
+    MinableItems = (
+    "Sands", "Rocks", "Cactuses", "Sand Pails", "Logs", "Cookies", "Silvers", "Golds", "Diamonds", "Emeralds",
+    "Golden Logs", "Golden Saplings")
+    MineItemsProbs = (
+    0.2657101102696958, 0.19928258270227184, 0.1328550551348479, 0.1328550551348479, 0.1328550551348479,
+    0.1328550551348479, 0.001328550551348479, 0.0009299853859439353, 0.0006642752756742395, 0.00039856516540454366,
+    0.0001328550551348479, 0.0001328550551348479)
+    MineImages = ("Assets/sand.png", "Assets/rock.png", "Assets/castus.png", "Assets/Sand Pail.png", "Assets/apple.png",
+                  "Assets/cookie.png", "Assets/silver.png", "Assets/gold.png", "Assets/apple.png", "Assets/emerald.png",
+                  "Assets/Golden Log.png", "Assets/apple.png")
+    MineImagesDict = {'Sands': 'Assets/sand.png', 'Rocks': 'Assets/rock.png', 'Cactuses': 'Assets/castus.png',
+                      'Sand Pails': 'Assets/Sand Pail.png', 'Logs': 'Assets/log.png', 'Cookies': 'Assets/cookie.png',
+                      'Silvers': 'Assets/silver.png', 'Golds': 'Assets/gold.png', 'Diamonds': 'Assets/apple.png',
+                      'Emeralds': 'Assets/emerald.png', 'Golden Logs': 'Assets/Golden Log.png',
+                      'Golden Saplings': 'Assets/sapling.png'}
     pygame.display.update()
-    while True:
-        start = time()
-        randletter = choice(ascii_letters)
-        x = input("Enter '{}': (Type 'stop' to stop) ".format(randletter))
-        if cS(x) == "STOP":
-            break
-        stop = time()
-        Time = (stop - start)
-        print("You entered it in {:.2f} seconds!".format(Time))
-        npcTime = 1 + (3 * random())
 
-        if Time < npcTime and x == randletter:
-            print("You passed!")
+    # Each iteration corresponds to a respawn of an object
+    # on the screen
+    while True:
+        display_surface.fill(white)
+
+        font = pygame.font.Font('freesansbold.ttf', 20)
+        pygame_print(f"Player Wins = {wins}", loc=100, offset=265)
+        pygame_print(f"{Opponent.role} Wins = {losses}", loc=140, offset=265)
+        pygame_print(f"Draws = {draws}", loc=180, offset=265)
+
+        font = pygame.font.Font('freesansbold.ttf', 26)
+        stop_rect = pygame_print("STOP", 36, background_color=red, offset=-100)
+        font = pygame.font.Font('freesansbold.ttf', 32)
+
+        pygame.draw.line(display_surface, black, (80, 75), (520, 75))  # top edge
+        pygame.draw.line(display_surface, black, (80, 675), (520, 675))  # bottom edge
+        pygame.draw.line(display_surface, black, (80, 75), (80, 675))  # left edge
+        pygame.draw.line(display_surface, black, (520, 75), (520, 675))  # right edge
+
+        pygame.display.update()
+        # Determine coordinates where object will appear on the screen
+
+        buffer_width = 40
+
+        rand_X, rand_Y = randint(80 + buffer_width, 520 - buffer_width), randint(75 + buffer_width, 675 - buffer_width)
+
+        square_rect = pygame.Rect(rand_X, rand_Y, buffer_width, buffer_width)
+
+        item = np.random.choice(MinableItems, p=MineItemsProbs)
+        image = pygame.image.load(MineImagesDict[item])
+        image = pygame.transform.scale(image, (buffer_width, buffer_width))
+
+        pygame.draw.rect(display_surface, white, square_rect)
+        display_surface.blit(image, square_rect.topleft)
+
+        pygame.display.update()
+        #
+        #        pygame.time.delay(1000)  # waiting one second
+
+        start = time()
+        npcTime = 1 + (1 * random())
+        botavg.append(npcTime)
+        breakFlag = False
+        playerTime = None
+        mouse_pos = None
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    playerTime = time() - start
+                    breakFlag = True
+                    break
+            if breakFlag:
+                break
+
+        if stop_rect.collidepoint(mouse_pos):
+            break
+
+        # If the player clicked faster than the NPC and clicked correctly,
+        # then the item is added to the inventory
+        elif playerTime < npcTime and square_rect.collidepoint(mouse_pos):
             wins += 1
             totalplayerscore += 1
             botavg.append(npcTime)
-            playeravg.append(Time)
-        elif Time > npcTime or x != randletter:
-            print("You lost!")
+            playeravg.append(playerTime)
+            if item in MinedItems:
+                MinedItems[item] += 1
+            else:
+                MinedItems[item] = 1
+        elif playerTime > npcTime or not square_rect.collidepoint(mouse_pos):
             losses += 1
             totalplayerscore -= 1
             botavg.append(npcTime)
-            playeravg.append(Time)
-        elif Time == npcTime:  # Probably never happen
-            print("Draw")
+            playeravg.append(playerTime)
+        elif playerTime == npcTime and square_rect.collidepoint(mouse_pos):  # Probably never happen
             draws += 1
             botavg.append(npcTime)
-            playeravg.append(Time)
+            playeravg.append(playerTime)
+
+    #        pygame.time.delay(1000)  # waiting one second
+
     playeravglen = (len(playeravg)) if len(playeravg) != 0 else 1
     playeravg = sum(playeravg)
     botavglen = (len(botavg)) if len(botavg) != 0 else 1
@@ -2335,18 +2419,14 @@ def Mine(role, setting):
 
     netExp = points * Opponent.expYield if points >= 0 else 0
 
-    #    role.currExp += netExp
-    #    while role.currExp > role.LevelExp:
-    #        role.currLevel += 1 #Increase the level of the role
-    #        netExp = role.currExp - role.LevelExp
-    #        role.LevelExp = role.ExpLevelFunc(role.currLevel+1)
-    #        role.currExp = 0
-    #        role.currExp += netExp
-
     increaseExp(role, netExp)
+    display_surface.fill(white)
 
     if playeravg / playeravglen < botavg / botavglen:
-        print(f"You get 5 extra resources because your avg was better than the {Opponent.role} {Opponent.picture}!")
+        pygame_print("You get 5 extra resources", 90)
+        pygame_print("because your avg was better", 130)
+        pygame_print(f"than the {Opponent.role}", 170)
+
         points += 5
 
     #        cookie              2-3     1-.1
@@ -2362,57 +2442,39 @@ def Mine(role, setting):
     #        golden logs         8       .000001
     #        sand pails          5       .001
 
-    if TheSetting == "BEACH":
-        role.numInv["Sands"]["Number"] += points
+    for item in MinedItems:
+        role.numInv[item]["Number"] += MinedItems[item]
 
-    #    3 <= x <= 5 #x is between 3 and 5 inclusive
-    #    3 < x < 5 #x is between 3 and 5 exclusive
-    elif TheSetting == "FOREST":
-        for i in range(points):
-            Temprand = randint(1, 1e8)
-            if Temprand == 1e8:
-                role.numInv["Golden Saplings"]["Number"] += 1
-            elif Temprand == 1:
-                role.numInv["Golden Logs"]["Number"] += 1
-            elif 10000 <= Temprand <= 100000:
-                role.numInv["Logs"]["Number"] += 1
+    pygame_print("The player average is {:.2f} seconds".format(playeravg / playeravglen), loc=210)
+    pygame_print("The {} average is {:.2f} seconds".format(Opponent.role, botavg / botavglen), loc=250)
+    pygame_print("You got {} resources in total!".format(points), loc=290)
+    pygame_print("You won {} games!".format(wins), loc=330)
+    pygame_print("You lost {} games!".format(losses), loc=370)
+    pygame_print("{} is the number of games that drawed!".format(draws), loc=410)
 
-    elif TheSetting == "HOUSE":
-        for i in range(points):
-            Temprand = randint(1, 1000)
-            if 1 <= Temprand <= 5:
-                role.numInv["Cookies"]["Number"] += 1
+    pygame.display.update()
+    while True:
+        for event in pygame.event.get():  # update the option number if necessary
+            if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                if event.key == pygame.K_RETURN:
+                    return points
 
-    elif TheSetting == "MOUNTAIN":
-        for i in range(points):
-            Temprand = randint(1, 1e7)
-            if 1 <= Temprand <= 1000:
-                role.numInv["Silvers"]["Number"] += 1
-            elif 1001 <= Temprand <= 1100:
-                role.numInv["Golds"]["Number"] += 1
-            elif Temprand == 1101:
-                role.numInv["Diamonds"]["Number"] += 1
-            elif Temprand == 1102:
-                role.numInv["Emeralds"]["Number"] += 1
-                # 10000
-            elif 1103 <= Temprand <= 101102:
-                role.numInv["Rocks"]["Number"] += 1
 
-    elif TheSetting == "DESERT":
-        role.numInv["Sands"]["Number"] += points
-        for i in range(points):
-            Temprand = randint(1, 1000)
-            if Temprand == 1:
-                role.numInv["Cactuses"]["Number"] += 1
+def printInventory(role):
+    currentInventory = []
+    global font, white, black
+    display_surface.fill(white)
 
-    print("The player average is {:.2f} seconds".format(playeravg / playeravglen))
-    print("The {} {} average is {:.2f} seconds".format(Opponent.role, Opponent.picture, botavg / botavglen))
-    print("You got {} resources in total!".format(points))
-    print("You won {} games!".format(wins))
-    print("You lost {} games!".format(losses))
-    print("{} is the number of games that drawed!".format(draws))
+    # TODO: iterate over role.stringInv and print out Name, picture and number (use the C++ printInventory function as template. Maybe: Use PyGame Table Class?
+    # https://pygame-menu.readthedocs.io/en/4.4.2/_source/widgets_table.html
 
-    return points
+    pygame.display.update()
+    while True:
+        for event in pygame.event.get():  # update the option number if necessary
+            if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                if event.key == pygame.K_RETURN:
+                    print("exiting menu")
+                    return
 
 
 def Menu(role, setting):
@@ -2592,7 +2654,7 @@ def game():
                             display_surface.blit(text, textRect)
                             pygame.display.update()
                             pygame.time.delay(1000)
-                            displayImage("treasure_chest.png", height=400, p=0)
+                            displayImage("treasure_chest.png", p=1)
                             pygame.time.delay(2000)
 
                             text = font.render("You see a chest", True, black, white)
@@ -2627,7 +2689,7 @@ def game():
 
                         elif event.key == pygame.K_RETURN:
                             if optionNumber == 0:  # Yes
-                                displayImage("treasure_chest.png", height=400, p=0)
+                                displayImage("treasure_chest.png", p=1)
 
                                 text = font.render("You do not have the key!", True, black, white)
                                 textRect = text.get_rect()
