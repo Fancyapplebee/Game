@@ -4,14 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="Update 7/8&#10;modified pygame_print&#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
-      <change afterPath="$PROJECT_DIR$/Game/Assets/diamond.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Game/Assets/log.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Game/Assets/sapling.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Game/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Game.py" afterDir="false" />
-    </list>
+    <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="Update 7/2&#10;part 2&#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -53,10 +46,6 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectColorInfo">{
-  &quot;customColor&quot;: &quot;&quot;,
-  &quot;associatedIndex&quot;: 5
-}</component>
   <component name="ProjectId" id="2Bjr1VHSEQj3DAkhikQdYCqUBuF" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
@@ -77,7 +66,7 @@
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -161,18 +150,6 @@
       <workItem from="1687550564953" duration="4001000" />
       <workItem from="1688278506417" duration="6142000" />
       <workItem from="1688317003820" duration="679000" />
-      <workItem from="1688673530336" duration="1207000" />
-      <workItem from="1688682142579" duration="600000" />
-      <workItem from="1688798664123" duration="21000" />
-      <workItem from="1688798698079" duration="1410000" />
-      <workItem from="1688835970457" duration="344000" />
-      <workItem from="1691802286031" duration="1415000" />
-      <workItem from="1691803825844" duration="834000" />
-      <workItem from="1691804947354" duration="7368000" />
-      <workItem from="1691847615113" duration="6627000" />
-      <workItem from="1692048577246" duration="895000" />
-      <workItem from="1692459736837" duration="635000" />
-      <workItem from="1692460441655" duration="1651000" />
     </task>
     <task id="LOCAL-00001" summary="it works">
       <created>1657430290327</created>
@@ -302,15 +279,7 @@
       <option name="project" value="LOCAL" />
       <updated>1688317494934</updated>
     </task>
-    <task id="LOCAL-00019" summary="Update 7/8&#10;modified pygame_print&#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
-      <option name="closed" value="true" />
-      <created>1688836064678</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1688836064678</updated>
-    </task>
-    <option name="localTasksCounter" value="20" />
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -354,11 +323,10 @@
     <MESSAGE value="Update 6/17&#10;Autoscale fully implemented in displayimage&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <MESSAGE value="Update 7/2&#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <MESSAGE value="Update 7/2&#10;part 2&#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
-    <MESSAGE value="Update 7/8&#10;modified pygame_print&#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update 7/8&#10;modified pygame_print&#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update 7/2&#10;part 2&#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Game$Game.coverage" NAME="Game Coverage Results" MODIFIED="1691813445147" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
     <SUITE FILE_PATH="coverage/Game$Game_.coverage" NAME="Game` Coverage Results" MODIFIED="1660411554438" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
+    <SUITE FILE_PATH="coverage/Game$Game.coverage" NAME="Game Coverage Results" MODIFIED="1688317681373" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
   </component>
 </project>
