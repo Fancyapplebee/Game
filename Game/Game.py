@@ -2324,7 +2324,7 @@ def Mine(role, setting):
                   "Assets/Golden Log.png", "Assets/apple.png")
     MineImagesDict = {'Sands': 'Assets/sand.png', 'Rocks': 'Assets/rock.png', 'Cactuses': 'Assets/castus.png',
                       'Sand Pails': 'Assets/Sand Pail.png', 'Logs': 'Assets/log.png', 'Cookies': 'Assets/cookie.png',
-                      'Silvers': 'Assets/silver.png', 'Golds': 'Assets/gold.png', 'Diamonds': 'Assets/apple.png',
+                      'Silvers': 'Assets/silver.png', 'Golds': 'Assets/gold.png', 'Diamonds': 'Assets/diamond.png',
                       'Emeralds': 'Assets/emerald.png', 'Golden Logs': 'Assets/Golden Log.png',
                       'Golden Saplings': 'Assets/sapling.png'}
     pygame.display.update()
