@@ -617,87 +617,87 @@ cppyy.cppdef(
         stringInv =
         {
                 {
-                        "Cookies",{{"Name", "Cookies"}, {"Picture", "🍪"}, {"Description", "Something to eat! Increase health by 10% "}, {"Type", "Healing"}}
+                        "Cookies",{{"Name", "Cookies"}, {"Picture", "Game/Assets/cookie.png"}, {"Description", "Something to eat! Increase health by 10% "}, {"Type", "Healing"}}
                 },
 
                 {
-                        "Logs",{{"Name", "Logs"}, {"Picture", "🪵"}, {"Description", "Something you can use in the shop for crafting things or to sell "}, {"Type", "Misc"}}
+                        "Logs",{{"Name", "Logs"}, {"Picture", "Game/Assets/log.png"}, {"Description", "Something you can use in the shop for crafting things or to sell "}, {"Type", "Misc"}}
                 },
 
                 {
-                        "Sands",{{"Name", "Sands"}, {"Picture", "🟫"}, {"Description", "Something you can smelt or sell! "}, {"Type", "Misc"}}
+                        "Sands",{{"Name", "Sands"}, {"Picture", "Game/Assets/sand.png"}, {"Description", "Something you can smelt or sell! "}, {"Type", "Misc"}}
                 },
 
                 {
-                        "Rocks",{{"Name", "Rocks"}, {"Picture", "🪨"}, {"Description", "Something you can use in the shop for crafting things, selling, or refining "}, {"Type", "Misc"}}
+                        "Rocks",{{"Name", "Rocks"}, {"Picture", "Game/Assets/rock.png"}, {"Description", "Something you can use in the shop for crafting things, selling, or refining "}, {"Type", "Misc"}}
                 },
 
                 {
-                        "Silvers",{{"Name", "Iron Ore"}, {"Picture", "🪙"}, {"Description", "Something you can use in the shop for crafting things, selling, or fusing "}, {"Type", "Misc"}}
+                        "Silvers",{{"Name", "Iron Ore"}, {"Picture", "Game/Assets/silver.png"}, {"Description", "Something you can use in the shop for crafting things, selling, or fusing "}, {"Type", "Misc"}}
                 },
 
                 {
-                        "Golds",{{"Name", "Golds"}, {"Picture", "🟨"}, {"Description", "Something you can use in the shop for crafting things, selling, or fusing "}, {"Type", "Misc"}}
+                        "Golds",{{"Name", "Golds"}, {"Picture", "Game/Assets/gold.png"}, {"Description", "Something you can use in the shop for crafting things, selling, or fusing "}, {"Type", "Misc"}}
                 },
 
                 {
-                        "Diamonds",{{"Name", "Diamonds"}, {"Picture", "💎"}, {"Description", "Something you can use in the shop for crafting things, selling, or fusing "}, {"Type", "Misc"}}
+                        "Diamonds",{{"Name", "Diamonds"}, {"Picture", "Game/Assets/diamond.png"}, {"Description", "Something you can use in the shop for crafting things, selling, or fusing "}, {"Type", "Misc"}}
                 },
 
                 {
-                        "Emeralds",{{"Name", "Emeralds"}, {"Picture", "🟩"}, {"Description", "Something you can use in the shop for crafting things, selling, or fusing "}, {"Type", "Misc"}}
+                        "Emeralds",{{"Name", "Emeralds"}, {"Picture", "Game/Assets/emerald.png"}, {"Description", "Something you can use in the shop for crafting things, selling, or fusing "}, {"Type", "Misc"}}
                 },
 
                 {
-                        "Cactuses",{{"Name", "Cactuses"}, {"Picture", "🌵"}, {"Description", "Something to sell or turn into pointy armour! "}, {"Type", "Misc"}}
+                        "Cactuses",{{"Name", "Cactuses"}, {"Picture", "Game/Assets/cactus.png"}, {"Description", "Something to sell or turn into pointy armour! "}, {"Type", "Misc"}}
                 },
 
                 {
-                        "Golden Saplings",{{"Name", "Golden Saplings"}, {"Picture", "🌲"}, {"Description", "Grows into a golden tree! "}, {"Type", "Misc"}}
+                        "Golden Saplings",{{"Name", "Golden Saplings"}, {"Picture", "Game/Assets/sapling.png"}, {"Description", "Grows into a golden tree! "}, {"Type", "Misc"}}
                 },
 
                 {
-                        "Golden Logs",{{"Name", "Golden Logs"}, {"Picture", "🌲"}, {"Description", "The most powerful wood, when combined with weapons +10 to all stats! "}, {"Type", "Misc"}}
+                        "Golden Logs",{{"Name", "Golden Logs"}, {"Picture", "Game/Assets/Golden Log.png"}, {"Description", "The most powerful wood, when combined with weapons +10 to all stats! "}, {"Type", "Misc"}}
                 },
 
                 {
-                        "Sand Pails",{{"Name", "Sand Pails"}, {"Picture", "🪣"}, {"Description", "A bucket, maybe you can plant something in here! "}, {"Type", "Misc"}}
+                        "Sand Pails",{{"Name", "Sand Pails"}, {"Picture", "Game/Assets/Sand Pail.png"}, {"Description", "A bucket, maybe you can plant something in here! "}, {"Type", "Misc"}}
                 },
 
                 {
-                        "Potion",{{"Name", "Potion"}, {"Picture", "🧪"}, {"Description", "A potion, maybe you can drink it (Increases health by 20)"}, {"Type", "Healing"}}
+                        "Potion",{{"Name", "Potion"}, {"Picture", "Game/Assets/Game/Assets/potion.png"}, {"Description", "A potion, maybe you can drink it (Increases health by 20)"}, {"Type", "Healing"}}
                 },
 
                 {
-                        "Apple",{{"Name", "Apple"}, {"Picture", "🍎"}, {"Description", "An apple, maybe you can eat it(Increases health by 10)! "}, {"Type", "Healing"}}
+                        "Apple",{{"Name", "Apple"}, {"Picture", "Game/Assets/apple.png"}, {"Description", "An apple, maybe you can eat it(Increases health by 10)! "}, {"Type", "Healing"}}
                 },
 
                 {
-                        "Key 1",{{"Name", "Key 1"}, {"Picture", "🔑"}, {"Description", "A key, maybe you can use it to open something! "}, {"Type", "Key"}}
+                        "Key 1",{{"Name", "Key 1"}, {"Picture", "Game/Assets/key.png"}, {"Description", "A key, maybe you can use it to open something! "}, {"Type", "Key"}}
                 },
 
                 {
-                        "Knife",{{"Name", "Knife"}, {"Picture", "🔪"}, {"Description", "A knife, maybe you can use it to attack enemies! "}, {"Type", "Weapon"}, {"Construction", "5 Rocks, 2 Logs, 1 Silvers"}}
+                        "Knife",{{"Name", "Knife"}, {"Picture", "Game/Assets/knife.png"}, {"Description", "A knife, maybe you can use it to attack enemies! "}, {"Type", "Weapon"}, {"Construction", "5 Rocks, 2 Logs, 1 Silvers"}}
                 },
 
                 {
-                        "Parrot",{{"Name", "Parrot"}, {"Picture", "🦜"}, {"Description", "A parrot, does passive damage to enemies! "}, {"Type", "Misc"}, {"Construction", "5 Apple, 3 Logs, 1 Potion"}}
+                        "Parrot",{{"Name", "Parrot"}, {"Picture", "Game/Assets/parrot.png"}, {"Description", "A parrot, does passive damage to enemies! "}, {"Type", "Misc"}, {"Construction", "5 Apple, 3 Logs, 1 Potion"}}
                 },
 
                 {
-                        "Ring",{{"Name", "Ring"}, {"Picture", "💍"}, {"Description", "A ring, increases your stats! "}, {"Type", "Misc"}, {"Construction", "5 Diamonds, 3 Golds, 1 Silvers"}}
+                        "Ring",{{"Name", "Ring"}, {"Picture", "Game/Assets/ring.png"}, {"Description", "A ring, increases your stats! "}, {"Type", "Misc"}, {"Construction", "5 Diamonds, 3 Golds, 1 Silvers"}}
                 },
 
                 {
-                        "Cape",{{"Name", "Cape"}, {"Picture", "🧥"}, {"Description", "A cape, increases your stats! "}, {"Type", "Misc"}, {"Construction", "5 Emeralds, 20 Sands"}}
+                        "Cape",{{"Name", "Cape"}, {"Picture", "Game/Assets/cape.png"}, {"Description", "A cape, increases your stats! "}, {"Type", "Misc"}, {"Construction", "5 Emeralds, 20 Sands"}}
                 },
 
                 {
-                        "Armor",{{"Name", "Armor"}, {"Picture", "🛡️"}, {"Description", "Armor, increases your stats! "}, {"Type", "Misc"}, {"Construction", "20 Rocks"}}
+                        "Armor",{{"Name", "Armor"}, {"Picture", "armour.png"}, {"Description", "Armor, increases your stats! "}, {"Type", "Misc"}, {"Construction", "20 Rocks"}}
                 },
 
                 {
-                        "Water Guns",{{"Name", "Water Guns"}, {"Picture", "🔫"}, {"Description", "Water Gun, maybe you can use it to attack enemies! "}, {"Type", "Misc"}, {"Construction", "1 Sands, 1 Potion"}}
+                        "Water Guns",{{"Name", "Water Guns"}, {"Picture", "Game/Assets/water gun.png"}, {"Description", "Water Gun, maybe you can use it to attack enemies! "}, {"Type", "Misc"}, {"Construction", "1 Sands, 1 Potion"}}
                 }
         };
 
@@ -1908,7 +1908,7 @@ display_surface = pygame.display.set_mode((X, Y))
 font = pygame.font.Font('freesansbold.ttf', 32)
 
 
-def pygame_print(text, loc, color=black, background_color=white, offset=0):
+def pygame_print(text, loc=Y // 2, color=black, background_color=white, offset=0):
     text = font.render(text, True, color, background_color)
     textRect = text.get_rect()
     textRect.center = (X // 2 + offset, loc)
@@ -2272,17 +2272,27 @@ def Stats(RoleHero):
                     return
 
 
-def long_pygame_print(message, count=0):
+# prints a long pygame message
+def long_pygame_print(message, count=0, line_break=24, color=black, background_color=white, offset=0):
     temp = ""
     length = len(message)
     for i in range(length):
         temp += message[i]
         # displaying a new line every 24 characters
-        if ((i + 1) % 24 == 0 and i != 0) or (i == length - 1):
-            pygame_print(temp, 90 + count)
+        if ((i + 1) % line_break == 0 and i != 0) or (i == length - 1):
+            pygame_print(temp, loc=90 + count, color=color, background_color=background_color, offset=offset)
             temp = ""
             count += 40
     return count
+
+
+def AddStop(text="STOP", offset=0):
+    global font
+    font = pygame.font.Font('freesansbold.ttf', 26)
+    stop_rect = pygame_print(text, 36, background_color=red, offset=offset)
+    font = pygame.font.Font('freesansbold.ttf', 32)
+
+    return stop_rect
 
 
 def Mine(role, setting):
@@ -2313,16 +2323,13 @@ def Mine(role, setting):
     avgtime = []
     MinedItems = {}
     MinableItems = (
-    "Sands", "Rocks", "Cactuses", "Sand Pails", "Logs", "Cookies", "Silvers", "Golds", "Diamonds", "Emeralds",
-    "Golden Logs", "Golden Saplings")
+        "Sands", "Rocks", "Cactuses", "Sand Pails", "Logs", "Cookies", "Silvers", "Golds", "Diamonds", "Emeralds",
+        "Golden Logs", "Golden Saplings")
     MineItemsProbs = (
-    0.2657101102696958, 0.19928258270227184, 0.1328550551348479, 0.1328550551348479, 0.1328550551348479,
-    0.1328550551348479, 0.001328550551348479, 0.0009299853859439353, 0.0006642752756742395, 0.00039856516540454366,
-    0.0001328550551348479, 0.0001328550551348479)
-    MineImages = ("Assets/sand.png", "Assets/rock.png", "Assets/castus.png", "Assets/Sand Pail.png", "Assets/apple.png",
-                  "Assets/cookie.png", "Assets/silver.png", "Assets/gold.png", "Assets/apple.png", "Assets/emerald.png",
-                  "Assets/Golden Log.png", "Assets/apple.png")
-    MineImagesDict = {'Sands': 'Assets/sand.png', 'Rocks': 'Assets/rock.png', 'Cactuses': 'Assets/castus.png',
+        0.2657101102696958, 0.19928258270227184, 0.1328550551348479, 0.1328550551348479, 0.1328550551348479,
+        0.1328550551348479, 0.001328550551348479, 0.0009299853859439353, 0.0006642752756742395, 0.00039856516540454366,
+        0.0001328550551348479, 0.0001328550551348479)
+    MineImagesDict = {'Sands': 'Assets/sand.png', 'Rocks': 'Assets/rock.png', 'Cactuses': 'Assets/cactus.png',
                       'Sand Pails': 'Assets/Sand Pail.png', 'Logs': 'Assets/log.png', 'Cookies': 'Assets/cookie.png',
                       'Silvers': 'Assets/silver.png', 'Golds': 'Assets/gold.png', 'Diamonds': 'Assets/diamond.png',
                       'Emeralds': 'Assets/emerald.png', 'Golden Logs': 'Assets/Golden Log.png',
@@ -2339,9 +2346,7 @@ def Mine(role, setting):
         pygame_print(f"{Opponent.role} Wins = {losses}", loc=140, offset=265)
         pygame_print(f"Draws = {draws}", loc=180, offset=265)
 
-        font = pygame.font.Font('freesansbold.ttf', 26)
-        stop_rect = pygame_print("STOP", 36, background_color=red, offset=-100)
-        font = pygame.font.Font('freesansbold.ttf', 32)
+        stop_rect = AddStop(offset=-100)
 
         pygame.draw.line(display_surface, black, (80, 75), (520, 75))  # top edge
         pygame.draw.line(display_surface, black, (80, 675), (520, 675))  # bottom edge
@@ -2460,20 +2465,106 @@ def Mine(role, setting):
                     return points
 
 
+def printItem(role, item_name):
+    global font, white, black, orange
+    display_surface.fill(white)  # clear the screen
+
+    #    pygame_print(f"{item}: {currentInventory[item]}", loc = line_count, color = orange if idx == optionNumber else black)
+    #    print(role.useInv[item_name]["Use"]) #"Use" button
+    #
+    #    print(role.numInv[item_name]["Number"]) #The amount of the item
+    #    print(role.numInv[item_name]["BuyValue"]) #The buy value of the item
+    #    print(role.numInv[item_name]["SellValue"]) #The sell value of the item
+    #    print(role.numInv[item_name]["QuestLevel"]) #The quest level at which this item is available
+    #
+    #    print(role.stringInv[item_name]["Name"]) #The name of the item
+    #    print(role.stringInv[item_name]["Picture"]) #The picture of the item
+    #    print(role.stringInv[item_name]["Description"]) #The description of the item
+    #    print(role.stringInv[item_name]["Type"]) #The type of the item (e.g. healing, trading, etc.)
+
+    square_rect = pygame.Rect(40, 100, 320, 235)  # left, top, width, height
+
+    image = pygame.image.load(
+        "Assets/Sand Pail.png")  # TODO: change "Assets/Sand Pail.png" to role.stringInv[item_name]["Picture"]
+    image = pygame.transform.scale(image, (320, 235))
+
+    pygame.draw.rect(display_surface, white, square_rect)
+    display_surface.blit(image, square_rect.topleft)
+
+    pygame_print(temp := f"Name: {item_name}", offset=-200, loc=380)
+    pygame_print(f"Type: {role.stringInv[item_name]['Type']}", offset=-200, loc=440)
+    long_pygame_print(f"Description: {role.stringInv[item_name]['Description']}", offset=-200, line_break=len(temp))
+
+    pygame.display.update()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    return
+
+
+#    ...
+
+
 def printInventory(role):
-    currentInventory = []
-    global font, white, black
+    global font, white, black, orange
     display_surface.fill(white)
 
     # TODO: iterate over role.stringInv and print out Name, picture and number (use the C++ printInventory function as template. Maybe: Use PyGame Table Class?
     # https://pygame-menu.readthedocs.io/en/4.4.2/_source/widgets_table.html
+    line_count = 80
+    currentInventory = {}
+    for item in role.numInv:
+        for attr in item.second:
+            if cppStringConvert(attr.first) == "Number" and attr.second > 0:
+                item_name = cppStringConvert(item.first)
+                pygame_print(f"{item_name}: {attr.second}", loc=line_count, color=orange if line_count == 80 else black)
+                currentInventory[item_name] = attr.second
+                line_count += 40
 
+    num_items = (line_count - 80) // 40
+
+    # If the user doesn't have any items, then we need to handle this differently.
+    if num_items == 0:
+        pygame_print("You don't have any items.", )
+        pygame.display.update()
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        return
+
+    currentInventoryList = list(currentInventory.keys())
+    line_count = 80
+    stop_rect = AddStop(text="EXIT", offset=0)
+    optionNumber = 0
     pygame.display.update()
+
     while True:
+        display_surface.fill(white)
+        line_count = 80
+        for idx, item in enumerate(currentInventory):
+            pygame_print(f"{item}: {currentInventory[item]}", loc=line_count,
+                         color=orange if idx == optionNumber else black)
+            line_count += 40
+
+        stop_rect = AddStop(text="EXIT", offset=0)
+        pygame.display.update()
+
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
-                if event.key == pygame.K_RETURN:
-                    print("exiting menu")
+                # TODO: if the user presses enter, print out the corresponding item
+                if event.key == pygame.K_DOWN:
+                    optionNumber = optionNumber + 1 if optionNumber != num_items - 1 else 0
+                elif event.key == pygame.K_UP:
+                    optionNumber = optionNumber - 1 if optionNumber != 0 else num_items - 1
+                elif event.key == pygame.K_RETURN:
+                    print(currentInventoryList[optionNumber])  # item that the user is hovering on
+                    printItem(role, currentInventoryList[optionNumber])
+            elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
+                mouse_pos = pygame.mouse.get_pos()
+                if stop_rect.collidepoint(mouse_pos):
                     return
 
 
@@ -2542,7 +2633,7 @@ def Menu(role, setting):
                         elif optionNumber == 2:  # Mine
                             Mine(role, setting)
                         elif optionNumber == 3:  # Inventory
-                            pass
+                            printInventory(role)
                         elif optionNumber == 4:  # Shop
                             pass
                         elif optionNumber == 5:  # Quests
