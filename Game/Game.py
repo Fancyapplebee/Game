@@ -629,7 +629,7 @@ cppyy.cppdef(
                 },
 
                 {
-                        "Rocks",{{"Name", "Rocks"}, {"Picture", "/Assets/rock.png"}, {"Description", "Something you can use in the shop for crafting things, selling, or refining "}, {"Type", "Misc"}}
+                        "Rocks",{{"Name", "Rocks"}, {"Picture", "Assets/rock.png"}, {"Description", "Something you can use in the shop for crafting things, selling, or refining "}, {"Type", "Misc"}}
                 },
 
                 {
@@ -665,7 +665,7 @@ cppyy.cppdef(
                 },
 
                 {
-                        "Potion",{{"Name", "Potion"}, {"Picture", "Assets/Game/Assets/potion.png"}, {"Description", "A potion, maybe you can drink it (Increases health by 20)"}, {"Type", "Healing"}}
+                        "Potion",{{"Name", "Potion"}, {"Picture", "Assets/Assets/potion.png"}, {"Description", "A potion, maybe you can drink it (Increases health by 20)"}, {"Type", "Healing"}}
                 },
 
                 {
@@ -1927,7 +1927,7 @@ def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: i
         count += inc
 
 
-# all images are in /Game/Game/Assets
+# all images are in Game/Game/Assets
 def displayImage(rsp, height: bool = False, p: int = 0):
     rsp = os.getcwd() + "/Assets/" + rsp
     pilimage = Image.open(rsp).convert("RGBA")
@@ -2273,23 +2273,26 @@ def Stats(RoleHero):
 
 
 # prints a long pygame message
-def long_pygame_print(message, count=0, line_break=24, color=black, background_color=white, offset=0):
+def long_pygame_print(message, count=0, line_break=24, color=black, background_color=white, offset=0, start_height=90):
     temp = ""
-    length = len(message)
-    for i in range(length):
-        temp += message[i]
-        # displaying a new line every 24 characters
-        if ((i + 1) % line_break == 0 and i != 0) or (i == length - 1):
-            pygame_print(temp, loc=90 + count, color=color, background_color=background_color, offset=offset)
-            temp = ""
+    # i is for indexing the string message
+    message = message.split()
+    for token in message:
+        if len(temp + token) + 1 >= line_break:
+            pygame_print(temp, loc=start_height + count, color=color, background_color=background_color, offset=offset)
+            temp = token + " "
             count += 40
+        else:
+            temp += token + " "
+
+    pygame_print(temp, loc=start_height + count, color=color, background_color=background_color, offset=offset)
     return count
 
 
-def AddStop(text="STOP", offset=0):
+def AddButton(text="STOP", offset=0, loc=36, background_color=red):
     global font
     font = pygame.font.Font('freesansbold.ttf', 26)
-    stop_rect = pygame_print(text, 36, background_color=red, offset=offset)
+    stop_rect = pygame_print(text, loc=loc, background_color=background_color, offset=offset)
     font = pygame.font.Font('freesansbold.ttf', 32)
 
     return stop_rect
@@ -2346,7 +2349,7 @@ def Mine(role, setting):
         pygame_print(f"{Opponent.role} Wins = {losses}", loc=140, offset=265)
         pygame_print(f"Draws = {draws}", loc=180, offset=265)
 
-        stop_rect = AddStop(offset=-100)
+        stop_rect = AddButton(offset=-100)
 
         pygame.draw.line(display_surface, black, (80, 75), (520, 75))  # top edge
         pygame.draw.line(display_surface, black, (80, 675), (520, 675))  # bottom edge
@@ -2483,17 +2486,23 @@ def printItem(role, item_name):
     #    print(role.stringInv[item_name]["Type"]) #The type of the item (e.g. healing, trading, etc.)
 
     square_rect = pygame.Rect(40, 100, 320, 235)  # left, top, width, height
-
-    image = pygame.image.load(
-        "Assets/Sand Pail.png")  # TODO: change "Assets/Sand Pail.png" to role.stringInv[item_name]["Picture"]
+    image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
     image = pygame.transform.scale(image, (320, 235))
 
     pygame.draw.rect(display_surface, white, square_rect)
     display_surface.blit(image, square_rect.topleft)
 
-    pygame_print(temp := f"Name: {item_name}", offset=-200, loc=380)
-    pygame_print(f"Type: {role.stringInv[item_name]['Type']}", offset=-200, loc=440)
-    long_pygame_print(f"Description: {role.stringInv[item_name]['Description']}", offset=-200, line_break=len(temp))
+    pygame_print(f"Name: {item_name}", offset=-200, loc=380)
+    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset=-200, loc=440)
+    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset=-200,
+                      line_break=23, start_height=550)
+
+    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=200, loc=200)
+    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset=200, loc=260)
+    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset=200, loc=320)
+    pygame_print(f"Quest Level: {role.numInv[item_name]['QuestLevel']}", offset=200, loc=380)
+
+    rect = AddButton(text="Use", offset=200, loc=550, background_color=orange)
 
     pygame.display.update()
 
@@ -2502,6 +2511,11 @@ def printItem(role, item_name):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     return
+            elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
+                mouse_pos = pygame.mouse.get_pos()
+                if rect.collidepoint(mouse_pos):
+                    print("Using the item.")
+                    role.useInv[item_name]["Use"]()
 
 
 #    ...
@@ -2537,7 +2551,7 @@ def printInventory(role):
 
     currentInventoryList = list(currentInventory.keys())
     line_count = 80
-    stop_rect = AddStop(text="EXIT", offset=0)
+    stop_rect = AddButton(text="EXIT", offset=0)
     optionNumber = 0
     pygame.display.update()
 
@@ -2549,12 +2563,11 @@ def printInventory(role):
                          color=orange if idx == optionNumber else black)
             line_count += 40
 
-        stop_rect = AddStop(text="EXIT", offset=0)
+        stop_rect = AddButton(text="EXIT", offset=0)
         pygame.display.update()
 
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
-                # TODO: if the user presses enter, print out the corresponding item
                 if event.key == pygame.K_DOWN:
                     optionNumber = optionNumber + 1 if optionNumber != num_items - 1 else 0
                 elif event.key == pygame.K_UP:
