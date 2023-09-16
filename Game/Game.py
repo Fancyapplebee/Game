@@ -800,6 +800,10 @@ cppyy.cppdef(
                                        {
                                            health = basehealth;
                                        }
+                                       if (numInv["Cookies"]["Number"] > 0)
+                                       {
+                                           numInv["Cookies"]["Number"]--;
+                                       }
                                    }
                            }}
             },
@@ -808,6 +812,10 @@ cppyy.cppdef(
                 "Logs",{{"Use",
                                    [&]()
                                    {
+                                       if (numInv["Logs"]["Number"] > 0)
+                                       {
+                                           numInv["Logs"]["Number"]--;
+                                       }
                                        return;
                                    }
                            }}
@@ -817,7 +825,11 @@ cppyy.cppdef(
                 "Key 1",{{"Use",
                                    [&]()
                                    {
-                                       return;
+                                        if (numInv["Key 1"]["Number"] > 0)
+                                        {
+                                            numInv["Key 1"]["Number"]--;
+                                        }
+                                        return;
                                    }
                            }}
             },
@@ -826,7 +838,11 @@ cppyy.cppdef(
                 "Sands",{{"Use",
                                    [&]()
                                    {
-                                       return;
+                                        if (numInv["Sands"]["Number"] > 0)
+                                        {
+                                            numInv["Sands"]["Number"]--;
+                                        }
+                                        return;
                                    }
                            }}
             },
@@ -835,7 +851,11 @@ cppyy.cppdef(
                 "Rocks",{{"Use",
                                    [&]()
                                    {
-                                       return;
+                                        if (numInv["Rocks"]["Number"] > 0)
+                                        {
+                                            numInv["Rocks"]["Number"]--;
+                                        }
+                                        return;
                                    }
                            }}
             },
@@ -844,6 +864,10 @@ cppyy.cppdef(
                 "Silvers",{{"Use",
                                    [&]()
                                    {
+                                        if (numInv["Silvers"]["Number"] > 0)
+                                        {
+                                            numInv["Silvers"]["Number"]--;
+                                        }
                                        return;
                                    }
                            }}
@@ -853,6 +877,10 @@ cppyy.cppdef(
                 "Golds",{{"Use",
                                    [&]()
                                    {
+                                        if (numInv["Golds"]["Number"] > 0)
+                                        {
+                                            numInv["Golds"]["Number"]--;
+                                        }
                                        return;
                                    }
                            }}
@@ -862,6 +890,10 @@ cppyy.cppdef(
                 "Diamonds",{{"Use",
                                    [&]()
                                    {
+                                        if (numInv["Diamonds"]["Number"] > 0)
+                                        {
+                                            numInv["Diamonds"]["Number"]--;
+                                        }
                                        return;
                                    }
                            }}
@@ -871,7 +903,11 @@ cppyy.cppdef(
                 "Emeralds",{{"Use",
                                    [&]()
                                    {
-                                       return;
+                                        if (numInv["Emeralds"]["Number"] > 0)
+                                        {
+                                            numInv["Emeralds"]["Number"]--;
+                                        }
+                                        return;
                                    }
                            }}
             },
@@ -880,6 +916,10 @@ cppyy.cppdef(
                 "Cactuses",{{"Use",
                                    [&]()
                                    {
+                                        if (numInv["Cactuses"]["Number"] > 0)
+                                        {
+                                            numInv["Cactuses"]["Number"]--;
+                                        }
                                        return;
                                    }
                            }}
@@ -889,6 +929,10 @@ cppyy.cppdef(
                 "Golden Saplings",{{"Use",
                                    [&]()
                                    {
+                                        if (numInv["Golden Saplings"]["Number"] > 0)
+                                        {
+                                            numInv["Golden Saplings"]["Number"]--;
+                                        }
                                        return;
                                    }
                            }}
@@ -898,7 +942,11 @@ cppyy.cppdef(
                 "Golden Logs",{{"Use",
                                    [&]()
                                    {
-                                       return;
+                                        if (numInv["Golden Logs"]["Number"] > 0)
+                                        {
+                                            numInv["Golden Logs"]["Number"]--;
+                                        }
+                                        return;
                                    }
                            }}
             },
@@ -907,7 +955,11 @@ cppyy.cppdef(
                 "Sand Pails",{{"Use",
                                    [&]()
                                    {
-                                       return;
+                                        if (numInv["Sand Pails"]["Number"] > 0)
+                                        {
+                                            numInv["Sand Pails"]["Number"]--;
+                                        }
+                                        return;
                                    }
                            }}
             },
@@ -920,6 +972,10 @@ cppyy.cppdef(
                                        if (this->health > basehealth)
                                        {
                                            health = basehealth;
+                                       }
+                                       if (numInv["Potion"]["Number"] > 0)
+                                       {
+                                            numInv["Potion"]["Number"]--;
                                        }
                                    }
                            }}
@@ -934,6 +990,10 @@ cppyy.cppdef(
                                        {
                                            health = basehealth;
                                        }
+                                       if (numInv["Apple"]["Number"] > 0)
+                                       {
+                                            numInv["Apple"]["Number"]--;
+                                       }
                                    }
                            }}
             },
@@ -942,6 +1002,10 @@ cppyy.cppdef(
                 "Knife",{{"Use",
                                     [&]()
                                     {
+                                        if (numInv["Knife"]["Number"] > 0)
+                                        {
+                                            numInv["Knife"]["Number"]--;
+                                        }
                                         return;
                                     }
                         }}
@@ -951,6 +1015,10 @@ cppyy.cppdef(
                 "Parrot",{{"Use",
                                     [&]()
                                     {
+                                        if (numInv["Parrot"]["Number"] > 0)
+                                        {
+                                            numInv["Parrot"]["Number"]--;
+                                        }
                                         return;
                                     }
                         }}
@@ -960,6 +1028,10 @@ cppyy.cppdef(
                 "Ring",{{"Use",
                                     [&]()
                                     {
+                                        if (numInv["Ring"]["Number"] > 0)
+                                        {
+                                            numInv["Ring"]["Number"]--;
+                                        }
                                         return;
                                     }
                         }}
@@ -969,6 +1041,10 @@ cppyy.cppdef(
                 "Cape",{{"Use",
                                     [&]()
                                     {
+                                        if (numInv["Cape"]["Number"] > 0)
+                                        {
+                                            numInv["Cape"]["Number"]--;
+                                        }
                                         return;
                                     }
                         }}
@@ -978,6 +1054,10 @@ cppyy.cppdef(
                 "Armor",{{"Use",
                                     [&]()
                                     {
+                                        if (numInv["Armor"]["Number"] > 0)
+                                        {
+                                            numInv["Armor"]["Number"]--;
+                                        }
                                         return;
                                     }
                         }}
@@ -987,6 +1067,10 @@ cppyy.cppdef(
                 "Water Guns",{{"Use",
                                     [&]()
                                     {
+                                        if (numInv["Water Guns"]["Number"] > 0)
+                                        {
+                                            numInv["Water Guns"]["Number"]--;
+                                        }
                                         return;
                                     }
                         }}
@@ -2507,6 +2591,7 @@ def printItem(role, item_name):
     pygame.display.update()
 
     while True:
+
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
@@ -2516,17 +2601,11 @@ def printItem(role, item_name):
                 if rect.collidepoint(mouse_pos):
                     print("Using the item.")
                     role.useInv[item_name]["Use"]()
+                    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=200, loc=200)
+                    pygame.display.update()
 
 
-#    ...
-
-
-def printInventory(role):
-    global font, white, black, orange
-    display_surface.fill(white)
-
-    # TODO: iterate over role.stringInv and print out Name, picture and number (use the C++ printInventory function as template. Maybe: Use PyGame Table Class?
-    # https://pygame-menu.readthedocs.io/en/4.4.2/_source/widgets_table.html
+def getItemCounts(role):
     line_count = 80
     currentInventory = {}
     for item in role.numInv:
@@ -2537,7 +2616,14 @@ def printInventory(role):
                 currentInventory[item_name] = attr.second
                 line_count += 40
 
-    num_items = (line_count - 80) // 40
+    return currentInventory, (line_count - 80) // 40
+
+
+def printInventory(role):
+    global font, white, black, orange
+    display_surface.fill(white)
+
+    currentInventory, num_items = getItemCounts(role)
 
     # If the user doesn't have any items, then we need to handle this differently.
     if num_items == 0:
@@ -2558,6 +2644,8 @@ def printInventory(role):
     while True:
         display_surface.fill(white)
         line_count = 80
+        currentInventory, num_items = getItemCounts(role)
+        currentInventoryList = list(currentInventory.keys())
         for idx, item in enumerate(currentInventory):
             pygame_print(f"{item}: {currentInventory[item]}", loc=line_count,
                          color=orange if idx == optionNumber else black)
@@ -2579,6 +2667,42 @@ def printInventory(role):
                 mouse_pos = pygame.mouse.get_pos()
                 if stop_rect.collidepoint(mouse_pos):
                     return
+
+
+def QuestGames(role):
+    global font, white, black, orange, X, Y
+
+    image_name = role.name.lower().replace(" jackson", "") + "-start.png"
+
+    buffer_width = 40
+
+    start_x, start_y = 100, 600
+
+    def renderRole(start_x, start_y):
+        display_surface.fill(white)
+        pygame_print(f"Quest #{role.questLevel + 1}", loc=60)
+        square_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
+        image = pygame.image.load(f"Assets/{image_name}")
+        image = pygame.transform.scale(image, (buffer_width, buffer_width))
+        pygame.draw.rect(display_surface, white, square_rect)
+        display_surface.blit(image, square_rect.topleft)
+        pygame.display.update()
+
+    renderRole(start_x, start_y)
+
+    while True:
+        for event in pygame.event.get():  # update the option number if necessary
+            if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                if event.key == pygame.K_RETURN:
+                    return
+                elif event.key == pygame.K_RIGHT:
+                    if start_x < X:
+                        start_x += 5
+                        renderRole(start_x, start_y)
+                elif event.key == pygame.K_LEFT:
+                    if start_x > 0:
+                        start_x -= 5
+                        renderRole(start_x, start_y)
 
 
 def Menu(role, setting):
@@ -2650,7 +2774,7 @@ def Menu(role, setting):
                         elif optionNumber == 4:  # Shop
                             pass
                         elif optionNumber == 5:  # Quests
-                            pass
+                            QuestGames(role)
                         elif optionNumber == 6:  # Stats
                             Stats(role)
                         return
