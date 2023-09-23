@@ -12,6 +12,7 @@ import requests
 from PIL import Image
 import os
 import numpy as np
+from collections import deque
 
 Quests = False
 Shop = False
@@ -158,6 +159,7 @@ cppyy.cppdef(
         int currLevel;
         double currExp;
         double LevelExp;
+        double speed;
     //    virtual double ExpLevelFunc(double){}
 
         void defend();
@@ -184,6 +186,10 @@ cppyy.cppdef(
         double StaminaLevelFunc(int level)
         {
             return exp(-1*(level+1));
+        }
+        double SpeedLevelFunc(int level)
+        {
+            return ((level < 4) ? exp(-0.6*level) : 0.091);
         }
 
     //    virtual void increaseExp(double exp); //Declaration
@@ -610,6 +616,7 @@ cppyy.cppdef(
         currLevel = startLevel;
         currExp = 0;
         LevelExp = 0; //override in derived classes
+        speed = 0;
 
     //        for (auto i : stringInv)
     //        for i in stringInv
@@ -1141,6 +1148,7 @@ class PercyJackson(Role):
         self.defense = 100
         self.attackStamina = 0.1
         self.defenseStamina = 0.2
+        self.speed = 0.3
         self.ExpLevelFunc = lambda x: x ** 2.5
         self.LevelExp = self.ExpLevelFunc(self.currLevel + 1)
         self.money = 50  # because the economy in italy is so bad :)
@@ -1162,6 +1170,7 @@ class Elf(Role):
         self.defense = 200
         self.attackStamina = 1
         self.defenseStamina = 0.4
+        self.speed = 0.1
         self.ExpLevelFunc = lambda x: x ** 1.5
         self.LevelExp = self.ExpLevelFunc(self.currLevel + 1)
         self.money = 200
@@ -1179,6 +1188,7 @@ class Zelda(Role):
         self.defense = 50
         self.attackStamina = 0.15
         self.defenseStamina = 0.25
+        self.speed = 0.3
         self.ExpLevelFunc = lambda x: x ** 2
         #        https://www.thoughtco.com/calculate-decay-factor-2312218
         #        self.AttackLevelFunc = lambda x: 20*(1-0.05)**x
@@ -1210,6 +1220,7 @@ def increaseStats(role):
     role.attackStamina -= role.StaminaLevelFunc(role.currLevel)
     role.defenseStamina -= role.StaminaLevelFunc(role.currLevel)
     role.defense = role.baseDefense
+    role.speed += role.SpeedLevelFunc(role.currLevel)
 
 
 def increaseExp(role, netExp):
@@ -2341,12 +2352,13 @@ def Stats(RoleHero):
     pygame_print(f"Attack Power = {RoleHero.attackpower:.0f}", 90)
     pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.basehealth:.0f}", 130)
     pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", 170)
-    pygame_print(f"Attack Stamina = {RoleHero.attackStamina}", 210)
-    pygame_print(f"Defense Stamina = {RoleHero.defenseStamina}", 250)
-    pygame_print(f"Money = {RoleHero.money}", 290)
-    pygame_print(f"Quest Level = {RoleHero.questLevel}", 330)
-    pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", 370)
-    pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", 410)
+    pygame_print(f"Speed = {RoleHero.speed:.2f}", 210)
+    pygame_print(f"Attack Stamina = {RoleHero.attackStamina}", 250)
+    pygame_print(f"Defense Stamina = {RoleHero.defenseStamina}", 290)
+    pygame_print(f"Money = {RoleHero.money}", 330)
+    pygame_print(f"Quest Level = {RoleHero.questLevel}", 370)
+    pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", 410)
+    pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", 450)
     pygame.display.update()
     while True:
         for event in pygame.event.get():  # update the option number if necessary
@@ -2686,23 +2698,42 @@ def QuestGames(role):
         image = pygame.transform.scale(image, (buffer_width, buffer_width))
         pygame.draw.rect(display_surface, white, square_rect)
         display_surface.blit(image, square_rect.topleft)
-        pygame.display.update()
+
+    #        pygame.display.update()
 
     renderRole(start_x, start_y)
 
+    shotsFired = deque([], maxlen=10)
     while True:
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_RETURN:
                     return
-                elif event.key == pygame.K_RIGHT:
-                    if start_x < X:
-                        start_x += 5
-                        renderRole(start_x, start_y)
-                elif event.key == pygame.K_LEFT:
-                    if start_x > 0:
-                        start_x -= 5
-                        renderRole(start_x, start_y)
+                elif event.key == pygame.K_SPACE:
+                    # Put beam on the screen
+                    beam_x = start_x + buffer_width
+                    beam_y = start_y + buffer_width
+                    # Puts the coordinate of the shots fired on the screen
+                    shotsFired.append([beam_x, beam_y])
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_RIGHT]:
+            if start_x < X - 40:
+                start_x += role.speed
+                renderRole(start_x, start_y)
+        elif keys[pygame.K_LEFT]:
+            if start_x > 0:
+                start_x -= role.speed
+                renderRole(start_x, start_y)
+        else:
+            renderRole(start_x, start_y)
+
+        for i in range(len(shotsFired)):
+            shotsFired[i][0] += 0.01
+            # TODO: Elevate y position so that it looks more reasonable, fyi, the y position is shotsFired[i][1]
+            square_rect = pygame.Rect(shotsFired[i][0], shotsFired[i][1], buffer_width / 2, buffer_width / 4)
+            pygame.draw.ellipse(display_surface, orange, square_rect)
+        pygame.display.update()
 
 
 def Menu(role, setting):
