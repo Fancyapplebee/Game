@@ -2684,56 +2684,104 @@ def printInventory(role):
 def QuestGames(role):
     global font, white, black, orange, X, Y
 
-    image_name = role.name.lower().replace(" jackson", "") + "-start.png"
+    role_image_name = role.name.lower().replace(" jackson", "") + "-start.png"
+    enemy_image_names = ("ninja.png", "ogre.png", "demon.png")
 
     buffer_width = 40
 
     start_x, start_y = 100, 600
 
+    role_rect, enemy_rect = None, None
+
     def renderRole(start_x, start_y):
         display_surface.fill(white)
         pygame_print(f"Quest #{role.questLevel + 1}", loc=60)
-        square_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
-        image = pygame.image.load(f"Assets/{image_name}")
-        image = pygame.transform.scale(image, (buffer_width, buffer_width))
-        pygame.draw.rect(display_surface, white, square_rect)
-        display_surface.blit(image, square_rect.topleft)
+        # Role
+        role_image = pygame.image.load(f"Assets/{role_image_name}")
+        role_image = pygame.transform.scale(role_image, (buffer_width, buffer_width))
+        pygame.draw.rect(display_surface, white, role_rect)
+        display_surface.blit(role_image, role_rect.topleft)
+        # Enemy
+        enemy_image = pygame.image.load(f"Assets/{enemy_image_names[0]}")
+        enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
+        pygame.draw.rect(display_surface, white, enemy_rect)
+        display_surface.blit(enemy_image, enemy_rect.topleft)
 
     #        pygame.display.update()
 
+    role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
+    enemy_rect = pygame.Rect(650, start_y, buffer_width, buffer_width)
     renderRole(start_x, start_y)
 
     shotsFired = deque([], maxlen=10)
-    while True:
+    beam_y_offset = -10
+
+    global badNPCs  # we're saying that we will be using the global variable badNPCs
+    NumberDefeated = 0
+    expEarned = 0
+    randnum = randint(1, 100)
+    start = 1
+    end = 0
+    for b in badNPCs:
+        end += int(b.second * 100)  # probability of spawning
+        if start <= randnum <= end:
+            a = BadNPC(cppStringConvert(b.first))  # we are spawning an enemy here
+            a.statboost(role)
+    while True:  # pygame loop
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_RETURN:
                     return
-                elif event.key == pygame.K_SPACE:
+                elif event.key == pygame.K_SPACE:  # Checking if the role hero fired a shot
                     # Put beam on the screen
                     beam_x = start_x + buffer_width
-                    beam_y = start_y + buffer_width
+                    beam_y = start_y + buffer_width + beam_y_offset
                     # Puts the coordinate of the shots fired on the screen
-                    shotsFired.append([beam_x, beam_y])
+                    shotsFired.append([beam_x, beam_y, False])
 
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_RIGHT]:
+        # If the role moves across the screen (left or right
+        # ==================================================
+        if keys[pygame.K_RIGHT]:  # if right arrow was pressed, move right
             if start_x < X - 40:
                 start_x += role.speed
+                role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
+                enemy_rect = pygame.Rect(650, start_y, buffer_width, buffer_width)
                 renderRole(start_x, start_y)
-        elif keys[pygame.K_LEFT]:
+        elif keys[pygame.K_LEFT]:  # if left arrow was pressed, move left
             if start_x > 0:
                 start_x -= role.speed
+                role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
+                enemy_rect = pygame.Rect(650, start_y, buffer_width, buffer_width)
+                renderRole(start_x, start_y)
+        # TODO: Add jump maybe?\
+        elif keys[pygame.K_UP]:  # if up arrow was pressed, move up then down
+            if start_x > 0:
+                start_y -= role.speed
+                role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
+                enemy_rect = pygame.Rect(650, start_y, buffer_width, buffer_width)
                 renderRole(start_x, start_y)
         else:
+            role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
+            enemy_rect = pygame.Rect(650, start_y, buffer_width, buffer_width)
             renderRole(start_x, start_y)
 
         for i in range(len(shotsFired)):
-            shotsFired[i][0] += 0.01
-            # TODO: Elevate y position so that it looks more reasonable, fyi, the y position is shotsFired[i][1]
-            square_rect = pygame.Rect(shotsFired[i][0], shotsFired[i][1], buffer_width / 2, buffer_width / 4)
-            pygame.draw.ellipse(display_surface, orange, square_rect)
+            shotsFired[i][0] += 5
+
+            beam_rect = pygame.Rect(shotsFired[i][0], shotsFired[i][1], buffer_width / 2,
+                                    buffer_width / 4)  # beam object
+            if beam_rect.colliderect(enemy_rect) and not shotsFired[i][
+                2]:  # Enemy was hit and this is not a repeat of the same shot
+                role.attack(a)
+                print("Works?!")
+                shotsFired[i][2] = True
+            pygame.draw.ellipse(display_surface, orange, beam_rect)  # Drawing the beam
         pygame.display.update()
+
+        if NumberDefeated == 10 or role.health <= 0:
+            # Do stuff
+            return
 
 
 def Menu(role, setting):
