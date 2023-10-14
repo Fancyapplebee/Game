@@ -1841,8 +1841,7 @@ def Quest1(RoleHero):
     #    Stack9 = False
     #    Stack10 = False
 
-    Stacks = [False] * (
-            RoleHero.currLevel + 1)  # Maybe change this if it becomes possible to increase level before this quest
+    Stacks = [False] * (RoleHero.currLevel + 1)  # Maybe change this if it becomes possible to increase level before this quest
 
     def DefenseWait(index):
         sleep(5)
@@ -2689,10 +2688,22 @@ def QuestGames(role):
 
     buffer_width = 40
 
-    start_x, start_y = 100, 600
+    start_x, start_y, curr_y, enemy_x, enemy_y = 100, 600, 600, 650, 600
+    ground_y = 600
+
+    role_jump_t = -1
 
     role_rect, enemy_rect = None, None
-
+    if Setting == "DESERT":
+        pygame.image.load("Assets/StartDesert.png")
+    elif Setting == "FOREST":
+        pygame.image.load("Assets/StartForest.png")
+    elif Setting == "MOUNTAIN":
+        pygame.image.load("Assets/StartMountain.png")
+    elif Setting == "BEACH":
+        pygame.image.load("Assets/StartBeach.png")
+    elif Setting == "HOUSE":
+        pygame.image.load("Assets/StartHouse.png")
     def renderRole(start_x, start_y):
         display_surface.fill(white)
         pygame_print(f"Quest #{role.questLevel + 1}", loc=60)
@@ -2710,11 +2721,11 @@ def QuestGames(role):
     #        pygame.display.update()
 
     role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
-    enemy_rect = pygame.Rect(650, start_y, buffer_width, buffer_width)
+    enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
     renderRole(start_x, start_y)
 
     shotsFired = deque([], maxlen=10)
-    beam_y_offset = -10
+    beam_y_offset = -8
 
     global badNPCs  # we're saying that we will be using the global variable badNPCs
     NumberDefeated = 0
@@ -2735,46 +2746,62 @@ def QuestGames(role):
                 elif event.key == pygame.K_SPACE:  # Checking if the role hero fired a shot
                     # Put beam on the screen
                     beam_x = start_x + buffer_width
-                    beam_y = start_y + buffer_width + beam_y_offset
+                    beam_y = curr_y + buffer_width + beam_y_offset
                     # Puts the coordinate of the shots fired on the screen
-                    shotsFired.append([beam_x, beam_y, False])
+                    shotsFired.append([beam_x, curr_y, False])
+                elif event.key == pygame.K_UP:  # Checking if the role decided to jump
+                    if start_y == ground_y:  # If the hero is on the ground, then they can jump
+                        start_y -= 200  # TODO: make the height of the jump depend on the role's stats, e.g., stamina?
+                        curr_y = start_y
+                        # Now, the hero is in free-fall we need to start a timer to figure out what's their y-position at a given time
+                        role_jump_t = time()
+
+        if start_y != ground_y:  # if the hero is in free-fall
+            fall_time = time() - role_jump_t
+            s = 0.5 * 9.81 * fall_time ** 2  # The absolute value the hero has fallen since role_jump_t
+
+            '''
+            Example: You fell from a cliff 2 km above sea-level at 10:00:00.
+            Question: How far have you fallen at 10:00:10?
+            Answer:
+                s = 0.5*9.81*(10:00:10 - 10:00:00)**2 = 0.5*9.81*10**2 = 0.5*9.81*100 = 490.5 meters ~ 1/2 of a km
+            '''
+            position = start_y + s
+            if position <= ground_y:
+                curr_y = position
+            else:  # Here, they have landed
+                curr_y = ground_y
+                start_y = ground_y
 
         keys = pygame.key.get_pressed()
-        # If the role moves across the screen (left or right
-        # ==================================================
+        # If the role moves across the screen (left or right)
+        # ===================================================
         if keys[pygame.K_RIGHT]:  # if right arrow was pressed, move right
             if start_x < X - 40:
                 start_x += role.speed
-                role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
-                enemy_rect = pygame.Rect(650, start_y, buffer_width, buffer_width)
-                renderRole(start_x, start_y)
+                role_rect = pygame.Rect(start_x, curr_y, buffer_width, buffer_width)
+                enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
+                renderRole(start_x, curr_y)
         elif keys[pygame.K_LEFT]:  # if left arrow was pressed, move left
             if start_x > 0:
                 start_x -= role.speed
-                role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
-                enemy_rect = pygame.Rect(650, start_y, buffer_width, buffer_width)
-                renderRole(start_x, start_y)
-        # TODO: Add jump maybe?\
-        elif keys[pygame.K_UP]:  # if up arrow was pressed, move up then down
-            if start_x > 0:
-                start_y -= role.speed
-                role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
-                enemy_rect = pygame.Rect(650, start_y, buffer_width, buffer_width)
-                renderRole(start_x, start_y)
+                role_rect = pygame.Rect(start_x, curr_y, buffer_width, buffer_width)
+                enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
+                renderRole(start_x, curr_y)
         else:
-            role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
-            enemy_rect = pygame.Rect(650, start_y, buffer_width, buffer_width)
-            renderRole(start_x, start_y)
+            role_rect = pygame.Rect(start_x, curr_y, buffer_width, buffer_width)
+            enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
+            renderRole(start_x, curr_y)
 
         for i in range(len(shotsFired)):
-            shotsFired[i][0] += 5
+            shotsFired[i][0] += 5  # TODO: make the shot speed depend on the role's stats?
 
             beam_rect = pygame.Rect(shotsFired[i][0], shotsFired[i][1], buffer_width / 2,
                                     buffer_width / 4)  # beam object
             if beam_rect.colliderect(enemy_rect) and not shotsFired[i][
                 2]:  # Enemy was hit and this is not a repeat of the same shot
                 role.attack(a)
-                print("Works?!")
+                print(f"Enemy health = {a.health}")
                 shotsFired[i][2] = True
             pygame.draw.ellipse(display_surface, orange, beam_rect)  # Drawing the beam
         pygame.display.update()
