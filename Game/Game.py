@@ -163,7 +163,7 @@ cppyy.cppdef(
     //    virtual double ExpLevelFunc(double){}
 
         void defend();
-        void attack(BadNPC& enemy);
+        bool attack(BadNPC& enemy, bool deductHealth = true);
         void baseLineStats();
         std::vector<std::string> printInventory();
         std::unordered_map<std::string, double> printSellItems(bool print = false);
@@ -225,24 +225,44 @@ cppyy.cppdef(
         }
     }
 
-    void Role::attack(BadNPC& enemy)
+    bool Role::attack(BadNPC& enemy, bool deductHealth)
     {
-        if (!moved)
+        std::cout << std::boolalpha << deductHealth << '\n';
+        if (!moved) //only for first time
         {
             moved = true;
-            enemy.health -= (Defense(enemy.defense) * attackpower);
-            moveTime = time();
-            waitTime = static_cast<uint64_t>(attackStamina*1000);
+            if (deductHealth) //just deduct health from enemy
+            {
+                enemy.health -= (Defense(enemy.defense) * attackpower);
+            }
+            else //calculate when role can attack again
+            {
+                moveTime = time();
+                waitTime = static_cast<uint64_t>(attackStamina*1000);
+            }
+            return true; //can attack
         }
         else if (time() - waitTime < moveTime)
         {
-            std::cout << "Can't attack yet\n";
+            std::cout << std::boolalpha << deductHealth << " here\n";
+            if (!deductHealth)
+            {
+                std::cout << "Can't attack yet\n";
+            }
+            return false; //can't attack yet
         }
         else
         {
-            enemy.health -= (Defense(enemy.defense) * attackpower);
-            moveTime = time();
-            waitTime = static_cast<uint64_t>(attackStamina*1000);
+            if (deductHealth) //just deduct health from enemy
+            {
+                enemy.health -= (Defense(enemy.defense) * attackpower);
+            }
+            else //calculate when role can attack again
+            {
+                moveTime = time();
+                waitTime = static_cast<uint64_t>(attackStamina*1000);
+            }
+            return true; //can attack
         }
     }
 
@@ -1153,7 +1173,6 @@ class PercyJackson(Role):
         self.LevelExp = self.ExpLevelFunc(self.currLevel + 1)
         self.money = 50  # because the economy in italy is so bad :)
 
-
 #    Naming variables convention
 #        mac_and_cheese : snake case
 #        MacAndCheese : pascal case
@@ -2022,7 +2041,7 @@ def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: i
 
 
 # all images are in Game/Game/Assets
-def displayImage(rsp, height: bool = False, p: int = 0):
+def displayImage(rsp, height: bool = False, p: int = 0, update: bool = True):
     rsp = os.getcwd() + "/Assets/" + rsp
     pilimage = Image.open(rsp).convert("RGBA")
     if p == 0:
@@ -2034,7 +2053,8 @@ def displayImage(rsp, height: bool = False, p: int = 0):
         height = (125 - pgimg.get_rect().height) / 8
     display_surface.fill(white)
     display_surface.blit(pgimg, ((X - pgimg.get_rect().width) // 2, height))
-    pygame.display.update()
+    if update:
+        pygame.display.update()
 
 
 def openChestOption(optionNumber=None):
@@ -2680,7 +2700,7 @@ def printInventory(role):
                     return
 
 
-def QuestGames(role):
+def QuestGames(Setting, role):
     global font, white, black, orange, X, Y
 
     role_image_name = role.name.lower().replace(" jackson", "") + "-start.png"
@@ -2694,17 +2714,18 @@ def QuestGames(role):
     role_jump_t = -1
 
     role_rect, enemy_rect = None, None
-    if Setting == "DESERT":
-        pygame.image.load("Assets/StartDesert.png")
-    elif Setting == "FOREST":
-        pygame.image.load("Assets/StartForest.png")
-    elif Setting == "MOUNTAIN":
-        pygame.image.load("Assets/StartMountain.png")
-    elif Setting == "BEACH":
-        pygame.image.load("Assets/StartBeach.png")
-    elif Setting == "HOUSE":
-        pygame.image.load("Assets/StartHouse.png")
+    print(Setting:=Setting.name.upper())
     def renderRole(start_x, start_y):
+#        if Setting == "DESERT":
+#            displayImage("StartDesert.png", p = 1, update = False)
+#        elif Setting == "FOREST":
+#            displayImage("StartForest.png", p = 1, update = False)
+#        elif Setting == "MOUNTAIN":
+#            displayImage("StartMountain.png", p = 1, update = False)
+#        elif Setting == "BEACH":
+#            displayImage("StartBeach.png", p = 1, update = False)
+#        elif Setting == "HOUSE":
+#            displayImage("StartHouse.png", p = 1, update = False)
         display_surface.fill(white)
         pygame_print(f"Quest #{role.questLevel + 1}", loc=60)
         # Role
@@ -2718,14 +2739,12 @@ def QuestGames(role):
         pygame.draw.rect(display_surface, white, enemy_rect)
         display_surface.blit(enemy_image, enemy_rect.topleft)
 
-    #        pygame.display.update()
-
     role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
     enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
     renderRole(start_x, start_y)
 
     shotsFired = deque([], maxlen=10)
-    beam_y_offset = -8
+    beam_y_offset = -9
 
     global badNPCs  # we're saying that we will be using the global variable badNPCs
     NumberDefeated = 0
@@ -2744,11 +2763,12 @@ def QuestGames(role):
                 if event.key == pygame.K_RETURN:
                     return
                 elif event.key == pygame.K_SPACE:  # Checking if the role hero fired a shot
-                    # Put beam on the screen
-                    beam_x = start_x + buffer_width
-                    beam_y = curr_y + buffer_width + beam_y_offset
-                    # Puts the coordinate of the shots fired on the screen
-                    shotsFired.append([beam_x, curr_y, False])
+                    # Put beam on the screen if role has the stamina for it
+                    if role.attack(a, deductHealth = False):
+                        beam_x = start_x + buffer_width
+                        beam_y = curr_y + buffer_width + beam_y_offset
+                        # Puts the coordinate of the shots fired on the screen
+                        shotsFired.append([beam_x, curr_y, False])
                 elif event.key == pygame.K_UP:  # Checking if the role decided to jump
                     if start_y == ground_y:  # If the hero is on the ground, then they can jump
                         start_y -= 200  # TODO: make the height of the jump depend on the role's stats, e.g., stamina?
@@ -2800,8 +2820,8 @@ def QuestGames(role):
                                     buffer_width / 4)  # beam object
             if beam_rect.colliderect(enemy_rect) and not shotsFired[i][
                 2]:  # Enemy was hit and this is not a repeat of the same shot
-                role.attack(a)
-                print(f"Enemy health = {a.health}")
+                role.attack(a, deductHealth = True)
+                print(f"Enemy health = {a.health:.2f}")
                 shotsFired[i][2] = True
             pygame.draw.ellipse(display_surface, orange, beam_rect)  # Drawing the beam
         pygame.display.update()
@@ -2880,7 +2900,7 @@ def Menu(role, setting):
                         elif optionNumber == 4:  # Shop
                             pass
                         elif optionNumber == 5:  # Quests
-                            QuestGames(role)
+                            QuestGames(setting, role)
                         elif optionNumber == 6:  # Stats
                             Stats(role)
                         return
