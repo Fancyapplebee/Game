@@ -4,8 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="Update 10/6&#10;&#10;Added a up key to the quest&#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
+    <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="White Background&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Game/Assets/demon.png" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Assets/demon.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Game/Assets/ninja.png" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Assets/ninja.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Game/Assets/ogre.png" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Assets/ogre.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Game/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Game.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -189,7 +192,7 @@
       <workItem from="1697907781332" duration="809000" />
       <workItem from="1698470353219" duration="829000" />
       <workItem from="1698471221274" duration="3365000" />
-      <workItem from="1698507501193" duration="1465000" />
+      <workItem from="1698507501193" duration="2168000" />
     </task>
     <task id="LOCAL-00001" summary="it works">
       <created>1657430290327</created>
@@ -391,7 +394,15 @@
       <option name="project" value="LOCAL" />
       <updated>1697907805184</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="White Background&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
+      <option name="closed" value="true" />
+      <created>1698512619541</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1698512619541</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -446,7 +457,10 @@
     <MESSAGE value="Update 9/16 &#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <MESSAGE value="Update 9/23&#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <MESSAGE value="Update 10/6&#10;&#10;Added a up key to the quest&#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update 10/6&#10;&#10;Added a up key to the quest&#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
+    <MESSAGE value="White backfround" />
+    <MESSAGE value="Update 10/6&#10;&#10;Added a up key to the quest&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
+    <MESSAGE value="White Background&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
+    <option name="LAST_COMMIT_MESSAGE" value="White Background&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Game$Game.coverage" NAME="Game Coverage Results" MODIFIED="1697907869892" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />

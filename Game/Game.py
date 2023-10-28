@@ -81,29 +81,29 @@ cppyy.cppdef(
         return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     }
 
-    std::unordered_map<std::string, double> badNPCs = {{"NINJA", 0.05} , {"OGRE", 0.01} , {"DEMON", 0.94}};
+    std::unordered_map<std::string, double> badNPCs = {{"NINJA", 0.33} , {"OGRE", 0.33} , {"DEMON", 0.34}};
 
     struct Role;
 
     struct BadNPC
     {
-        const std::string role;
+        const std::string name;
         std::string picture;
         double attackpower;
         double health;
         double defense;
         double expYield;
 
-        BadNPC(const std::string& name);
+        BadNPC(const std::string& Name);
 
         void attack(Role&);
         void statboost(Role&);
 
     };
 
-    BadNPC::BadNPC(const std::string& name) : role{name}
+    BadNPC::BadNPC(const std::string& Name) : name{Name}
     {
-        if (role == "NINJA") //second most powerful
+        if (name == "NINJA") //second most powerful
         {
             this->picture = "🥷";
             this->attackpower = 10;
@@ -112,7 +112,7 @@ cppyy.cppdef(
             this->expYield = 10;
 
         }
-        else if (role == "OGRE") //most powerful
+        else if (name == "OGRE") //most powerful
         {
             this->picture = "👹";
             this->attackpower = 10;
@@ -120,7 +120,7 @@ cppyy.cppdef(
             this->defense = 100;
             this->expYield = 25;
         }
-        else if (role == "DEMON") //least powerful
+        else if (name == "DEMON") //least powerful
         {
             this->picture = "👿";
             this->attackpower = 5;
@@ -161,9 +161,10 @@ cppyy.cppdef(
         double LevelExp;
         double speed;
     //    virtual double ExpLevelFunc(double){}
-
+        bool can_attack();
+        void update_wait_time();
         void defend();
-        bool attack(BadNPC& enemy, bool deductHealth = true);
+        void attack(BadNPC& enemy);
         void baseLineStats();
         std::vector<std::string> printInventory();
         std::unordered_map<std::string, double> printSellItems(bool print = false);
@@ -225,45 +226,30 @@ cppyy.cppdef(
         }
     }
 
-    bool Role::attack(BadNPC& enemy, bool deductHealth)
+    //false
+    //not moved? (only first time)
+    //true
+    //Enemy health = (some value)
+
+    //The current has to be at least 'waitTime' further in the future than when the role last attacked 'moveTime'
+    bool Role::can_attack()
     {
-        std::cout << std::boolalpha << deductHealth << '\n';
-        if (!moved) //only for first time
+        return ((!moved) || (time() - waitTime >= moveTime));
+    }
+
+    void Role::update_wait_time()
+    {
+        if (!moved)
         {
             moved = true;
-            if (deductHealth) //just deduct health from enemy
-            {
-                enemy.health -= (Defense(enemy.defense) * attackpower);
-            }
-            else //calculate when role can attack again
-            {
-                moveTime = time();
-                waitTime = static_cast<uint64_t>(attackStamina*1000);
-            }
-            return true; //can attack
         }
-        else if (time() - waitTime < moveTime)
-        {
-            std::cout << std::boolalpha << deductHealth << " here\n";
-            if (!deductHealth)
-            {
-                std::cout << "Can't attack yet\n";
-            }
-            return false; //can't attack yet
-        }
-        else
-        {
-            if (deductHealth) //just deduct health from enemy
-            {
-                enemy.health -= (Defense(enemy.defense) * attackpower);
-            }
-            else //calculate when role can attack again
-            {
-                moveTime = time();
-                waitTime = static_cast<uint64_t>(attackStamina*1000);
-            }
-            return true; //can attack
-        }
+        moveTime = time();
+        waitTime = static_cast<uint64_t>(attackStamina*1000);
+    }
+
+    void Role::attack(BadNPC& enemy)
+    {
+        enemy.health -= (Defense(enemy.defense) * attackpower);
     }
 
     void Role::baseLineStats()
@@ -1173,6 +1159,7 @@ class PercyJackson(Role):
         self.LevelExp = self.ExpLevelFunc(self.currLevel + 1)
         self.money = 50  # because the economy in italy is so bad :)
 
+
 #    Naming variables convention
 #        mac_and_cheese : snake case
 #        MacAndCheese : pascal case
@@ -1860,7 +1847,8 @@ def Quest1(RoleHero):
     #    Stack9 = False
     #    Stack10 = False
 
-    Stacks = [False] * (RoleHero.currLevel + 1)  # Maybe change this if it becomes possible to increase level before this quest
+    Stacks = [False] * (
+                RoleHero.currLevel + 1)  # Maybe change this if it becomes possible to increase level before this quest
 
     def DefenseWait(index):
         sleep(5)
@@ -2017,7 +2005,7 @@ light_pink = (255, 182, 193)
 orange = (255, 165, 0)
 X = 800
 Y = 750
-display_surface = pygame.display.set_mode((X, Y))
+screen = pygame.display.set_mode((X, Y))
 font = pygame.font.Font('freesansbold.ttf', 32)
 
 
@@ -2025,14 +2013,14 @@ def pygame_print(text, loc=Y // 2, color=black, background_color=white, offset=0
     text = font.render(text, True, color, background_color)
     textRect = text.get_rect()
     textRect.center = (X // 2 + offset, loc)
-    display_surface.blit(text, textRect)
+    screen.blit(text, textRect)
     return textRect
 
 
 def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = 40, height: float = 4,
                new_screen=True) -> None:
     count = 0
-    display_surface.fill(color) if new_screen else True
+    screen.fill(color) if new_screen else True
     for num, item in enumerate(items):
         pygame_print(item, Y // height + count, color=(yellow if num == selectNumber else black),
                      background_color=color)
@@ -2042,6 +2030,7 @@ def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: i
 
 # all images are in Game/Game/Assets
 def displayImage(rsp, height: bool = False, p: int = 0, update: bool = True):
+    global screen
     rsp = os.getcwd() + "/Assets/" + rsp
     pilimage = Image.open(rsp).convert("RGBA")
     if p == 0:
@@ -2051,8 +2040,9 @@ def displayImage(rsp, height: bool = False, p: int = 0, update: bool = True):
     pgimg = pygame.image.fromstring(pilimage.tobytes(), pilimage.size, pilimage.mode)
     if not height:
         height = (125 - pgimg.get_rect().height) / 8
-    display_surface.fill(white)
-    display_surface.blit(pgimg, ((X - pgimg.get_rect().width) // 2, height))
+
+    screen.fill(white)
+    screen.blit(pgimg, ((X - pgimg.get_rect().width) // 2, height))
     if update:
         pygame.display.update()
 
@@ -2089,7 +2079,7 @@ class Setting:
     def map(self):
         global font, white, black
 
-        display_surface.fill(white)
+        screen.fill(white)
         pygame_print("--------", 90)
         pygame_print("Places", 130)
         pygame_print("--------", 170)
@@ -2142,7 +2132,7 @@ class Desert(Setting):
 def search(setting, role):
     currentTime = time()
     if currentTime - role.searchTime < 86400:
-        display_surface.fill(white)
+        screen.fill(white)
         time_til_search = (86400 - (currentTime - role.searchTime)) / 60
         message = f"Sorry, you cannot search at this point! Time until you can search again = {time_til_search:.2f} minutes"
         temp = ""
@@ -2166,7 +2156,7 @@ def search(setting, role):
     numOptions = len(setting.places)
     breakFlag = False
     while True:
-        display_surface.fill(white)  # clear the screen
+        screen.fill(white)  # clear the screen
 
         currHeight = 90
         Question = f"Where in the {setting.name} do you want to explore?"
@@ -2199,7 +2189,7 @@ def search(setting, role):
                 elif event.key == pygame.K_RETURN:
                     print(setting.places[optionNumber])
                     # TODO: Finish search function images to display
-                    display_surface.fill(white)  # clear the screen
+                    screen.fill(white)  # clear the screen
                     breakFlag = True  # enables breaking out of while-loop
                     break  # Breaking out of the pygame for-loop
 
@@ -2234,7 +2224,7 @@ def search(setting, role):
         pygame.time.delay(1000)  # waiting one second
         if Chances == 1:
             role.numInv["Sand Pails"]["Number"] += 1
-            display_surface.fill(white)  # clear the screen
+            screen.fill(white)  # clear the screen
             pygame_print("You got a Sand Pail!", 200)
             displayImage("sand-pail.png", p=0)
             pygame.display.update()
@@ -2249,7 +2239,7 @@ def search(setting, role):
         pygame.time.delay(1000)  # waiting one second
         if Chances == 1:
             role.numInv["Cactuses"]["Number"] += 1
-            display_surface.fill(white)  # clear the screen
+            screen.fill(white)  # clear the screen
             pygame_print("You found a cactus!", 200)
             displayImage("cactus.png", p=0)
             pygame.display.update()
@@ -2367,7 +2357,7 @@ def search(setting, role):
 
 
 def Stats(RoleHero):
-    display_surface.fill(white)
+    screen.fill(white)
     pygame_print(f"Attack Power = {RoleHero.attackpower:.0f}", 90)
     pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.basehealth:.0f}", 130)
     pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", 170)
@@ -2420,7 +2410,7 @@ def Mine(role, setting):
     '''
     # TODO: Make it so the rectangle is actually an item from the list of possible items that the user can mine
 
-    display_surface.fill(white)
+    screen.fill(white)
     global time, font
     map()
     TheSetting = setting.name.upper()
@@ -2457,7 +2447,7 @@ def Mine(role, setting):
     # Each iteration corresponds to a respawn of an object
     # on the screen
     while True:
-        display_surface.fill(white)
+        screen.fill(white)
 
         font = pygame.font.Font('freesansbold.ttf', 20)
         pygame_print(f"Player Wins = {wins}", loc=100, offset=265)
@@ -2466,10 +2456,10 @@ def Mine(role, setting):
 
         stop_rect = AddButton(offset=-100)
 
-        pygame.draw.line(display_surface, black, (80, 75), (520, 75))  # top edge
-        pygame.draw.line(display_surface, black, (80, 675), (520, 675))  # bottom edge
-        pygame.draw.line(display_surface, black, (80, 75), (80, 675))  # left edge
-        pygame.draw.line(display_surface, black, (520, 75), (520, 675))  # right edge
+        pygame.draw.line(screen, black, (80, 75), (520, 75))  # top edge
+        pygame.draw.line(screen, black, (80, 675), (520, 675))  # bottom edge
+        pygame.draw.line(screen, black, (80, 75), (80, 675))  # left edge
+        pygame.draw.line(screen, black, (520, 75), (520, 675))  # right edge
 
         pygame.display.update()
         # Determine coordinates where object will appear on the screen
@@ -2484,8 +2474,8 @@ def Mine(role, setting):
         image = pygame.image.load(MineImagesDict[item])
         image = pygame.transform.scale(image, (buffer_width, buffer_width))
 
-        pygame.draw.rect(display_surface, white, square_rect)
-        display_surface.blit(image, square_rect.topleft)
+        pygame.draw.rect(screen, white, square_rect)
+        screen.blit(image, square_rect.topleft)
 
         pygame.display.update()
         #
@@ -2543,7 +2533,7 @@ def Mine(role, setting):
     netExp = points * Opponent.expYield if points >= 0 else 0
 
     increaseExp(role, netExp)
-    display_surface.fill(white)
+    screen.fill(white)
 
     if playeravg / playeravglen < botavg / botavglen:
         pygame_print("You get 5 extra resources", 90)
@@ -2585,7 +2575,7 @@ def Mine(role, setting):
 
 def printItem(role, item_name):
     global font, white, black, orange
-    display_surface.fill(white)  # clear the screen
+    screen.fill(white)  # clear the screen
 
     #    pygame_print(f"{item}: {currentInventory[item]}", loc = line_count, color = orange if idx == optionNumber else black)
     #    print(role.useInv[item_name]["Use"]) #"Use" button
@@ -2604,8 +2594,8 @@ def printItem(role, item_name):
     image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
     image = pygame.transform.scale(image, (320, 235))
 
-    pygame.draw.rect(display_surface, white, square_rect)
-    display_surface.blit(image, square_rect.topleft)
+    pygame.draw.rect(screen, white, square_rect)
+    screen.blit(image, square_rect.topleft)
 
     pygame_print(f"Name: {item_name}", offset=-200, loc=380)
     pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset=-200, loc=440)
@@ -2652,7 +2642,7 @@ def getItemCounts(role):
 
 def printInventory(role):
     global font, white, black, orange
-    display_surface.fill(white)
+    screen.fill(white)
 
     currentInventory, num_items = getItemCounts(role)
 
@@ -2673,7 +2663,7 @@ def printInventory(role):
     pygame.display.update()
 
     while True:
-        display_surface.fill(white)
+        screen.fill(white)
         line_count = 80
         currentInventory, num_items = getItemCounts(role)
         currentInventoryList = list(currentInventory.keys())
@@ -2704,7 +2694,7 @@ def QuestGames(Setting, role):
     global font, white, black, orange, X, Y
 
     role_image_name = role.name.lower().replace(" jackson", "") + "-start.png"
-    enemy_image_names = ("ninja.png", "ogre.png", "demon.png")
+    enemy_image_names = {"NINJA": "ninja.png", "OGRE": "ogre.png", "DEMON": "demon.png"}
 
     buffer_width = 40
 
@@ -2714,30 +2704,47 @@ def QuestGames(Setting, role):
     role_jump_t = -1
 
     role_rect, enemy_rect = None, None
-    print(Setting:=Setting.name.upper())
+    print(Setting := Setting.name.upper())
+
+    def spawnBadNPC():
+        randnum = randint(1, 100)
+        print(randnum)
+        start = 1
+        end = 0
+        for b in badNPCs:
+            end += int(b.second * 100)  # probability of spawning
+            if start <= randnum <= end:
+                a = BadNPC(cppStringConvert(b.first))  # we are spawning an enemy here
+                a.statboost(role)
+                return a
+
+    a = spawnBadNPC()
+    print(f"Enemy name = {a.name}, enemy_image_names.get(a.name) = {enemy_image_names.get(a.name)}")
+
     def renderRole(start_x, start_y):
-#        if Setting == "DESERT":
-#            displayImage("StartDesert.png", p = 1, update = False)
-#        elif Setting == "FOREST":
-#            displayImage("StartForest.png", p = 1, update = False)
-#        elif Setting == "MOUNTAIN":
-#            displayImage("StartMountain.png", p = 1, update = False)
-#        elif Setting == "BEACH":
-#            displayImage("StartBeach.png", p = 1, update = False)
-#        elif Setting == "HOUSE":
-#            displayImage("StartHouse.png", p = 1, update = False)
-        display_surface.fill(white)
+        # TODO: Fix the backdrop so it doesn't slow down the quest
+        if Setting == "DESERT":
+            displayImage("StartDesert.png", p=1, update=False)
+        elif Setting == "FOREST":
+            displayImage("StartForest.png", p=1, update=False)
+        elif Setting == "MOUNTAIN":
+            displayImage("StartMountain.png", p=1, update=False)
+        elif Setting == "BEACH":
+            displayImage("StartBeach.png", p=1, update=False)
+        elif Setting == "HOUSE":
+            displayImage("StartHouse.png", p=1, update=False)
+        #        screen.fill(white)
         pygame_print(f"Quest #{role.questLevel + 1}", loc=60)
         # Role
         role_image = pygame.image.load(f"Assets/{role_image_name}")
         role_image = pygame.transform.scale(role_image, (buffer_width, buffer_width))
-        pygame.draw.rect(display_surface, white, role_rect)
-        display_surface.blit(role_image, role_rect.topleft)
+        pygame.draw.rect(screen, white, role_rect)
+        screen.blit(role_image, role_rect.topleft)
         # Enemy
-        enemy_image = pygame.image.load(f"Assets/{enemy_image_names[0]}")
+        enemy_image = pygame.image.load(f"Assets/{enemy_image_names[a.name]}")
         enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
-        pygame.draw.rect(display_surface, white, enemy_rect)
-        display_surface.blit(enemy_image, enemy_rect.topleft)
+        pygame.draw.rect(screen, white, enemy_rect)
+        screen.blit(enemy_image, enemy_rect.topleft)
 
     role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
     enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
@@ -2749,14 +2756,7 @@ def QuestGames(Setting, role):
     global badNPCs  # we're saying that we will be using the global variable badNPCs
     NumberDefeated = 0
     expEarned = 0
-    randnum = randint(1, 100)
-    start = 1
-    end = 0
-    for b in badNPCs:
-        end += int(b.second * 100)  # probability of spawning
-        if start <= randnum <= end:
-            a = BadNPC(cppStringConvert(b.first))  # we are spawning an enemy here
-            a.statboost(role)
+
     while True:  # pygame loop
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
@@ -2764,11 +2764,13 @@ def QuestGames(Setting, role):
                     return
                 elif event.key == pygame.K_SPACE:  # Checking if the role hero fired a shot
                     # Put beam on the screen if role has the stamina for it
-                    if role.attack(a, deductHealth = False):
+                    if role.can_attack():
                         beam_x = start_x + buffer_width
                         beam_y = curr_y + buffer_width + beam_y_offset
                         # Puts the coordinate of the shots fired on the screen
                         shotsFired.append([beam_x, curr_y, False])
+                        # Update the wait-time here.
+                        role.update_wait_time()
                 elif event.key == pygame.K_UP:  # Checking if the role decided to jump
                     if start_y == ground_y:  # If the hero is on the ground, then they can jump
                         start_y -= 200  # TODO: make the height of the jump depend on the role's stats, e.g., stamina?
@@ -2798,13 +2800,13 @@ def QuestGames(Setting, role):
         # ===================================================
         if keys[pygame.K_RIGHT]:  # if right arrow was pressed, move right
             if start_x < X - 40:
-                start_x += role.speed
+                start_x += role.speed * 10
                 role_rect = pygame.Rect(start_x, curr_y, buffer_width, buffer_width)
                 enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
                 renderRole(start_x, curr_y)
         elif keys[pygame.K_LEFT]:  # if left arrow was pressed, move left
             if start_x > 0:
-                start_x -= role.speed
+                start_x -= role.speed * 10
                 role_rect = pygame.Rect(start_x, curr_y, buffer_width, buffer_width)
                 enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
                 renderRole(start_x, curr_y)
@@ -2814,16 +2816,20 @@ def QuestGames(Setting, role):
             renderRole(start_x, curr_y)
 
         for i in range(len(shotsFired)):
-            shotsFired[i][0] += 5  # TODO: make the shot speed depend on the role's stats?
+            shotsFired[i][0] += 50  # TODO: make the shot speed depend on the role's stats?
 
             beam_rect = pygame.Rect(shotsFired[i][0], shotsFired[i][1], buffer_width / 2,
                                     buffer_width / 4)  # beam object
             if beam_rect.colliderect(enemy_rect) and not shotsFired[i][
                 2]:  # Enemy was hit and this is not a repeat of the same shot
-                role.attack(a, deductHealth = True)
+                role.attack(a)
                 print(f"Enemy health = {a.health:.2f}")
+                if a.health <= 0:
+                    print("Spawning new enemy")
+                    a = spawnBadNPC()
+                    NumberDefeated += 1
                 shotsFired[i][2] = True
-            pygame.draw.ellipse(display_surface, orange, beam_rect)  # Drawing the beam
+            pygame.draw.ellipse(screen, orange, beam_rect)  # Drawing the beam
         pygame.display.update()
 
         if NumberDefeated == 10 or role.health <= 0:
@@ -2839,7 +2845,7 @@ def Menu(role, setting):
         pygame.display.update()
 
         while True:
-            #            display_surface.fill(white)
+            #            screen.fill(white)
             pygame_print("Choose an option", 90, color=black, background_color=white)
             pygame_print("================", 130, color=black, background_color=white)
             pygame_print("Map", 170, color=(orange if optionNumber == 0 else black), background_color=white)
@@ -2871,7 +2877,7 @@ def Menu(role, setting):
         optionNumber = 0
         pygame.display.update()
         while True:
-            display_surface.fill(white)
+            screen.fill(white)
             pygame_print("Choose an option", 90, color=black, background_color=white)
             pygame_print("================", 130, color=black, background_color=white)
             pygame_print("Map", 170, color=(orange if optionNumber == 0 else black), background_color=white)
@@ -2965,8 +2971,8 @@ def game():
             pygame.display.update()
             for event in pygame.event.get():  # Can only call pygame.event.get() once per iteration
                 if not started:
-                    display_surface.fill(light_pink)
-                    display_surface.blit(text, textRect)
+                    screen.fill(light_pink)
+                    screen.blit(text, textRect)
                     pygame.display.update()
                     started = True
                 elif event.type == pygame.QUIT:
@@ -3001,11 +3007,11 @@ def game():
 
                             optionNumber = 0  # set the variable for the next option menu
 
-                            display_surface.fill(white)
+                            screen.fill(white)
                             text = font.render("Where am I?", True, black, white)
                             textRect = text.get_rect()
                             textRect.center = (X // 2, Y // 1.5)
-                            display_surface.blit(text, textRect)
+                            screen.blit(text, textRect)
                             pygame.display.update()
                             pygame.time.delay(1000)
                             displayImage("treasure_chest.png", p=1)
@@ -3014,7 +3020,7 @@ def game():
                             text = font.render("You see a chest", True, black, white)
                             textRect = text.get_rect()
                             textRect.center = (X // 2, Y // 1.5)
-                            display_surface.blit(text, textRect)
+                            screen.blit(text, textRect)
                             pygame.display.update()
 
                             pygame.time.delay(1000)  # Can change later
@@ -3022,7 +3028,7 @@ def game():
                             text = font.render("Do you open the chest?", True, black, white)
                             textRect = text.get_rect()
                             textRect.center = (X // 2, Y // 1.5)
-                            display_surface.blit(text, textRect)
+                            screen.blit(text, textRect)
                             pygame.display.update()
 
                             pygame.time.delay(250)
@@ -3048,11 +3054,11 @@ def game():
                                 text = font.render("You do not have the key!", True, black, white)
                                 textRect = text.get_rect()
                                 textRect.center = (X // 2, Y // 1.5)
-                                display_surface.blit(text, textRect)
+                                screen.blit(text, textRect)
                                 pygame.display.update()
                                 pygame.time.delay(1000)  # Can change later
 
-                            display_surface.fill(white)
+                            screen.fill(white)
                             pygame.display.update()
                             displayedPlaces = True
                             optionNumber = 0
@@ -3062,11 +3068,11 @@ def game():
                     text = font.render("Where do you want to go?", True, black, white)
                     textRect = text.get_rect()
                     textRect.center = (X // 2, 50)
-                    display_surface.blit(text, textRect)
+                    screen.blit(text, textRect)
                     text = font.render("========================", True, black, white)
                     textRect = text.get_rect()
                     textRect.center = (X // 2, 90)
-                    display_surface.blit(text, textRect)
+                    screen.blit(text, textRect)
                     font = pygame.font.Font('freesansbold.ttf', 32)
                     PlaceOption(optionNumber)
                     pygame.display.update()
@@ -3108,29 +3114,29 @@ def game():
                             Quests = True
                             pygame.display.update()
 
-                            display_surface.fill(white)
+                            screen.fill(white)
                             font = pygame.font.Font('freesansbold.ttf', 32)
                             text = font.render("New things unlocked!", True, black, white)
                             textRect = text.get_rect()
                             textRect.center = (X // 2, 90)
-                            display_surface.blit(text, textRect)
+                            screen.blit(text, textRect)
                             pygame.display.update()
                             pygame.time.delay(500)
 
-                            display_surface.fill(white)
+                            screen.fill(white)
                             font = pygame.font.Font('freesansbold.ttf', 26)
                             text = font.render("Quests have been unlocked.", True, black, white)
                             textRect = text.get_rect()
                             textRect.center = (X // 2, 90)
-                            display_surface.blit(text, textRect)
+                            screen.blit(text, textRect)
                             pygame.display.update()
                             pygame.time.delay(500)
 
-                            display_surface.fill(white)
+                            screen.fill(white)
                             text = font.render("To open quests", True, black, white)
                             textRect = text.get_rect()
                             textRect.center = (X // 2, 70)
-                            display_surface.blit(text, textRect)
+                            screen.blit(text, textRect)
                             pygame.display.update()
                             pygame.time.delay(500)
                             font = pygame.font.Font('freesansbold.ttf', 28)
@@ -3138,7 +3144,7 @@ def game():
                             textRect = text.get_rect()
                             textRect.center = (X // 2, 120)
                             font = pygame.font.Font('freesansbold.ttf', 32)
-                            display_surface.blit(text, textRect)
+                            screen.blit(text, textRect)
                             pygame.display.update()
                             pygame.time.delay(1000)
 
