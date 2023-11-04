@@ -93,40 +93,52 @@ cppyy.cppdef(
         double health;
         double defense;
         double expYield;
+        double speed;
+        double attackStamina;
+        bool moved;
+        uint64_t moveTime;
+        uint64_t waitTime;
 
         BadNPC(const std::string& Name);
 
         void attack(Role&);
         void statboost(Role&);
-
+        void update_wait_time();
+        bool can_attack();
     };
 
-    BadNPC::BadNPC(const std::string& Name) : name{Name}
+    BadNPC::BadNPC(const std::string& Name) : name{Name}, moved{false}, moveTime{0}, waitTime{0}
     {
         if (name == "NINJA") //second most powerful
         {
             this->picture = "🥷";
-            this->attackpower = 10;
+            this->attackpower = 7;
             this->health = 100.0;
             this->defense = 50;
             this->expYield = 10;
+            this->speed = 1.5;
+            this->attackStamina = 0.7;
 
         }
         else if (name == "OGRE") //most powerful
         {
             this->picture = "👹";
-            this->attackpower = 10;
+            this->attackpower = 15;
             this->health = 500.0;
             this->defense = 100;
             this->expYield = 25;
+            this->speed = 1;
+            this->attackStamina = 1.5;
         }
         else if (name == "DEMON") //least powerful
         {
             this->picture = "👿";
-            this->attackpower = 5;
+            this->attackpower = 10;
             this->health = 100.0;
             this->defense = 20;
             this->expYield = 5;
+            this->speed = 1.25;
+            this->attackStamina = 1;
         }
     }
 
@@ -237,7 +249,23 @@ cppyy.cppdef(
         return ((!moved) || (time() - waitTime >= moveTime));
     }
 
+    //The current has to be at least 'waitTime' further in the future than when the enemy last attacked 'moveTime'
+    bool BadNPC::can_attack()
+    {
+        return ((!moved) || (time() - waitTime >= moveTime));
+    }
+
     void Role::update_wait_time()
+    {
+        if (!moved)
+        {
+            moved = true;
+        }
+        moveTime = time();
+        waitTime = static_cast<uint64_t>(attackStamina*1000);
+    }
+
+    void BadNPC::update_wait_time()
     {
         if (!moved)
         {
@@ -280,6 +308,7 @@ cppyy.cppdef(
         health = multiplier * health;
         defense = multiplier * defense;
         expYield = multiplier * expYield;
+        speed = multiplier * speed;
     }
 
     std::vector<std::string> Role::printInventory()
@@ -1848,7 +1877,7 @@ def Quest1(RoleHero):
     #    Stack10 = False
 
     Stacks = [False] * (
-                RoleHero.currLevel + 1)  # Maybe change this if it becomes possible to increase level before this quest
+            RoleHero.currLevel + 1)  # Maybe change this if it becomes possible to increase level before this quest
 
     def DefenseWait(index):
         sleep(5)
@@ -2691,17 +2720,17 @@ def printInventory(role):
 
 
 def QuestGames(Setting, role):
-    global font, white, black, orange, X, Y
+    global font, white, black, orange, X, Y, red
 
     role_image_name = role.name.lower().replace(" jackson", "") + "-start.png"
     enemy_image_names = {"NINJA": "ninja.png", "OGRE": "ogre.png", "DEMON": "demon.png"}
 
     buffer_width = 40
 
-    start_x, start_y, curr_y, enemy_x, enemy_y = 100, 600, 600, 650, 600
+    start_x, start_y, curr_y, enemy_x, enemy_y, curr_enemy_y = 100, 600, 600, 650, 600, 600
     ground_y = 600
 
-    role_jump_t = -1
+    role_jump_t, enemy_jump_t = -1, -1
 
     role_rect, enemy_rect = None, None
     print(Setting := Setting.name.upper())
@@ -2738,12 +2767,10 @@ def QuestGames(Setting, role):
         # Role
         role_image = pygame.image.load(f"Assets/{role_image_name}")
         role_image = pygame.transform.scale(role_image, (buffer_width, buffer_width))
-        pygame.draw.rect(screen, white, role_rect)
         screen.blit(role_image, role_rect.topleft)
         # Enemy
         enemy_image = pygame.image.load(f"Assets/{enemy_image_names[a.name]}")
         enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
-        pygame.draw.rect(screen, white, enemy_rect)
         screen.blit(enemy_image, enemy_rect.topleft)
 
     role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
@@ -2751,13 +2778,17 @@ def QuestGames(Setting, role):
     renderRole(start_x, start_y)
 
     shotsFired = deque([], maxlen=10)
-    beam_y_offset = -9
+    shotsEnemyFired = deque([], maxlen=10)
+    beam_y_offset = -5
 
     global badNPCs  # we're saying that we will be using the global variable badNPCs
     NumberDefeated = 0
-    expEarned = 0
+    expEarned = 0  # TODO: Update XP
+
+    enemy_options = ("attack", "left", "right", "jump")
 
     while True:  # pygame loop
+        enemyMove = randint(0, 3)
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_RETURN:
@@ -2768,15 +2799,27 @@ def QuestGames(Setting, role):
                         beam_x = start_x + buffer_width
                         beam_y = curr_y + buffer_width + beam_y_offset
                         # Puts the coordinate of the shots fired on the screen
-                        shotsFired.append([beam_x, curr_y, False])
+                        shotsFired.append([beam_x, beam_y, False])
                         # Update the wait-time here.
                         role.update_wait_time()
+
                 elif event.key == pygame.K_UP:  # Checking if the role decided to jump
                     if start_y == ground_y:  # If the hero is on the ground, then they can jump
                         start_y -= 200  # TODO: make the height of the jump depend on the role's stats, e.g., stamina?
                         curr_y = start_y
                         # Now, the hero is in free-fall we need to start a timer to figure out what's their y-position at a given time
                         role_jump_t = time()
+
+        if enemy_options[enemyMove] == "jump" and enemy_y == ground_y:
+            enemy_y -= 200
+            curr_enemy_y = enemy_y
+            enemy_jump_t = time()
+        if enemy_options[enemyMove] == "attack":
+            beam_x = enemy_x + buffer_width
+            beam_y = curr_enemy_y + buffer_width + beam_y_offset
+            # Puts the coordinate of the shots fired on the screen
+            shotsEnemyFired.append([beam_x, beam_y, False])
+            a.update_wait_time()
 
         if start_y != ground_y:  # if the hero is in free-fall
             fall_time = time() - role_jump_t
@@ -2789,11 +2832,20 @@ def QuestGames(Setting, role):
                 s = 0.5*9.81*(10:00:10 - 10:00:00)**2 = 0.5*9.81*10**2 = 0.5*9.81*100 = 490.5 meters ~ 1/2 of a km
             '''
             position = start_y + s
-            if position <= ground_y:
+            if position <= ground_y:  # If they are still falling
                 curr_y = position
             else:  # Here, they have landed
                 curr_y = ground_y
                 start_y = ground_y
+        if enemy_y != ground_y:
+            fall_time = time() - enemy_jump_t
+            s = 0.5 * 9.81 * fall_time ** 2
+            position = enemy_y + s
+            if position <= ground_y:
+                curr_enemy_y = position
+            else:
+                curr_enemy_y = ground_y
+                enemy_y = ground_y
 
         keys = pygame.key.get_pressed()
         # If the role moves across the screen (left or right)
@@ -2801,23 +2853,22 @@ def QuestGames(Setting, role):
         if keys[pygame.K_RIGHT]:  # if right arrow was pressed, move right
             if start_x < X - 40:
                 start_x += role.speed * 10
-                role_rect = pygame.Rect(start_x, curr_y, buffer_width, buffer_width)
-                enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
-                renderRole(start_x, curr_y)
-        elif keys[pygame.K_LEFT]:  # if left arrow was pressed, move left
+        if keys[pygame.K_LEFT]:  # if left arrow was pressed, move left
             if start_x > 0:
                 start_x -= role.speed * 10
-                role_rect = pygame.Rect(start_x, curr_y, buffer_width, buffer_width)
-                enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
-                renderRole(start_x, curr_y)
-        else:
-            role_rect = pygame.Rect(start_x, curr_y, buffer_width, buffer_width)
-            enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
-            renderRole(start_x, curr_y)
+        if enemy_options[enemyMove] == "right":
+            if enemy_x < X - 40:
+                enemy_x += a.speed * 10
+        if enemy_options[enemyMove] == "left":
+            if enemy_x > 0:
+                enemy_x -= a.speed * 10
+
+        role_rect = pygame.Rect(start_x, curr_y, buffer_width, buffer_width)
+        enemy_rect = pygame.Rect(enemy_x, curr_enemy_y, buffer_width, buffer_width)
+        renderRole(start_x, curr_y)
 
         for i in range(len(shotsFired)):
             shotsFired[i][0] += 50  # TODO: make the shot speed depend on the role's stats?
-
             beam_rect = pygame.Rect(shotsFired[i][0], shotsFired[i][1], buffer_width / 2,
                                     buffer_width / 4)  # beam object
             if beam_rect.colliderect(enemy_rect) and not shotsFired[i][
@@ -2830,6 +2881,21 @@ def QuestGames(Setting, role):
                     NumberDefeated += 1
                 shotsFired[i][2] = True
             pygame.draw.ellipse(screen, orange, beam_rect)  # Drawing the beam
+
+        for i in range(len(shotsEnemyFired)):
+            shotsEnemyFired[i][0] -= 50  # TODO: make the shot speed depend on the role's stats?
+            beam_rect = pygame.Rect(shotsEnemyFired[i][0], shotsEnemyFired[i][1], buffer_width / 2,
+                                    buffer_width / 4)  # beam object
+            if beam_rect.colliderect(role_rect) and not shotsEnemyFired[i][
+                2]:  # Role was hit and this is not a repeat of the same shot
+                a.attack(role)
+                print(f"Role health = {role.health:.2f}")
+                if role.health <= 0:
+                    print("You died!")
+                    return
+                shotsEnemyFired[i][2] = True
+            pygame.draw.ellipse(screen, red, beam_rect)  # Drawing the beam
+
         pygame.display.update()
 
         if NumberDefeated == 10 or role.health <= 0:
