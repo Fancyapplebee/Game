@@ -128,7 +128,7 @@ cppyy.cppdef(
             this->defense = 100;
             this->expYield = 25;
             this->speed = 1;
-            this->attackStamina = 1.5;
+            this->attackStamina = 0.9;
         }
         else if (name == "DEMON") //least powerful
         {
@@ -138,7 +138,7 @@ cppyy.cppdef(
             this->defense = 20;
             this->expYield = 5;
             this->speed = 1.25;
-            this->attackStamina = 1;
+            this->attackStamina = 0.9;
         }
     }
 
@@ -249,7 +249,7 @@ cppyy.cppdef(
         return ((!moved) || (time() - waitTime >= moveTime));
     }
 
-    //The current has to be at least 'waitTime' further in the future than when the enemy last attacked 'moveTime'
+    //The current BadNPC has to be at least 'waitTime' further in the future than when the BadNPC last attacked 'moveTime'
     bool BadNPC::can_attack()
     {
         return ((!moved) || (time() - waitTime >= moveTime));
@@ -301,6 +301,7 @@ cppyy.cppdef(
         << "\n\n";
     }
 
+    //scaling the BadNPCs stats depending on the Quest#; higher the quest, stronger the BadNPC's
     void BadNPC::statboost(Role& RoleHero)
     {
         double multiplier = (0.2 * RoleHero.questLevel) + 1;
@@ -309,6 +310,7 @@ cppyy.cppdef(
         defense = multiplier * defense;
         expYield = multiplier * expYield;
         speed = multiplier * speed;
+        //TODO: divide stamina by multiplier
     }
 
     std::vector<std::string> Role::printInventory()
@@ -1162,14 +1164,6 @@ def cppStringConvert(string):
     return temp  # a python string
 
 
-def HealthBar(character):
-    print(character.picture)
-    tempHealth = int(character.health)
-    hundreds = tempHealth // 100
-    tempHealth %= 100
-    tens = tempHealth // 10
-    ones = tempHealth % 10
-    print(hundreds * "*" + tens * "=" + ones * "-")
 
 
 class PercyJackson(Role):
@@ -1203,7 +1197,7 @@ class Elf(Role):
         self.health = 50
         self.baseDefense = 200
         self.defense = 200
-        self.attackStamina = 1
+        self.attackStamina = 0.2
         self.defenseStamina = 0.4
         self.speed = 0.1
         self.ExpLevelFunc = lambda x: x ** 1.5
@@ -1229,10 +1223,6 @@ class Zelda(Role):
         #        self.AttackLevelFunc = lambda x: 20*(1-0.05)**x
         self.LevelExp = self.ExpLevelFunc(self.currLevel + 1)
         self.money = 100
-
-
-class GoodNPC:
-    pass
 
 
 class NeutralNPC:
@@ -1268,176 +1258,135 @@ def increaseExp(role, netExp):
         role.currExp = 0
         role.currExp += netExp
 
-
 def Mine(role, setting):
-    global time
-    map()
-    TheSetting = setting.name.upper()
-    print("The objective of this game is to type the letter in time (To stop, type stop)!")
-    Opponent = NeutralNPC()
-    print(f"Get ready, you are about to face the {Opponent.role} {Opponent.picture}")
-    wins = 0
-    losses = 0
-    draws = 0
-    totalplayerscore = 0
-    playeravg = []
-    botavg = []
-    avgtime = []
-    while True:
-        start = time()
-        randletter = choice(ascii_letters)
-        x = input("Enter '{}': (Type 'stop' to stop) ".format(randletter))
-        if cS(x) == "STOP":
-            break
-        stop = time()
-        Time = (stop - start)
-        print("You entered it in {:.2f} seconds!".format(Time))
-        npcTime = 1 + (3 * random())
+        global time
+        map()
+        TheSetting = setting.name.upper()
+        print("The objective of this game is to type the letter in time (To stop, type stop)!")
+        Opponent = NeutralNPC()
+        print(f"Get ready, you are about to face the {Opponent.role} {Opponent.picture}")
+        wins = 0
+        losses = 0
+        draws = 0
+        totalplayerscore = 0
+        playeravg = []
+        botavg = []
+        avgtime = []
+        while True:
+            start = time()
+            randletter = choice(ascii_letters)
+            x = input("Enter '{}': (Type 'stop' to stop) ".format(randletter))
+            if cS(x) == "STOP":
+                break
+            stop = time()
+            Time = (stop - start)
+            print("You entered it in {:.2f} seconds!".format(Time))
+            npcTime = 1 + (3 * random())
 
-        if Time < npcTime and x == randletter:
-            print("You passed!")
-            wins += 1
-            totalplayerscore += 1
-            botavg.append(npcTime)
-            playeravg.append(Time)
-        elif Time > npcTime or x != randletter:
-            print("You lost!")
-            losses += 1
-            totalplayerscore -= 1
-            botavg.append(npcTime)
-            playeravg.append(Time)
-        elif Time == npcTime:  # Probably never happen
-            print("Draw")
-            draws += 1
-            botavg.append(npcTime)
-            playeravg.append(Time)
-    playeravglen = (len(playeravg)) if len(playeravg) != 0 else 1
-    playeravg = sum(playeravg)
-    botavglen = (len(botavg)) if len(botavg) != 0 else 1
-    botavg = sum(botavg)
-    points = wins - losses
+            if Time < npcTime and x == randletter:
+                print("You passed!")
+                wins += 1
+                totalplayerscore += 1
+                botavg.append(npcTime)
+                playeravg.append(Time)
+            elif Time > npcTime or x != randletter:
+                print("You lost!")
+                losses += 1
+                totalplayerscore -= 1
+                botavg.append(npcTime)
+                playeravg.append(Time)
+            elif Time == npcTime:  # Probably never happen
+                print("Draw")
+                draws += 1
+                botavg.append(npcTime)
+                playeravg.append(Time)
+        playeravglen = (len(playeravg)) if len(playeravg) != 0 else 1
+        playeravg = sum(playeravg)
+        botavglen = (len(botavg)) if len(botavg) != 0 else 1
+        botavg = sum(botavg)
+        points = wins - losses
 
-    netExp = points * Opponent.expYield if points >= 0 else 0
+        netExp = points * Opponent.expYield if points >= 0 else 0
 
-    #    role.currExp += netExp
-    #    while role.currExp > role.LevelExp:
-    #        role.currLevel += 1 #Increase the level of the role
-    #        netExp = role.currExp - role.LevelExp
-    #        role.LevelExp = role.ExpLevelFunc(role.currLevel+1)
-    #        role.currExp = 0
-    #        role.currExp += netExp
+        #    role.currExp += netExp
+        #    while role.currExp > role.LevelExp:
+        #        role.currLevel += 1 #Increase the level of the role
+        #        netExp = role.currExp - role.LevelExp
+        #        role.LevelExp = role.ExpLevelFunc(role.currLevel+1)
+        #        role.currExp = 0
+        #        role.currExp += netExp
 
-    increaseExp(role, netExp)
+        increaseExp(role, netExp)
 
-    if playeravg / playeravglen < botavg / botavglen:
-        print(f"You get 5 extra resources because your avg was better than the {Opponent.role} {Opponent.picture}!")
-        points += 5
+        if playeravg / playeravglen < botavg / botavglen:
+            print(f"You get 5 extra resources because your avg was better than the {Opponent.role} {Opponent.picture}!")
+            points += 5
 
-    #        cookie              2-3     1-.1
-    #        logs                3-4     .1-.01
-    #        sands               0       100
-    #        rocks               2       1
-    #        silvers             4       .01
-    #        golds               5       .001
-    #        diamonds            7       .00001
-    #        emeralds            7       .00001
-    #        cactuses            3       .1
-    #        golden saplings     8       .000001
-    #        golden logs         8       .000001
-    #        sand pails          5       .001
+        #        cookie              2-3     1-.1
+        #        logs                3-4     .1-.01
+        #        sands               0       100
+        #        rocks               2       1
+        #        silvers             4       .01
+        #        golds               5       .001
+        #        diamonds            7       .00001
+        #        emeralds            7       .00001
+        #        cactuses            3       .1
+        #        golden saplings     8       .000001
+        #        golden logs         8       .000001
+        #        sand pails          5       .001
 
-    if TheSetting == "BEACH":
-        role.numInv["Sands"]["Number"] += points
+        if TheSetting == "BEACH":
+            role.numInv["Sands"]["Number"] += points
 
-    #    3 <= x <= 5 #x is between 3 and 5 inclusive
-    #    3 < x < 5 #x is between 3 and 5 exclusive
-    elif TheSetting == "FOREST":
-        for i in range(points):
-            Temprand = randint(1, 1e8)
-            if Temprand == 1e8:
-                role.numInv["Golden Saplings"]["Number"] += 1
-            elif Temprand == 1:
-                role.numInv["Golden Logs"]["Number"] += 1
-            elif 10000 <= Temprand <= 100000:
-                role.numInv["Logs"]["Number"] += 1
+        #    3 <= x <= 5 #x is between 3 and 5 inclusive
+        #    3 < x < 5 #x is between 3 and 5 exclusive
+        elif TheSetting == "FOREST":
+            for i in range(points):
+                Temprand = randint(1, 1e8)
+                if Temprand == 1e8:
+                    role.numInv["Golden Saplings"]["Number"] += 1
+                elif Temprand == 1:
+                    role.numInv["Golden Logs"]["Number"] += 1
+                elif 10000 <= Temprand <= 100000:
+                    role.numInv["Logs"]["Number"] += 1
 
-    elif TheSetting == "HOUSE":
-        for i in range(points):
-            Temprand = randint(1, 1000)
-            if 1 <= Temprand <= 5:
-                role.numInv["Cookies"]["Number"] += 1
+        elif TheSetting == "HOUSE":
+            for i in range(points):
+                Temprand = randint(1, 1000)
+                if 1 <= Temprand <= 5:
+                    role.numInv["Cookies"]["Number"] += 1
 
-    elif TheSetting == "MOUNTAIN":
-        for i in range(points):
-            Temprand = randint(1, 1e7)
-            if 1 <= Temprand <= 1000:
-                role.numInv["Silvers"]["Number"] += 1
-            elif 1001 <= Temprand <= 1100:
-                role.numInv["Golds"]["Number"] += 1
-            elif Temprand == 1101:
-                role.numInv["Diamonds"]["Number"] += 1
-            elif Temprand == 1102:
-                role.numInv["Emeralds"]["Number"] += 1
-                # 10000
-            elif 1103 <= Temprand <= 101102:
-                role.numInv["Rocks"]["Number"] += 1
+        elif TheSetting == "MOUNTAIN":
+            for i in range(points):
+                Temprand = randint(1, 1e7)
+                if 1 <= Temprand <= 1000:
+                    role.numInv["Silvers"]["Number"] += 1
+                elif 1001 <= Temprand <= 1100:
+                    role.numInv["Golds"]["Number"] += 1
+                elif Temprand == 1101:
+                    role.numInv["Diamonds"]["Number"] += 1
+                elif Temprand == 1102:
+                    role.numInv["Emeralds"]["Number"] += 1
+                    # 10000
+                elif 1103 <= Temprand <= 101102:
+                    role.numInv["Rocks"]["Number"] += 1
 
-    elif TheSetting == "DESERT":
-        role.numInv["Sands"]["Number"] += points
-        for i in range(points):
-            Temprand = randint(1, 1000)
-            if Temprand == 1:
-                role.numInv["Cactuses"]["Number"] += 1
+        elif TheSetting == "DESERT":
+            role.numInv["Sands"]["Number"] += points
+            for i in range(points):
+                Temprand = randint(1, 1000)
+                if Temprand == 1:
+                    role.numInv["Cactuses"]["Number"] += 1
 
-    print("The player average is {:.2f} seconds".format(playeravg / playeravglen))
-    print("The {} {} average is {:.2f} seconds".format(Opponent.role, Opponent.picture, botavg / botavglen))
-    print("You got {} resources in total!".format(points))
-    print("You won {} games!".format(wins))
-    print("You lost {} games!".format(losses))
-    print("{} is the number of games that drawed!".format(draws))
+        print("The player average is {:.2f} seconds".format(playeravg / playeravglen))
+        print("The {} {} average is {:.2f} seconds".format(Opponent.role, Opponent.picture, botavg / botavglen))
+        print("You got {} resources in total!".format(points))
+        print("You won {} games!".format(wins))
+        print("You lost {} games!".format(losses))
+        print("{} is the number of games that drawed!".format(draws))
 
-    return points
+        return points
 
-
-# Setting Types
-class Setting:
-    def map(self):
-        print("------")
-        print("Places")
-        print("------")
-        for place in self.places:
-            print(place)
-        print()
-
-
-class House(Setting):
-    def __init__(self):
-        self.name = "House"
-        self.places = ("FRIDGE",)
-
-
-class Beach(Setting):
-    def __init__(self):
-        self.name = "Beach"
-        self.places = ("SANDBAR", "CASTLE", "OCEAN")  # Fill this up
-
-
-class Forest(Setting):
-    def __init__(self):
-        self.name = "Forest"
-        self.places = ("TREE",)  # Fill this up
-
-
-class Mountain(Setting):
-    def __init__(self):
-        self.name = "Mountain"
-        self.places = ("CAVE", "TOP")  # Fill this up
-
-
-class Desert(Setting):
-    def __init__(self):
-        self.name = "Desert"
-        self.places = ("LANDSCAPE", "HILLSIDE")  # Fill this up
 
 
 def displayHeroes(printing=False):
@@ -1449,189 +1398,7 @@ def displayHeroes(printing=False):
     return lines
 
 
-def map():
-    print("------")
-    print("Places")
-    print("------")
-    for place in places:
-        print(place)
-    print()
 
-
-def search(setting, role):
-    currentTime = time()
-    if currentTime - role.searchTime < 86400:
-        print(
-            f"Sorry, you cannot search at this point!\nTime until you can search again = {86400 - (currentTime - role.searchTime):.2f} seconds")
-        return
-
-    print("------")
-    print("Places")
-    print("------")
-    for place in setting.places:
-        print(place)
-    print("------")
-    place = cS(input(f"Where in the {setting.name} do you want to explore? "))
-    while place not in setting.places:
-        print("Try again!")
-        place = cS(input(f"Where in the {setting.name} do you want to explore? "))
-
-    #        item                OM      prob (percentage out of 100)
-    #
-    #
-    #        cookie              2-3     1-.1
-    #        logs                3-4     .1-.01
-    #        sands               0       100
-    #        rocks               2       1
-    #        silvers             4       .01
-    #        golds               5       .001
-    #        diamonds            7       .00001
-    #        emeralds            7       .00001
-    #        cactuses            3       .1
-    #        golden saplings     8       .000001
-    #        golden logs         8       .000001
-    #        sand pails          5       .001
-
-    if place == "SANDBAR":
-        Chances = randint(1, 100000)
-        role.numInv["Sands"]["Number"] += 1
-        print("You got SAND!")
-        if Chances == 1:
-            role.numInv["Sand Pails"]["Number"] += 1
-            print("You got a Sand Pail!")
-
-    elif place == "HILLSIDE":
-        Chances = randint(1, 1000)
-        role.numInv["Sands"]["Number"] += 1
-        print("You got SAND!")
-        if Chances == 1:
-            role.numInv["Cactuses"]["Number"] += 1
-            print("You found a cactus!")
-
-    elif place == "CASTLE":
-        Chances = randint(1, 1e8)
-        if Chances == 1:
-            role.numInv["Golden Logs"] += 1
-            print("SUPER RARE DROP: Golden Log!")
-        elif 2 <= Chances <= 11:
-            role.numInv["Emeralds"]["Number"] += 1
-            print("You got an emerald.")
-        else:
-            print("Nothing found.")
-
-    elif place == "OCEAN":
-        Chances = randint(1, 1e5)
-        if Chances == 1:
-            role.numInv["Golds"]["Number"] += 1
-            print("You got gold!")
-        else:
-            print("Nothing found.")
-    elif place == "FRIDGE":
-        Chances = randint(1, 1000)
-        if 1 <= Chances <= 5:
-            role.numInv["Cookies"]["Number"] += 1
-            print("You got a cookie!")
-        else:
-            print("Nothing found.")
-
-    elif place == "TREE":
-        Chances = randint(1, 1000)
-        if 1 <= Chances <= 5:
-            role.numInv["Apple"]["Number"] += 1
-            print("You got an apple!")
-        else:
-            print("Nothing found.")
-
-
-    elif place == "CAVE":
-        Chances = randint(1, 10000)
-        if Chances == 1:
-            role.numInv["Silvers"]["Number"] += 1
-            print("You got a piece of silver!")
-        elif 2 <= Chances <= 101:
-            role.numInv["Rocks"]["Number"] += 1
-            print("You got a rock!")
-        else:
-            print("Nothing found.")
-
-    #    100000/10 = 10000 -> 1e5/10 = 1e4
-    #   1/100 = 10/1000 = 100/10000 = 1000/100000
-    elif place == "TOP":
-        Chances = randint(1, 1e5)
-        if Chances == 1:
-            role.numInv["Golds"]["Number"] += 1
-            print("You got a piece of gold!")
-        elif 2 <= Chances <= 11:
-            role.numInv["Silvers"]["Number"] += 1
-            print("You got a piece of silver!")
-
-        elif 12 <= Chances <= 1011:
-            role.numInv["Rocks"]["Number"] += 1
-            print("You got a rock!")
-        else:
-            print("Nothing found.")
-
-
-    elif place == "LANDSCAPE":
-        Chances = randint(1, 100000)
-        role.numInv["Sands"]["Number"] += 1
-        print("You got SAND!")
-        if Chances == 1:
-            role.numInv["Sand Pails"]["Number"] += 1
-            print("You found a sand pail!")
-        elif 2 <= Chances <= 11:
-            role.numInv["Cactuses"]["Number"] += 1
-            print("You found a cactus!")
-        else:
-            print("Nothing found.")
-
-    role.searchTime = time()
-    return place
-
-
-def DictKeyFormatter(str):
-    return " ".join([temp[0] + temp[1:].lower() for temp in str])
-
-
-#            TODO: Create a boolean function that takes AmountToTradeFor, AmountToTradeFor, and SellInfo, and returns true if it can be traded for and false otherwise. If the user already has one, don't let the user buy another one.
-# TODO: have an upgrade function for the tradeitem
-
-def TradeFor(Role, SellInfo, RequiredTradeItems, TradeOption):
-    # Check if the user already has the item (TradeOption)
-    if Role.numInv[TradeOption]["Number"] > 0:
-        print(f"Sorry, you seem to already have {TradeOption}")
-        return
-
-    # Checking if the user has everything that's need to trade for it
-    for i in RequiredTradeItems:
-        tradeItem = cppStringConvert(i.first)
-
-        if tradeItem == "Money":
-            # Check if the user has enough money
-            if Role.money < RequiredTradeItems["Money"]:
-                print("Sorry, you do not have enough money!")
-                return
-        # Check that the user has the given required item
-        elif tradeItem not in SellInfo:
-            print(f"Sorry, you do not have any {tradeItem}")
-            return
-        # Check that the user has enough of the given required item
-        elif Role.numInv[tradeItem]["Number"] < int(i.second):
-            print(
-                f'Sorry, you do not have enough {tradeItem}. You only have {Role.numInv[tradeItem]["Number"]} out of {i.second:0.0f}')
-            return
-
-    # Get the items from the user
-    for i in RequiredTradeItems:
-        tradeItem = cppStringConvert(i.first)
-        if tradeItem == "Money":
-            Role.money -= RequiredTradeItems["Money"]
-        else:
-            # decrease item in user's inventory by 1
-            Role.numInv[tradeItem]["Number"] -= 1
-
-    # Give the user the item
-    Role.numInv[TradeOption]["Number"] += 1
 
 
 # User can buy or sell as many items as they wish, given that they have enough
@@ -1807,168 +1574,6 @@ def ProcessInvRequest(role):
         print()
 
 
-def Menu(role, setting):
-    # Only going to execute once
-    if Quests == False:
-        option = cS(input("Enter either 'Map' or 'Search' or 'Stats' "))
-        # Input validation
-        while option not in ("MAP", "SEARCH", "STATS"):
-            print("Try again!")
-            option = cS(input("Enter either 'Map' or 'Search'  or 'Stats' "))
-        if option == "MAP":
-            setting.map()
-        elif option == "SEARCH":
-            search(setting, role)
-        elif option == "STATS":
-            role.baseLineStats()
-
-    # Will go on until user enters "Quests"
-    elif Quests == True or Shop == True:
-        '''
-        Enter one of the following options
-        ==================================
-
-        '''
-        option = cS(input(
-            "Enter one of the following options\n==================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
-
-        # Input validation
-        while option not in ("MAP", "SEARCH", "QUESTS", "MINE", "INV", "SHOP", "STATS"):
-            print("Try again!")
-            option = cS(input(
-                "Enter one of the following options\n==================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
-
-        while option in ("MAP", "SEARCH", "MINE", "INV", "SHOP", "STATS"):
-            if option == "MAP":
-                setting.map()
-                option = GetMenuOption()
-            elif option == "SEARCH":
-                search(setting, role)
-                option = GetMenuOption()
-            elif option == "STATS":
-                role.baseLineStats()
-                option = GetMenuOption()
-            elif option == "MINE":
-                Mine(role, setting)
-                option = GetMenuOption()
-            elif option == "INV":
-                ProcessInvRequest(role)
-                option = GetMenuOption()
-            elif option == "SHOP":
-                if Shop == True:
-                    shop(role)
-                    option = GetMenuOption()
-                else:
-                    print("You do not have access to the shop yet!")
-                    option = GetMenuOption()
-
-
-def Quest1(RoleHero):
-    # Implementing stacking, so they can only defend 10 times
-    #    Stack1 = False
-    #    Stack2 = False
-    #    Stack3 = False
-    #    Stack4 = False
-    #    Stack5 = False
-    #    Stack6 = False
-    #    Stack7 = False
-    #    Stack8 = False
-    #    Stack9 = False
-    #    Stack10 = False
-
-    Stacks = [False] * (
-            RoleHero.currLevel + 1)  # Maybe change this if it becomes possible to increase level before this quest
-
-    def DefenseWait(index):
-        sleep(5)
-        if RoleHero.defense >= RoleHero.baseDefense + 250:
-            RoleHero.defense -= 250
-        # decrease the defense by one notch here
-        Stacks[index] = False
-
-    global badNPCs  # we're saying that we will be using the global variable badNPCs
-    NumberDefeated = 0
-    expEarned = 0
-    while NumberDefeated < 10 or RoleHero.health <= 0:
-        randnum = randint(1, 100)
-        start = 1
-        end = 0
-        #        {"NINJA":0.05,"OGRE":0.01, "DEMON":0.94}
-        #
-        for b in badNPCs:
-            end += int(b.second * 100)  # probability of spawning
-            if start <= randnum <= end:
-                # Fight!
-                a = BadNPC(cppStringConvert(b.first))  # we are spawning an enemy here
-                a.statboost(RoleHero)
-
-                HealthBar(a)
-                HealthBar(RoleHero)
-                # Fight
-                enemyMove = 1 if randint(1, 2) == 1 else 2
-                enemyMoved = False
-                ETTMA = random() / 2  # Enemy Time To Move Again
-                while RoleHero.health > 0 and a.health > 0:
-                    try:
-                        start = time()  # 100000000
-                        TimeToMove = random() * 3  # 4
-                        if RoleHero.defending == True and start - RoleHero.moveTime > 0.1:
-                            print("Defense Boost expired")
-                            RoleHero.defending == False
-                            RoleHero.defense = RoleHero.baseDefense
-
-                        move = inputimeout(prompt="1. to attack, 2. for temporary defense boost: ", timeout=TimeToMove)
-                        while move != "1" and move != "2":
-                            TimeToMove = TimeToMove + start - time()  # 100000004
-                            if TimeToMove > 0:
-                                move = inputimeout(prompt="1. to attack, 2. for temporary defense boost: ",
-                                                   timeout=TimeToMove)
-                            else:
-                                raise TimeoutOccurred
-                        #                        print(move)
-                        #                        print(a.health)
-                        if move == "1":
-                            RoleHero.attack(a)
-                        if move == "2":
-
-                            if all(Stacks):
-                                print("You have reached your defense boost cap!")
-                            else:
-                                for stack in range(len(Stacks)):
-                                    if Stacks[stack] == False:
-                                        Stacks[stack] = True
-                                        Thread(target=DefenseWait, args=(stack,)).start()
-                                        break
-                                RoleHero.defend()
-
-
-                    except TimeoutOccurred:
-                        start = time()
-                        if RoleHero.defending == True and start - RoleHero.moveTime > 0.1:
-                            print("Defense Boost expired")
-                            RoleHero.defending == False
-                            RoleHero.defense = RoleHero.baseDefense
-
-                        a.attack(RoleHero)
-                        if RoleHero.defending == True:
-                            RoleHero.defense = RoleHero.baseDefense
-                            RoleHero.defending = False
-                        print(f"You were attacked! You have {RoleHero.health:.2f} remaining")
-
-                if RoleHero.health <= 0:
-                    print("You are destroyed!")
-                    return
-                NumberDefeated += 1
-                expEarned += a.expYield
-
-            start = end + 1
-    print("You have completed the quest!")
-    RoleHero.defense = RoleHero.baseDefense  # Resetting the defense
-    RoleHero.numInv["Key 1"]["Number"] = 1
-    print("You now have access to the shop")
-    RoleHero.questLevel += 1
-    RoleHero.numInv["Potion"]["Number"] += 1
-    increaseExp(RoleHero, expEarned)
 
 
 def HeroGame(playerhero):
@@ -2081,24 +1686,15 @@ def openChestOption(optionNumber=None):
                  color=(orange if optionNumber == 0 else black)) if optionNumber == 0 else pygame_print("Yes",
                                                                                                         Y // 1.5 + 60,
                                                                                                         color=black)
-    pygame.display.update()
     pygame_print("No", Y // 1.5 + 100, color=(orange if optionNumber == 1 else black))
     pygame.display.update()
 
 
 def PlaceOption(optionNumber=None):
     pygame_print("House", 150, color=(orange if optionNumber == 0 else black))
-    pygame.display.update()
-
     pygame_print("Beach", 190, color=(orange if optionNumber == 1 else black))
-    pygame.display.update()
-
     pygame_print("Forest", 230, color=(orange if optionNumber == 2 else black))
-    pygame.display.update()
-
     pygame_print("Mountain", 270, color=(orange if optionNumber == 3 else black))
-    pygame.display.update()
-
     pygame_print("Desert", 310, color=(orange if optionNumber == 4 else black))
     pygame.display.update()
 
@@ -2178,7 +1774,7 @@ def search(setting, role):
 
         pygame.display.update()
         pygame.time.delay(1000)
-
+        pygame.event.get()
         return
 
     optionNumber = 0
@@ -2322,7 +1918,6 @@ def search(setting, role):
         pygame.display.update()
         pygame.time.delay(1000)  # waiting one second
 
-
     elif setting.places[optionNumber] == "CAVE":
         Chances = randint(1, 10000)
         if Chances == 1:
@@ -2441,7 +2036,6 @@ def Mine(role, setting):
 
     screen.fill(white)
     global time, font
-    map()
     TheSetting = setting.name.upper()
     message = "The objective of this game is to click on the item in time (To stop, type stop)!"
     Opponent = NeutralNPC()
@@ -2814,7 +2408,7 @@ def QuestGames(Setting, role):
             enemy_y -= 200
             curr_enemy_y = enemy_y
             enemy_jump_t = time()
-        if enemy_options[enemyMove] == "attack":
+        if enemy_options[enemyMove] == "attack" and a.can_attack():
             beam_x = enemy_x + buffer_width
             beam_y = curr_enemy_y + buffer_width + beam_y_offset
             # Puts the coordinate of the shots fired on the screen
@@ -3058,6 +2652,7 @@ def game():
                             updateList(heroes, optionNumber)  # update screen
                         elif event.key == pygame.K_RETURN:
                             playerhero = heroes[optionNumber]
+                            pygame.event.get()  # https://www.pygame.org/docs/ref/event.html#pygame.event.get
                             if playerhero == "PERCY JACKSON":
                                 displayImage("percy-start.png", p=1)
                                 pygame.time.delay(2000)
@@ -3098,8 +2693,9 @@ def game():
                             pygame.display.update()
 
                             pygame.time.delay(250)
-                            openChestOption(optionNumber)
+                            openChestOption(optionNumber)  # Displaying 'Yes' and 'No'
                             dispayedChest = True
+                            pygame.event.get()  # We don't want the enter that they press to do anything until 'Yes' and 'No' are displayed
 
                 elif dispayedChest and not displayedPlaces:
 
@@ -3122,12 +2718,15 @@ def game():
                                 textRect.center = (X // 2, Y // 1.5)
                                 screen.blit(text, textRect)
                                 pygame.display.update()
+
                                 pygame.time.delay(1000)  # Can change later
 
                             screen.fill(white)
                             pygame.display.update()
                             displayedPlaces = True
                             optionNumber = 0
+
+                        pygame.event.get()  # Clear any keys that were pressed in this if-block
 
                 elif displayedPlaces and not Quests:
                     font = pygame.font.Font('freesansbold.ttf', 28)
@@ -3175,7 +2774,7 @@ def game():
                                 displayImage("StartDesert.png", p=1)
                                 pygame.time.delay(2000)
                                 Place = Desert()
-
+                            pygame.event.get()  # Clear any keys that were pressed in this if-block before displaying the menu
                             Menu(RoleHero, Place)
                             Quests = True
                             pygame.display.update()
@@ -3214,7 +2813,7 @@ def game():
                             pygame.display.update()
                             pygame.time.delay(1000)
 
-
+                            pygame.event.get()  # Clear any keys that were pressed in this if-block
                 elif Quests:
                     while True:
                         Menu(RoleHero, Place)
