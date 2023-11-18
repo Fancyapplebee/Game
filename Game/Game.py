@@ -1164,8 +1164,6 @@ def cppStringConvert(string):
     return temp  # a python string
 
 
-
-
 class PercyJackson(Role):
     def __init__(self, name):
         super().__init__(name)
@@ -1258,135 +1256,135 @@ def increaseExp(role, netExp):
         role.currExp = 0
         role.currExp += netExp
 
+
 def Mine(role, setting):
-        global time
-        map()
-        TheSetting = setting.name.upper()
-        print("The objective of this game is to type the letter in time (To stop, type stop)!")
-        Opponent = NeutralNPC()
-        print(f"Get ready, you are about to face the {Opponent.role} {Opponent.picture}")
-        wins = 0
-        losses = 0
-        draws = 0
-        totalplayerscore = 0
-        playeravg = []
-        botavg = []
-        avgtime = []
-        while True:
-            start = time()
-            randletter = choice(ascii_letters)
-            x = input("Enter '{}': (Type 'stop' to stop) ".format(randletter))
-            if cS(x) == "STOP":
-                break
-            stop = time()
-            Time = (stop - start)
-            print("You entered it in {:.2f} seconds!".format(Time))
-            npcTime = 1 + (3 * random())
+    global time
+    map()
+    TheSetting = setting.name.upper()
+    print("The objective of this game is to type the letter in time (To stop, type stop)!")
+    Opponent = NeutralNPC()
+    print(f"Get ready, you are about to face the {Opponent.role} {Opponent.picture}")
+    wins = 0
+    losses = 0
+    draws = 0
+    totalplayerscore = 0
+    playeravg = []
+    botavg = []
+    avgtime = []
+    while True:
+        start = time()
+        randletter = choice(ascii_letters)
+        x = input("Enter '{}': (Type 'stop' to stop) ".format(randletter))
+        if cS(x) == "STOP":
+            break
+        stop = time()
+        Time = (stop - start)
+        print("You entered it in {:.2f} seconds!".format(Time))
+        npcTime = 1 + (3 * random())
 
-            if Time < npcTime and x == randletter:
-                print("You passed!")
-                wins += 1
-                totalplayerscore += 1
-                botavg.append(npcTime)
-                playeravg.append(Time)
-            elif Time > npcTime or x != randletter:
-                print("You lost!")
-                losses += 1
-                totalplayerscore -= 1
-                botavg.append(npcTime)
-                playeravg.append(Time)
-            elif Time == npcTime:  # Probably never happen
-                print("Draw")
-                draws += 1
-                botavg.append(npcTime)
-                playeravg.append(Time)
-        playeravglen = (len(playeravg)) if len(playeravg) != 0 else 1
-        playeravg = sum(playeravg)
-        botavglen = (len(botavg)) if len(botavg) != 0 else 1
-        botavg = sum(botavg)
-        points = wins - losses
+        if Time < npcTime and x == randletter:
+            print("You passed!")
+            wins += 1
+            totalplayerscore += 1
+            botavg.append(npcTime)
+            playeravg.append(Time)
+        elif Time > npcTime or x != randletter:
+            print("You lost!")
+            losses += 1
+            totalplayerscore -= 1
+            botavg.append(npcTime)
+            playeravg.append(Time)
+        elif Time == npcTime:  # Probably never happen
+            print("Draw")
+            draws += 1
+            botavg.append(npcTime)
+            playeravg.append(Time)
+    playeravglen = (len(playeravg)) if len(playeravg) != 0 else 1
+    playeravg = sum(playeravg)
+    botavglen = (len(botavg)) if len(botavg) != 0 else 1
+    botavg = sum(botavg)
+    points = wins - losses
 
-        netExp = points * Opponent.expYield if points >= 0 else 0
+    netExp = points * Opponent.expYield if points >= 0 else 0
 
-        #    role.currExp += netExp
-        #    while role.currExp > role.LevelExp:
-        #        role.currLevel += 1 #Increase the level of the role
-        #        netExp = role.currExp - role.LevelExp
-        #        role.LevelExp = role.ExpLevelFunc(role.currLevel+1)
-        #        role.currExp = 0
-        #        role.currExp += netExp
+    #    role.currExp += netExp
+    #    while role.currExp > role.LevelExp:
+    #        role.currLevel += 1 #Increase the level of the role
+    #        netExp = role.currExp - role.LevelExp
+    #        role.LevelExp = role.ExpLevelFunc(role.currLevel+1)
+    #        role.currExp = 0
+    #        role.currExp += netExp
 
-        increaseExp(role, netExp)
+    increaseExp(role, netExp)
 
-        if playeravg / playeravglen < botavg / botavglen:
-            print(f"You get 5 extra resources because your avg was better than the {Opponent.role} {Opponent.picture}!")
-            points += 5
+    if playeravg / playeravglen < botavg / botavglen:
+        print(f"You get 5 extra resources because your avg was better than the {Opponent.role} {Opponent.picture}!")
+        points += 5
 
-        #        cookie              2-3     1-.1
-        #        logs                3-4     .1-.01
-        #        sands               0       100
-        #        rocks               2       1
-        #        silvers             4       .01
-        #        golds               5       .001
-        #        diamonds            7       .00001
-        #        emeralds            7       .00001
-        #        cactuses            3       .1
-        #        golden saplings     8       .000001
-        #        golden logs         8       .000001
-        #        sand pails          5       .001
+    #        cookie              2-3     1-.1
+    #        logs                3-4     .1-.01
+    #        sands               0       100
+    #        rocks               2       1
+    #        silvers             4       .01
+    #        golds               5       .001
+    #        diamonds            7       .00001
+    #        emeralds            7       .00001
+    #        cactuses            3       .1
+    #        golden saplings     8       .000001
+    #        golden logs         8       .000001
+    #        sand pails          5       .001
 
-        if TheSetting == "BEACH":
-            role.numInv["Sands"]["Number"] += points
+    if TheSetting == "BEACH":
+        role.numInv["Sands"]["Number"] += points
 
-        #    3 <= x <= 5 #x is between 3 and 5 inclusive
-        #    3 < x < 5 #x is between 3 and 5 exclusive
-        elif TheSetting == "FOREST":
-            for i in range(points):
-                Temprand = randint(1, 1e8)
-                if Temprand == 1e8:
-                    role.numInv["Golden Saplings"]["Number"] += 1
-                elif Temprand == 1:
-                    role.numInv["Golden Logs"]["Number"] += 1
-                elif 10000 <= Temprand <= 100000:
-                    role.numInv["Logs"]["Number"] += 1
+    #    3 <= x <= 5 #x is between 3 and 5 inclusive
+    #    3 < x < 5 #x is between 3 and 5 exclusive
+    elif TheSetting == "FOREST":
+        for i in range(points):
+            Temprand = randint(1, 1e8)
+            if Temprand == 1e8:
+                role.numInv["Golden Saplings"]["Number"] += 1
+            elif Temprand == 1:
+                role.numInv["Golden Logs"]["Number"] += 1
+            elif 10000 <= Temprand <= 100000:
+                role.numInv["Logs"]["Number"] += 1
 
-        elif TheSetting == "HOUSE":
-            for i in range(points):
-                Temprand = randint(1, 1000)
-                if 1 <= Temprand <= 5:
-                    role.numInv["Cookies"]["Number"] += 1
+    elif TheSetting == "HOUSE":
+        for i in range(points):
+            Temprand = randint(1, 1000)
+            if 1 <= Temprand <= 5:
+                role.numInv["Cookies"]["Number"] += 1
 
-        elif TheSetting == "MOUNTAIN":
-            for i in range(points):
-                Temprand = randint(1, 1e7)
-                if 1 <= Temprand <= 1000:
-                    role.numInv["Silvers"]["Number"] += 1
-                elif 1001 <= Temprand <= 1100:
-                    role.numInv["Golds"]["Number"] += 1
-                elif Temprand == 1101:
-                    role.numInv["Diamonds"]["Number"] += 1
-                elif Temprand == 1102:
-                    role.numInv["Emeralds"]["Number"] += 1
-                    # 10000
-                elif 1103 <= Temprand <= 101102:
-                    role.numInv["Rocks"]["Number"] += 1
+    elif TheSetting == "MOUNTAIN":
+        for i in range(points):
+            Temprand = randint(1, 1e7)
+            if 1 <= Temprand <= 1000:
+                role.numInv["Silvers"]["Number"] += 1
+            elif 1001 <= Temprand <= 1100:
+                role.numInv["Golds"]["Number"] += 1
+            elif Temprand == 1101:
+                role.numInv["Diamonds"]["Number"] += 1
+            elif Temprand == 1102:
+                role.numInv["Emeralds"]["Number"] += 1
+                # 10000
+            elif 1103 <= Temprand <= 101102:
+                role.numInv["Rocks"]["Number"] += 1
 
-        elif TheSetting == "DESERT":
-            role.numInv["Sands"]["Number"] += points
-            for i in range(points):
-                Temprand = randint(1, 1000)
-                if Temprand == 1:
-                    role.numInv["Cactuses"]["Number"] += 1
+    elif TheSetting == "DESERT":
+        role.numInv["Sands"]["Number"] += points
+        for i in range(points):
+            Temprand = randint(1, 1000)
+            if Temprand == 1:
+                role.numInv["Cactuses"]["Number"] += 1
 
-        print("The player average is {:.2f} seconds".format(playeravg / playeravglen))
-        print("The {} {} average is {:.2f} seconds".format(Opponent.role, Opponent.picture, botavg / botavglen))
-        print("You got {} resources in total!".format(points))
-        print("You won {} games!".format(wins))
-        print("You lost {} games!".format(losses))
-        print("{} is the number of games that drawed!".format(draws))
+    print("The player average is {:.2f} seconds".format(playeravg / playeravglen))
+    print("The {} {} average is {:.2f} seconds".format(Opponent.role, Opponent.picture, botavg / botavglen))
+    print("You got {} resources in total!".format(points))
+    print("You won {} games!".format(wins))
+    print("You lost {} games!".format(losses))
+    print("{} is the number of games that drawed!".format(draws))
 
-        return points
-
+    return points
 
 
 def displayHeroes(printing=False):
@@ -1396,9 +1394,6 @@ def displayHeroes(printing=False):
     lines.append("")
     print("\n".join(lines)) if not printing else print()
     return lines
-
-
-
 
 
 # User can buy or sell as many items as they wish, given that they have enough
@@ -1572,8 +1567,6 @@ def ProcessInvRequest(role):
         print()
         role.useInv[DictKeyFormatter(option)]["Use"]()
         print()
-
-
 
 
 def HeroGame(playerhero):
@@ -1774,7 +1767,7 @@ def search(setting, role):
 
         pygame.display.update()
         pygame.time.delay(1000)
-        pygame.event.get()
+        pygame.event.clear(eventtype=pygame.KEYDOWN)
         return
 
     optionNumber = 0
@@ -2374,6 +2367,7 @@ def QuestGames(Setting, role):
     shotsFired = deque([], maxlen=10)
     shotsEnemyFired = deque([], maxlen=10)
     beam_y_offset = -5
+    K = 10  # Constant factor
 
     global badNPCs  # we're saying that we will be using the global variable badNPCs
     NumberDefeated = 0
@@ -2397,15 +2391,8 @@ def QuestGames(Setting, role):
                         # Update the wait-time here.
                         role.update_wait_time()
 
-                elif event.key == pygame.K_UP:  # Checking if the role decided to jump
-                    if start_y == ground_y:  # If the hero is on the ground, then they can jump
-                        start_y -= 200  # TODO: make the height of the jump depend on the role's stats, e.g., stamina?
-                        curr_y = start_y
-                        # Now, the hero is in free-fall we need to start a timer to figure out what's their y-position at a given time
-                        role_jump_t = time()
-
-        if enemy_options[enemyMove] == "jump" and enemy_y == ground_y:
-            enemy_y -= 200
+        if enemy_options[enemyMove] == "jump" and enemy_y + 200 >= ground_y:
+            enemy_y -= 5
             curr_enemy_y = enemy_y
             enemy_jump_t = time()
         if enemy_options[enemyMove] == "attack" and a.can_attack():
@@ -2415,9 +2402,11 @@ def QuestGames(Setting, role):
             shotsEnemyFired.append([beam_x, beam_y, False])
             a.update_wait_time()
 
+        keys = pygame.key.get_pressed()
+
         if start_y != ground_y:  # if the hero is in free-fall
             fall_time = time() - role_jump_t
-            s = 0.5 * 9.81 * fall_time ** 2  # The absolute value the hero has fallen since role_jump_t
+            s = K * 0.5 * 9.81 * fall_time ** 2  # The absolute value the hero has fallen since role_jump_t
 
             '''
             Example: You fell from a cliff 2 km above sea-level at 10:00:00.
@@ -2433,7 +2422,7 @@ def QuestGames(Setting, role):
                 start_y = ground_y
         if enemy_y != ground_y:
             fall_time = time() - enemy_jump_t
-            s = 0.5 * 9.81 * fall_time ** 2
+            s = K * 0.5 * 9.81 * fall_time ** 2
             position = enemy_y + s
             if position <= ground_y:
                 curr_enemy_y = position
@@ -2441,15 +2430,20 @@ def QuestGames(Setting, role):
                 curr_enemy_y = ground_y
                 enemy_y = ground_y
 
-        keys = pygame.key.get_pressed()
         # If the role moves across the screen (left or right)
         # ===================================================
         if keys[pygame.K_RIGHT]:  # if right arrow was pressed, move right
             if start_x < X - 40:
-                start_x += role.speed * 10
+                start_x += role.speed * 20
         if keys[pygame.K_LEFT]:  # if left arrow was pressed, move left
             if start_x > 0:
-                start_x -= role.speed * 10
+                start_x -= role.speed * 20
+        if keys[pygame.K_UP]:
+            if start_y + 200 >= ground_y:  # Check if they can keep going higher
+                start_y -= 5
+                curr_y = start_y
+                role_jump_t = time()
+
         if enemy_options[enemyMove] == "right":
             if enemy_x < X - 40:
                 enemy_x += a.speed * 10
@@ -2652,7 +2646,8 @@ def game():
                             updateList(heroes, optionNumber)  # update screen
                         elif event.key == pygame.K_RETURN:
                             playerhero = heroes[optionNumber]
-                            pygame.event.get()  # https://www.pygame.org/docs/ref/event.html#pygame.event.get
+                            pygame.event.clear(
+                                eventtype=pygame.KEYDOWN)  # https://www.pygame.org/docs/ref/event.html#pygame.event.get
                             if playerhero == "PERCY JACKSON":
                                 displayImage("percy-start.png", p=1)
                                 pygame.time.delay(2000)
@@ -2695,7 +2690,8 @@ def game():
                             pygame.time.delay(250)
                             openChestOption(optionNumber)  # Displaying 'Yes' and 'No'
                             dispayedChest = True
-                            pygame.event.get()  # We don't want the enter that they press to do anything until 'Yes' and 'No' are displayed
+                            pygame.event.clear(
+                                eventtype=pygame.KEYDOWN)  # We don't want the enter that they press to do anything until 'Yes' and 'No' are displayed
 
                 elif dispayedChest and not displayedPlaces:
 
@@ -2726,7 +2722,8 @@ def game():
                             displayedPlaces = True
                             optionNumber = 0
 
-                        pygame.event.get()  # Clear any keys that were pressed in this if-block
+                        pygame.event.clear(
+                            eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block
 
                 elif displayedPlaces and not Quests:
                     font = pygame.font.Font('freesansbold.ttf', 28)
@@ -2774,7 +2771,8 @@ def game():
                                 displayImage("StartDesert.png", p=1)
                                 pygame.time.delay(2000)
                                 Place = Desert()
-                            pygame.event.get()  # Clear any keys that were pressed in this if-block before displaying the menu
+                            pygame.event.clear(
+                                eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block before displaying the menu
                             Menu(RoleHero, Place)
                             Quests = True
                             pygame.display.update()
@@ -2813,7 +2811,8 @@ def game():
                             pygame.display.update()
                             pygame.time.delay(1000)
 
-                            pygame.event.get()  # Clear any keys that were pressed in this if-block
+                            pygame.event.clear(
+                                eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block
                 elif Quests:
                     while True:
                         Menu(RoleHero, Place)
