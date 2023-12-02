@@ -2366,7 +2366,9 @@ def QuestGames(Setting, role):
 
     shotsFired = deque([], maxlen=10)
     shotsEnemyFired = deque([], maxlen=10)
-    beam_y_offset = -5
+    beam_y_offset = -5  # TODO: Maybe adjust this to see if there's a better value
+    # TODO: Add beam_x_offset to make it emanate closer to shooter
+    beam_x_offset = -25
     K = 10  # Constant factor
 
     global badNPCs  # we're saying that we will be using the global variable badNPCs
@@ -2384,7 +2386,7 @@ def QuestGames(Setting, role):
                 elif event.key == pygame.K_SPACE:  # Checking if the role hero fired a shot
                     # Put beam on the screen if role has the stamina for it
                     if role.can_attack():
-                        beam_x = start_x + buffer_width
+                        beam_x = start_x + buffer_width + beam_x_offset
                         beam_y = curr_y + buffer_width + beam_y_offset
                         # Puts the coordinate of the shots fired on the screen
                         shotsFired.append([beam_x, beam_y, False])
@@ -2392,20 +2394,33 @@ def QuestGames(Setting, role):
                         role.update_wait_time()
 
         if enemy_options[enemyMove] == "jump" and enemy_y + 200 >= ground_y:
-            enemy_y -= 5
-            curr_enemy_y = enemy_y
+            curr_enemy_y -= 5
+            enemy_y = curr_enemy_y
             enemy_jump_t = time()
         if enemy_options[enemyMove] == "attack" and a.can_attack():
-            beam_x = enemy_x + buffer_width
+            beam_x = enemy_x + buffer_width + beam_x_offset
             beam_y = curr_enemy_y + buffer_width + beam_y_offset
             # Puts the coordinate of the shots fired on the screen
             shotsEnemyFired.append([beam_x, beam_y, False])
             a.update_wait_time()
 
         keys = pygame.key.get_pressed()
+        # -> means 0.01 s, the below example shows how our position changes ever 0.01 seconds when falling
+        '''
+        95 -> 95.004905 -> 95.01962 -> 95.044145 -> 95.07848 -> 95.122625 -> 95.17658 -> 95.240345 -> 95.31392 -> 95.397305 -> 95.4905 -> 95.593505 -> 95.70632 -> 95.828945 -> 95.96138 -> 96.103625 -> 96.25568 -> 96.417545 -> 96.58922 -> 96.770705 -> 96.962 -> 97.163105 -> 97.37402 -> 97.594745 -> 97.82528 -> 98.065625 -> 98.31578 -> 98.575745 -> 98.84552000000001 -> 99.125105 -> 99.4145 -> 99.713705 -> 100.02272 -> 100.34154500000001 -> 100.67018 -> 101.00862500000001 -> 101.35688 -> 101.714945 -> 102.08282000000001 -> 102.46050500000001 -> 102.84800000000001 -> 103.245305 -> 103.65242 -> 104.06934500000001 -> 104.49608 -> 104.93262500000002 -> 105.37898000000001 -> 105.83514500000001 -> 106.30112000000001 -> 106.77690500000001 -> 107.26250000000002 -> 107.75790500000001 -> 108.26312000000001 -> 108.77814500000001 -> 109.30298000000002 -> 109.83762500000002 -> 110.38208000000002 -> 110.93634500000002 -> 111.50042000000002 -> 112.07430500000002 -> 112.65800000000002 -> 113.25150500000002 -> 113.85482000000002 -> 114.46794500000001 -> 115.09088000000003 -> 115.72362500000003 -> 116.36618000000003 -> 117.01854500000003 -> 117.68072000000004 -> 118.35270500000003 -> 119.03450000000004 -> 119.72610500000003 -> 120.42752000000003 -> 121.13874500000003 -> 121.85978000000003 -> 122.59062500000003 -> 123.33128000000004 -> 124.08174500000004 -> 124.84202000000003 -> 125.61210500000004 -> 126.39200000000004 -> 127.18170500000005 -> 127.98122000000004 -> 128.79054500000004 -> 129.60968000000005 -> 130.43862500000006 -> 131.27738000000005 -> 132.12594500000006 -> 132.98432000000005 -> 133.85250500000006 -> 134.73050000000006 -> 135.61830500000005 -> 136.51592000000005 -> 137.42334500000007 -> 138.34058000000005 -> 139.26762500000007 -> 140.20448000000005 -> 141.15114500000007 -> 142.10762000000005 -> 143.07390500000008
 
-        if start_y != ground_y:  # if the hero is in free-fall
+        orig_height = height = 95
+        s=lambda x: 5*9.81*x**2
+        count = 0
+        for i in range(1,101):
+            print(f"{height}", end = " -> ")
+            count += 0.01
+            height = s(count)+orig_height
+        '''
+
+        if curr_y != ground_y:  # if the hero is in free-fall
             fall_time = time() - role_jump_t
+            print(f"fall_time={fall_time}")
             s = K * 0.5 * 9.81 * fall_time ** 2  # The absolute value the hero has fallen since role_jump_t
 
             '''
@@ -2420,7 +2435,7 @@ def QuestGames(Setting, role):
             else:  # Here, they have landed
                 curr_y = ground_y
                 start_y = ground_y
-        if enemy_y != ground_y:
+        if curr_enemy_y != ground_y:
             fall_time = time() - enemy_jump_t
             s = K * 0.5 * 9.81 * fall_time ** 2
             position = enemy_y + s
@@ -2439,9 +2454,11 @@ def QuestGames(Setting, role):
             if start_x > 0:
                 start_x -= role.speed * 20
         if keys[pygame.K_UP]:
-            if start_y + 200 >= ground_y:  # Check if they can keep going higher
-                start_y -= 5
-                curr_y = start_y
+            print(f"curr_y={curr_y}")
+            if curr_y + 200 >= ground_y:  # Check if they can keep going higher, curr_y must >= 400 atm (less than 200 elevation)
+                print("yes")
+                curr_y -= 5
+                start_y = curr_y  # Set the start jumping position to the current position
                 role_jump_t = time()
 
         if enemy_options[enemyMove] == "right":
