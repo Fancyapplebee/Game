@@ -2368,7 +2368,7 @@ def QuestGames(Setting, role):
     shotsEnemyFired = deque([], maxlen=10)
     beam_y_offset = -5  # TODO: Maybe adjust this to see if there's a better value
     # TODO: Add beam_x_offset to make it emanate closer to shooter
-    beam_x_offset = -25
+    beam_x_offset = -12.5
     K = 10  # Constant factor
 
     global badNPCs  # we're saying that we will be using the global variable badNPCs
