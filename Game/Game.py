@@ -2508,7 +2508,7 @@ def QuestGames(Setting, role):
             pygame.draw.ellipse(screen, orange, beam_rect)  # Drawing the beam
 
         for shot in shotsEnemyFired:
-            shot.beam_x = shot.beam_x - 50 if not shot.is_flipped else shot.beam_x + 50  # TODO: make the shot speed depend on the role's stats? HW: Change 50 to something smaller to debug
+            shot.beam_x = shot.beam_x - 41 if not shot.is_flipped else shot.beam_x + 63  # TODO: make the shot speed depend on the role's stats? HW: Change 50 to something smaller to debug
             beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, buffer_width / 2,
                                     buffer_width / 4)  # beam object
             if beam_rect.colliderect(
