@@ -96,6 +96,7 @@ cppyy.cppdef(
         double speed;
         double attackStamina;
         bool moved;
+        bool flipped;
         uint64_t moveTime;
         uint64_t waitTime;
 
@@ -107,7 +108,7 @@ cppyy.cppdef(
         bool can_attack();
     };
 
-    BadNPC::BadNPC(const std::string& Name) : name{Name}, moved{false}, moveTime{0}, waitTime{0}
+    BadNPC::BadNPC(const std::string& Name) : name{Name}, moved{false}, moveTime{0}, waitTime{0}, flipped{false}
     {
         if (name == "NINJA") //second most powerful
         {
@@ -150,6 +151,7 @@ cppyy.cppdef(
         double searchtime;
         bool defending;
         bool moved;
+        bool flipped;
         uint64_t moveTime;
         uint64_t waitTime;
 
@@ -638,6 +640,7 @@ cppyy.cppdef(
         searchtime = 0;
         defending = false;
         moved = false;
+        flipped = false;
         moveTime = 0;
         waitTime = 0;
         health = 0;
@@ -2306,11 +2309,21 @@ def printInventory(role):
                     return
 
 
+class Shot:
+    def __init__(self, beam_x, beam_y, hit_target, is_flipped):
+        self.beam_x = beam_x
+        self.beam_y = beam_y
+        self.hit_target = hit_target
+        self.is_flipped = is_flipped
+
+
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red
 
     role_image_name = role.name.lower().replace(" jackson", "") + "-start.png"
+    role_image_name_flipped = role_image_name.replace(".png", "flip.png")
     enemy_image_names = {"NINJA": "ninja.png", "OGRE": "ogre.png", "DEMON": "demon.png"}
+    enemy_image_names_flipped = {"NINJA": "ninjaflip.png", "OGRE": "ogreflip.png", "DEMON": "demonflip.png"}
 
     buffer_width = 40
 
@@ -2352,11 +2365,13 @@ def QuestGames(Setting, role):
         #        screen.fill(white)
         pygame_print(f"Quest #{role.questLevel + 1}", loc=60)
         # Role
-        role_image = pygame.image.load(f"Assets/{role_image_name}")
+        role_image = pygame.image.load(
+            f"Assets/{role_image_name}" if not role.flipped else f"Assets/{role_image_name_flipped}")
         role_image = pygame.transform.scale(role_image, (buffer_width, buffer_width))
         screen.blit(role_image, role_rect.topleft)
         # Enemy
-        enemy_image = pygame.image.load(f"Assets/{enemy_image_names[a.name]}")
+        enemy_image = pygame.image.load(
+            f"Assets/{enemy_image_names[a.name]}" if not a.flipped else f"Assets/{enemy_image_names_flipped[a.name]}")
         enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
         screen.blit(enemy_image, enemy_rect.topleft)
 
@@ -2386,22 +2401,26 @@ def QuestGames(Setting, role):
                 elif event.key == pygame.K_SPACE:  # Checking if the role hero fired a shot
                     # Put beam on the screen if role has the stamina for it
                     if role.can_attack():
-                        beam_x = start_x + buffer_width + beam_x_offset
+                        # 100 - (27.5) = 72.5 or 100 + (40-12.5) = 127.5
+                        beam_x = start_x - ((buffer_width + beam_x_offset) if not role.flipped else (-buffer_width))
                         beam_y = curr_y + buffer_width + beam_y_offset
                         # Puts the coordinate of the shots fired on the screen
-                        shotsFired.append([beam_x, beam_y, False])
+                        shotsFired.append(Shot(beam_x, beam_y, False,
+                                               role.flipped))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
                         # Update the wait-time here.
                         role.update_wait_time()
 
-        if enemy_options[enemyMove] == "jump" and enemy_y + 200 >= ground_y:
+        if enemy_options[enemyMove] == "jump" and enemy_y + 200 >= ground_y:  # Holding down jump makes it bigger
             curr_enemy_y -= 5
             enemy_y = curr_enemy_y
             enemy_jump_t = time()
         if enemy_options[enemyMove] == "attack" and a.can_attack():
-            beam_x = enemy_x + buffer_width + beam_x_offset
+            # If the offset problem is the direction their shooting, get rid of 1st beam_x_offset, else if it's the flipped image, get rid of 2nd beam_x_offset
+            beam_x = enemy_x + ((buffer_width + beam_x_offset) if not a.flipped else (-buffer_width - beam_x_offset))
             beam_y = curr_enemy_y + buffer_width + beam_y_offset
             # Puts the coordinate of the shots fired on the screen
-            shotsEnemyFired.append([beam_x, beam_y, False])
+            shotsEnemyFired.append(Shot(beam_x, beam_y, False,
+                                        a.flipped))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
             a.update_wait_time()
 
         keys = pygame.key.get_pressed()
@@ -2420,7 +2439,6 @@ def QuestGames(Setting, role):
 
         if curr_y != ground_y:  # if the hero is in free-fall
             fall_time = time() - role_jump_t
-            print(f"fall_time={fall_time}")
             s = K * 0.5 * 9.81 * fall_time ** 2  # The absolute value the hero has fallen since role_jump_t
 
             '''
@@ -2450,13 +2468,13 @@ def QuestGames(Setting, role):
         if keys[pygame.K_RIGHT]:  # if right arrow was pressed, move right
             if start_x < X - 40:
                 start_x += role.speed * 20
+            role.flipped = False
         if keys[pygame.K_LEFT]:  # if left arrow was pressed, move left
             if start_x > 0:
                 start_x -= role.speed * 20
+            role.flipped = True
         if keys[pygame.K_UP]:
-            print(f"curr_y={curr_y}")
             if curr_y + 200 >= ground_y:  # Check if they can keep going higher, curr_y must >= 400 atm (less than 200 elevation)
-                print("yes")
                 curr_y -= 5
                 start_y = curr_y  # Set the start jumping position to the current position
                 role_jump_t = time()
@@ -2464,41 +2482,43 @@ def QuestGames(Setting, role):
         if enemy_options[enemyMove] == "right":
             if enemy_x < X - 40:
                 enemy_x += a.speed * 10
+            a.flipped = True
         if enemy_options[enemyMove] == "left":
             if enemy_x > 0:
                 enemy_x -= a.speed * 10
+            a.flipped = False
 
         role_rect = pygame.Rect(start_x, curr_y, buffer_width, buffer_width)
         enemy_rect = pygame.Rect(enemy_x, curr_enemy_y, buffer_width, buffer_width)
         renderRole(start_x, curr_y)
 
-        for i in range(len(shotsFired)):
-            shotsFired[i][0] += 50  # TODO: make the shot speed depend on the role's stats?
-            beam_rect = pygame.Rect(shotsFired[i][0], shotsFired[i][1], buffer_width / 2,
+        for shot in shotsFired:
+            shot.beam_x = shot.beam_x + 50 if not shot.is_flipped else shot.beam_x - 50  # TODO: make the shot speed depend on the role's stats?
+            beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, buffer_width / 2,
                                     buffer_width / 4)  # beam object
-            if beam_rect.colliderect(enemy_rect) and not shotsFired[i][
-                2]:  # Enemy was hit and this is not a repeat of the same shot
+            if beam_rect.colliderect(
+                    enemy_rect) and not shot.hit_target:  # Enemy was hit and this is not a repeat of the same shot
                 role.attack(a)
                 print(f"Enemy health = {a.health:.2f}")
                 if a.health <= 0:
                     print("Spawning new enemy")
                     a = spawnBadNPC()
                     NumberDefeated += 1
-                shotsFired[i][2] = True
+                shot.hit_target = True
             pygame.draw.ellipse(screen, orange, beam_rect)  # Drawing the beam
 
-        for i in range(len(shotsEnemyFired)):
-            shotsEnemyFired[i][0] -= 50  # TODO: make the shot speed depend on the role's stats?
-            beam_rect = pygame.Rect(shotsEnemyFired[i][0], shotsEnemyFired[i][1], buffer_width / 2,
+        for shot in shotsEnemyFired:
+            shot.beam_x = shot.beam_x - 50 if not shot.is_flipped else shot.beam_x + 50  # TODO: make the shot speed depend on the role's stats? HW: Change 50 to something smaller to debug
+            beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, buffer_width / 2,
                                     buffer_width / 4)  # beam object
-            if beam_rect.colliderect(role_rect) and not shotsEnemyFired[i][
-                2]:  # Role was hit and this is not a repeat of the same shot
+            if beam_rect.colliderect(
+                    role_rect) and not shot.hit_target:  # Role was hit and this is not a repeat of the same shot
                 a.attack(role)
                 print(f"Role health = {role.health:.2f}")
                 if role.health <= 0:
                     print("You died!")
                     return
-                shotsEnemyFired[i][2] = True
+                shot.hit_target = True
             pygame.draw.ellipse(screen, red, beam_rect)  # Drawing the beam
 
         pygame.display.update()
