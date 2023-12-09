@@ -2493,7 +2493,7 @@ def QuestGames(Setting, role):
         renderRole(start_x, curr_y)
 
         for shot in shotsFired:
-            shot.beam_x = shot.beam_x + 50 if not shot.is_flipped else shot.beam_x - 50  # TODO: make the shot speed depend on the role's stats?
+            shot.beam_x = shot.beam_x + 50 if not shot.is_flipped else shot.beam_x - 41  # TODO: make the shot speed depend on the role's stats?
             beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, buffer_width / 2,
                                     buffer_width / 4)  # beam object
             if beam_rect.colliderect(
