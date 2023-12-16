@@ -207,8 +207,6 @@ cppyy.cppdef(
             return ((level < 4) ? exp(-0.6*level) : 0.091);
         }
 
-    //    virtual void increaseExp(double exp); //Declaration
-
         Role(std::string name);
         virtual ~Role();
     };
@@ -1130,19 +1128,6 @@ cppyy.cppdef(
         //empty
     }
 
-    //void Role::increaseExp(double exp) //Definition
-    //{
-    //    currExp += netExp;
-    //    while (currExp > LevelExp)
-    //    {
-    //        currLevel++; // Increase the level of the role
-    //        netExp = currExp - LevelExp;
-    //        LevelExp = ExpLevelFunc(currLevel + 1);
-    //        currExp = 0;
-    //        currExp += netExp;
-    //    }
-    //}
-
     bool HasSellableItems(std::unordered_map<std::string, std::unordered_map<std::string,double>>& inventory)
     {
         for (auto &i : inventory)
@@ -1258,136 +1243,6 @@ def increaseExp(role, netExp):
         role.LevelExp = role.ExpLevelFunc(role.currLevel + 1)
         role.currExp = 0
         role.currExp += netExp
-
-
-def Mine(role, setting):
-    global time
-    map()
-    TheSetting = setting.name.upper()
-    print("The objective of this game is to type the letter in time (To stop, type stop)!")
-    Opponent = NeutralNPC()
-    print(f"Get ready, you are about to face the {Opponent.role} {Opponent.picture}")
-    wins = 0
-    losses = 0
-    draws = 0
-    totalplayerscore = 0
-    playeravg = []
-    botavg = []
-    avgtime = []
-    while True:
-        start = time()
-        randletter = choice(ascii_letters)
-        x = input("Enter '{}': (Type 'stop' to stop) ".format(randletter))
-        if cS(x) == "STOP":
-            break
-        stop = time()
-        Time = (stop - start)
-        print("You entered it in {:.2f} seconds!".format(Time))
-        npcTime = 1 + (3 * random())
-
-        if Time < npcTime and x == randletter:
-            print("You passed!")
-            wins += 1
-            totalplayerscore += 1
-            botavg.append(npcTime)
-            playeravg.append(Time)
-        elif Time > npcTime or x != randletter:
-            print("You lost!")
-            losses += 1
-            totalplayerscore -= 1
-            botavg.append(npcTime)
-            playeravg.append(Time)
-        elif Time == npcTime:  # Probably never happen
-            print("Draw")
-            draws += 1
-            botavg.append(npcTime)
-            playeravg.append(Time)
-    playeravglen = (len(playeravg)) if len(playeravg) != 0 else 1
-    playeravg = sum(playeravg)
-    botavglen = (len(botavg)) if len(botavg) != 0 else 1
-    botavg = sum(botavg)
-    points = wins - losses
-
-    netExp = points * Opponent.expYield if points >= 0 else 0
-
-    #    role.currExp += netExp
-    #    while role.currExp > role.LevelExp:
-    #        role.currLevel += 1 #Increase the level of the role
-    #        netExp = role.currExp - role.LevelExp
-    #        role.LevelExp = role.ExpLevelFunc(role.currLevel+1)
-    #        role.currExp = 0
-    #        role.currExp += netExp
-
-    increaseExp(role, netExp)
-
-    if playeravg / playeravglen < botavg / botavglen:
-        print(f"You get 5 extra resources because your avg was better than the {Opponent.role} {Opponent.picture}!")
-        points += 5
-
-    #        cookie              2-3     1-.1
-    #        logs                3-4     .1-.01
-    #        sands               0       100
-    #        rocks               2       1
-    #        silvers             4       .01
-    #        golds               5       .001
-    #        diamonds            7       .00001
-    #        emeralds            7       .00001
-    #        cactuses            3       .1
-    #        golden saplings     8       .000001
-    #        golden logs         8       .000001
-    #        sand pails          5       .001
-
-    if TheSetting == "BEACH":
-        role.numInv["Sands"]["Number"] += points
-
-    #    3 <= x <= 5 #x is between 3 and 5 inclusive
-    #    3 < x < 5 #x is between 3 and 5 exclusive
-    elif TheSetting == "FOREST":
-        for i in range(points):
-            Temprand = randint(1, 1e8)
-            if Temprand == 1e8:
-                role.numInv["Golden Saplings"]["Number"] += 1
-            elif Temprand == 1:
-                role.numInv["Golden Logs"]["Number"] += 1
-            elif 10000 <= Temprand <= 100000:
-                role.numInv["Logs"]["Number"] += 1
-
-    elif TheSetting == "HOUSE":
-        for i in range(points):
-            Temprand = randint(1, 1000)
-            if 1 <= Temprand <= 5:
-                role.numInv["Cookies"]["Number"] += 1
-
-    elif TheSetting == "MOUNTAIN":
-        for i in range(points):
-            Temprand = randint(1, 1e7)
-            if 1 <= Temprand <= 1000:
-                role.numInv["Silvers"]["Number"] += 1
-            elif 1001 <= Temprand <= 1100:
-                role.numInv["Golds"]["Number"] += 1
-            elif Temprand == 1101:
-                role.numInv["Diamonds"]["Number"] += 1
-            elif Temprand == 1102:
-                role.numInv["Emeralds"]["Number"] += 1
-                # 10000
-            elif 1103 <= Temprand <= 101102:
-                role.numInv["Rocks"]["Number"] += 1
-
-    elif TheSetting == "DESERT":
-        role.numInv["Sands"]["Number"] += points
-        for i in range(points):
-            Temprand = randint(1, 1000)
-            if Temprand == 1:
-                role.numInv["Cactuses"]["Number"] += 1
-
-    print("The player average is {:.2f} seconds".format(playeravg / playeravglen))
-    print("The {} {} average is {:.2f} seconds".format(Opponent.role, Opponent.picture, botavg / botavglen))
-    print("You got {} resources in total!".format(points))
-    print("You won {} games!".format(wins))
-    print("You lost {} games!".format(losses))
-    print("{} is the number of games that drawed!".format(draws))
-
-    return points
 
 
 def displayHeroes(printing=False):
@@ -2327,7 +2182,7 @@ def QuestGames(Setting, role):
 
     buffer_width = 40
 
-    start_x, start_y, curr_y, enemy_x, enemy_y, curr_enemy_y = 100, 600, 600, 650, 600, 600
+    start_x, start_y, curr_y, enemy_x, enemy_y, curr_enemy_y = 100, 600, 600, 700 - buffer_width, 600, 600
     ground_y = 600
 
     role_jump_t, enemy_jump_t = -1, -1
@@ -2343,15 +2198,15 @@ def QuestGames(Setting, role):
         for b in badNPCs:
             end += int(b.second * 100)  # probability of spawning
             if start <= randnum <= end:
-                a = BadNPC(cppStringConvert(b.first))  # we are spawning an enemy here
-                a.statboost(role)
-                return a
+                enemy = BadNPC(cppStringConvert(b.first))  # we are spawning an enemy here
+                enemy.statboost(role)
+                return enemy
 
-    a = spawnBadNPC()
-    print(f"Enemy name = {a.name}, enemy_image_names.get(a.name) = {enemy_image_names.get(a.name)}")
+    enemy = spawnBadNPC()
+    print(f"Enemy name = {enemy.name}, enemy_image_names.get(enemy.name) = {enemy_image_names.get(enemy.name)}")
 
     def renderRole(start_x, start_y):
-        # TODO: Fix the backdrop so it doesn't slow down the quest
+        global font
         if Setting == "DESERT":
             displayImage("StartDesert.png", p=1, update=False)
         elif Setting == "FOREST":
@@ -2362,18 +2217,21 @@ def QuestGames(Setting, role):
             displayImage("StartBeach.png", p=1, update=False)
         elif Setting == "HOUSE":
             displayImage("StartHouse.png", p=1, update=False)
-        #        screen.fill(white)
         pygame_print(f"Quest #{role.questLevel + 1}", loc=60)
         # Role
+        font = pygame.font.Font('freesansbold.ttf', 25)
+        pygame_print(f"{role.name.title()} health = {role.health:.2f}", loc=175, offset=-200)
         role_image = pygame.image.load(
             f"Assets/{role_image_name}" if not role.flipped else f"Assets/{role_image_name_flipped}")
         role_image = pygame.transform.scale(role_image, (buffer_width, buffer_width))
         screen.blit(role_image, role_rect.topleft)
         # Enemy
+        pygame_print(f"{enemy.name.title()} health = {enemy.health:.2f}", loc=175, offset=+200)
         enemy_image = pygame.image.load(
-            f"Assets/{enemy_image_names[a.name]}" if not a.flipped else f"Assets/{enemy_image_names_flipped[a.name]}")
+            f"Assets/{enemy_image_names[enemy.name]}" if not enemy.flipped else f"Assets/{enemy_image_names_flipped[enemy.name]}")
         enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
         screen.blit(enemy_image, enemy_rect.topleft)
+        font = pygame.font.Font('freesansbold.ttf', 32)
 
     role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
     enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
@@ -2381,9 +2239,6 @@ def QuestGames(Setting, role):
 
     shotsFired = deque([], maxlen=10)
     shotsEnemyFired = deque([], maxlen=10)
-    beam_y_offset = -5  # TODO: Maybe adjust this to see if there's a better value
-    # TODO: Add beam_x_offset to make it emanate closer to shooter
-    beam_x_offset = -12.5
     K = 10  # Constant factor
 
     global badNPCs  # we're saying that we will be using the global variable badNPCs
@@ -2401,9 +2256,8 @@ def QuestGames(Setting, role):
                 elif event.key == pygame.K_SPACE:  # Checking if the role hero fired a shot
                     # Put beam on the screen if role has the stamina for it
                     if role.can_attack():
-                        # 100 - (27.5) = 72.5 or 100 + (40-12.5) = 127.5
-                        beam_x = start_x - ((buffer_width + beam_x_offset) if not role.flipped else (-buffer_width))
-                        beam_y = curr_y + buffer_width + beam_y_offset
+                        beam_x = start_x + (buffer_width if not role.flipped else 0)
+                        beam_y = curr_y + buffer_width / 2
                         # Puts the coordinate of the shots fired on the screen
                         shotsFired.append(Shot(beam_x, beam_y, False,
                                                role.flipped))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
@@ -2414,14 +2268,13 @@ def QuestGames(Setting, role):
             curr_enemy_y -= 5
             enemy_y = curr_enemy_y
             enemy_jump_t = time()
-        if enemy_options[enemyMove] == "attack" and a.can_attack():
-            # If the offset problem is the direction their shooting, get rid of 1st beam_x_offset, else if it's the flipped image, get rid of 2nd beam_x_offset
-            beam_x = enemy_x + ((buffer_width + beam_x_offset) if not a.flipped else (-buffer_width - beam_x_offset))
-            beam_y = curr_enemy_y + buffer_width + beam_y_offset
+        if enemy_options[enemyMove] == "attack" and enemy.can_attack():
+            beam_x = enemy_x + (0 if not enemy.flipped else buffer_width)
+            beam_y = curr_enemy_y + buffer_width / 2
             # Puts the coordinate of the shots fired on the screen
             shotsEnemyFired.append(Shot(beam_x, beam_y, False,
-                                        a.flipped))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
-            a.update_wait_time()
+                                        enemy.flipped))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
+            enemy.update_wait_time()
 
         keys = pygame.key.get_pressed()
         # -> means 0.01 s, the below example shows how our position changes ever 0.01 seconds when falling
@@ -2466,7 +2319,7 @@ def QuestGames(Setting, role):
         # If the role moves across the screen (left or right)
         # ===================================================
         if keys[pygame.K_RIGHT]:  # if right arrow was pressed, move right
-            if start_x < X - 40:
+            if start_x < X - buffer_width:
                 start_x += role.speed * 20
             role.flipped = False
         if keys[pygame.K_LEFT]:  # if left arrow was pressed, move left
@@ -2480,43 +2333,46 @@ def QuestGames(Setting, role):
                 role_jump_t = time()
 
         if enemy_options[enemyMove] == "right":
-            if enemy_x < X - 40:
-                enemy_x += a.speed * 10
-            a.flipped = True
+            if enemy_x < X - buffer_width:
+                enemy_x += enemy.speed * 10
+            enemy.flipped = True
         if enemy_options[enemyMove] == "left":
             if enemy_x > 0:
-                enemy_x -= a.speed * 10
-            a.flipped = False
+                enemy_x -= enemy.speed * 10
+            enemy.flipped = False
 
         role_rect = pygame.Rect(start_x, curr_y, buffer_width, buffer_width)
         enemy_rect = pygame.Rect(enemy_x, curr_enemy_y, buffer_width, buffer_width)
         renderRole(start_x, curr_y)
 
         for shot in shotsFired:
-            shot.beam_x = shot.beam_x + 50 if not shot.is_flipped else shot.beam_x - 41  # TODO: make the shot speed depend on the role's stats?
+            shot.beam_x = shot.beam_x + 50 if not shot.is_flipped else shot.beam_x - 50  # TODO: make the shot speed depend on the role's stats?
             beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, buffer_width / 2,
                                     buffer_width / 4)  # beam object
             if beam_rect.colliderect(
                     enemy_rect) and not shot.hit_target:  # Enemy was hit and this is not a repeat of the same shot
-                role.attack(a)
-                print(f"Enemy health = {a.health:.2f}")
-                if a.health <= 0:
-                    print("Spawning new enemy")
-                    a = spawnBadNPC()
+                role.attack(enemy)
+                if enemy.health <= 0:
+                    increaseExp(role, enemy.expYield)
+
+                    enemy = spawnBadNPC()
+                    pygame_print("Spawning new enemy: {enemy.name}",
+                                 loc=300)  # TODO: Need timer to display this for X number of seconds
                     NumberDefeated += 1
+
                 shot.hit_target = True
             pygame.draw.ellipse(screen, orange, beam_rect)  # Drawing the beam
 
         for shot in shotsEnemyFired:
-            shot.beam_x = shot.beam_x - 41 if not shot.is_flipped else shot.beam_x + 63  # TODO: make the shot speed depend on the role's stats? HW: Change 50 to something smaller to debug
+            shot.beam_x = shot.beam_x - 50 if not shot.is_flipped else shot.beam_x + 50
             beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, buffer_width / 2,
                                     buffer_width / 4)  # beam object
             if beam_rect.colliderect(
                     role_rect) and not shot.hit_target:  # Role was hit and this is not a repeat of the same shot
-                a.attack(role)
-                print(f"Role health = {role.health:.2f}")
+                enemy.attack(role)
+                pygame.draw.rect(screen, red, role_rect, 2)
                 if role.health <= 0:
-                    print("You died!")
+                    pygame_print("You died!", loc=300)  # TODO: Need timer to display this for X number of seconds
                     return
                 shot.hit_target = True
             pygame.draw.ellipse(screen, red, beam_rect)  # Drawing the beam
