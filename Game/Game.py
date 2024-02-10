@@ -12,7 +12,9 @@ import requests
 from PIL import Image
 import os
 import numpy as np
-from collections import deque
+from collections import deque, namedtuple
+from math import sqrt, log as ln
+import json
 
 Quests = False
 Shop = False
@@ -40,14 +42,6 @@ def Defense(Def):
 # modify search option so that it can only occur once per people day ✅
 # Axes that can increase drop-chances for mine function
 # Find out where we can increase money besides selling
-
-# Zeeshan Rizvi
-# https://stackoverflow.com/questions/17432478/python-print-to-one-line-with-time-delay-between-prints/52595545#52595545?newreg=cb618a4b6ed14f8bb7a782e731f4c678
-def slowPrint(text):
-    for i in text:
-        print(i, end='', flush=True)
-        sleep(0.15)
-    print()
 
 
 '''
@@ -90,6 +84,7 @@ cppyy.cppdef(
         const std::string name;
         std::string picture;
         double attackpower;
+        double base_health;
         double health;
         double defense;
         double expYield;
@@ -114,17 +109,19 @@ cppyy.cppdef(
         {
             this->picture = "🥷";
             this->attackpower = 7;
+            this->base_health = 100.0;
             this->health = 100.0;
             this->defense = 50;
             this->expYield = 10;
             this->speed = 1.5;
             this->attackStamina = 0.7;
-
         }
+
         else if (name == "OGRE") //most powerful
         {
             this->picture = "👹";
             this->attackpower = 15;
+            this->base_health = 500.0;
             this->health = 500.0;
             this->defense = 100;
             this->expYield = 25;
@@ -135,6 +132,7 @@ cppyy.cppdef(
         {
             this->picture = "👿";
             this->attackpower = 10;
+            this->base_health = 100.0;
             this->health = 100.0;
             this->defense = 20;
             this->expYield = 5;
@@ -160,7 +158,7 @@ cppyy.cppdef(
         std::unordered_map<std::string,std::unordered_map<std::string,std::function<void()>>> useInv;
 
         double health;
-        double basehealth;
+        double base_health;
         double attackpower;
         double defense;
         double attackStamina;
@@ -277,7 +275,11 @@ cppyy.cppdef(
 
     void Role::attack(BadNPC& enemy)
     {
-        enemy.health -= (Defense(enemy.defense) * attackpower);
+        enemy.health -= (Defense(enemy.defense) * attackpower); //the enemy's health can go below 0, so see below :)
+        if (enemy.health < 0)
+        {
+            enemy.health = 0;
+        }
     }
 
     void Role::baseLineStats()
@@ -286,7 +288,7 @@ cppyy.cppdef(
         << std::fixed << attackpower << '\n'
         << "Health = " << std::setprecision(0)
         << std::fixed << health << " / " << std::setprecision(0)
-        << std::fixed << basehealth << '\n'
+        << std::fixed << base_health << '\n'
         << "Defense = " << std::setprecision(0)
         << std::fixed << defense << " / " << std::setprecision(0)
         << std::fixed << baseDefense << '\n'
@@ -307,10 +309,11 @@ cppyy.cppdef(
         double multiplier = (0.2 * RoleHero.questLevel) + 1;
         attackpower = multiplier * attackpower;
         health = multiplier * health;
+        base_health = multiplier * base_health;
         defense = multiplier * defense;
         expYield = multiplier * expYield;
         speed = multiplier * speed;
-        //TODO: divide stamina by multiplier
+        attackStamina = attackStamina / multiplier;
     }
 
     std::vector<std::string> Role::printInventory()
@@ -642,7 +645,7 @@ cppyy.cppdef(
         moveTime = 0;
         waitTime = 0;
         health = 0;
-        basehealth = 0;
+        base_health = 0;
         attackpower = 0;
         defense = 0;
         attackStamina = 0;
@@ -841,9 +844,9 @@ cppyy.cppdef(
                                    [&]()
                                    {
                                        health += 0.1*health;
-                                       if (health > basehealth)
+                                       if (health > base_health)
                                        {
-                                           health = basehealth;
+                                           health = base_health;
                                        }
                                        if (numInv["Cookies"]["Number"] > 0)
                                        {
@@ -1014,9 +1017,9 @@ cppyy.cppdef(
                                    [&]()
                                    {
                                        health += 20;
-                                       if (this->health > basehealth)
+                                       if (this->health > base_health)
                                        {
-                                           health = basehealth;
+                                           health = base_health;
                                        }
                                        if (numInv["Potion"]["Number"] > 0)
                                        {
@@ -1031,9 +1034,9 @@ cppyy.cppdef(
                                    [&]()
                                    {
                                        health += 0.25*health;
-                                       if (this->health > basehealth)
+                                       if (this->health > base_health)
                                        {
-                                           health = basehealth;
+                                           health = base_health;
                                        }
                                        if (numInv["Apple"]["Number"] > 0)
                                        {
@@ -1140,6 +1143,7 @@ cppyy.cppdef(
 
         return false;
     }
+
 ''')
 from cppyy.gbl import Role, BadNPC, badNPCs, HasSellableItems
 
@@ -1157,7 +1161,7 @@ class PercyJackson(Role):
         super().__init__(name)
         self.picture = "⚡️"
         self.attackpower = 20
-        self.basehealth = 200
+        self.base_health = 200
         self.health = 200
         self.baseDefense = 100
         self.defense = 100
@@ -1179,7 +1183,7 @@ class Elf(Role):
         super().__init__(name)
         self.picture = "🧝"
         self.attackpower = 10
-        self.basehealth = 50
+        self.base_health = 50
         self.health = 50
         self.baseDefense = 200
         self.defense = 200
@@ -1197,7 +1201,7 @@ class Zelda(Role):
         self.picture = "🗡"
         # TODO: Change back to 20 for actual game
         self.attackpower = 2000
-        self.basehealth = 100
+        self.base_health = 100
         self.health = 100
         self.baseDefense = 50
         self.defense = 50
@@ -1225,7 +1229,7 @@ class NeutralNPC:
 
 def increaseStats(role):
     role.attackpower += role.AttackLevelFunc(role.currLevel)
-    role.basehealth += role.HealthLevelFunc(role.currLevel)
+    role.base_health += role.HealthLevelFunc(role.currLevel)
     role.health += role.HealthLevelFunc(role.currLevel)
     role.baseDefense += role.DefenseLevelFunc(role.currLevel)
     role.attackStamina -= role.StaminaLevelFunc(role.currLevel)
@@ -1664,7 +1668,6 @@ def search(setting, role):
                     optionNumber = optionNumber - 1 if optionNumber != 0 else numOptions - 1
                 elif event.key == pygame.K_RETURN:
                     print(setting.places[optionNumber])
-                    # TODO: Finish search function images to display
                     screen.fill(white)  # clear the screen
                     breakFlag = True  # enables breaking out of while-loop
                     break  # Breaking out of the pygame for-loop
@@ -1834,11 +1837,11 @@ def search(setting, role):
 def Stats(RoleHero):
     screen.fill(white)
     pygame_print(f"Attack Power = {RoleHero.attackpower:.0f}", 90)
-    pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.basehealth:.0f}", 130)
+    pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", 130)
     pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", 170)
     pygame_print(f"Speed = {RoleHero.speed:.2f}", 210)
-    pygame_print(f"Attack Stamina = {RoleHero.attackStamina}", 250)
-    pygame_print(f"Defense Stamina = {RoleHero.defenseStamina}", 290)
+    pygame_print(f"Attack Stamina = {RoleHero.attackStamina:.2f}", 250)
+    pygame_print(f"Defense Stamina = {RoleHero.defenseStamina:.2f}", 290)
     pygame_print(f"Money = {RoleHero.money}", 330)
     pygame_print(f"Quest Level = {RoleHero.questLevel}", 370)
     pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", 410)
@@ -1883,7 +1886,6 @@ def Mine(role, setting):
     Objective: Click on the object before
     the NPC snatches the item (before npcTime elapses)
     '''
-    # TODO: Make it so the rectangle is actually an item from the list of possible items that the user can mine
 
     screen.fill(white)
     global time, font
@@ -2051,19 +2053,6 @@ def printItem(role, item_name):
     global font, white, black, orange
     screen.fill(white)  # clear the screen
 
-    #    pygame_print(f"{item}: {currentInventory[item]}", loc = line_count, color = orange if idx == optionNumber else black)
-    #    print(role.useInv[item_name]["Use"]) #"Use" button
-    #
-    #    print(role.numInv[item_name]["Number"]) #The amount of the item
-    #    print(role.numInv[item_name]["BuyValue"]) #The buy value of the item
-    #    print(role.numInv[item_name]["SellValue"]) #The sell value of the item
-    #    print(role.numInv[item_name]["QuestLevel"]) #The quest level at which this item is available
-    #
-    #    print(role.stringInv[item_name]["Name"]) #The name of the item
-    #    print(role.stringInv[item_name]["Picture"]) #The picture of the item
-    #    print(role.stringInv[item_name]["Description"]) #The description of the item
-    #    print(role.stringInv[item_name]["Type"]) #The type of the item (e.g. healing, trading, etc.)
-
     square_rect = pygame.Rect(40, 100, 320, 235)  # left, top, width, height
     image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
     image = pygame.transform.scale(image, (320, 235))
@@ -2174,6 +2163,8 @@ class Shot:
 
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red
+    role.health = role.base_health  # TODO: delete!
+    role.attackpower = 1000  # TODO: delete!
 
     role_image_name = role.name.lower().replace(" jackson", "") + "-start.png"
     role_image_name_flipped = role_image_name.replace(".png", "flip.png")
@@ -2181,6 +2172,15 @@ def QuestGames(Setting, role):
     enemy_image_names_flipped = {"NINJA": "ninjaflip.png", "OGRE": "ogreflip.png", "DEMON": "demonflip.png"}
 
     buffer_width = 40
+
+    '''
+
+
+    🤺          👹
+    (100,600)   (660, 600)
+
+
+    '''
 
     start_x, start_y, curr_y, enemy_x, enemy_y, curr_enemy_y = 100, 600, 600, 700 - buffer_width, 600, 600
     ground_y = 600
@@ -2190,9 +2190,99 @@ def QuestGames(Setting, role):
     role_rect, enemy_rect = None, None
     print(Setting := Setting.name.upper())
 
+    '''
+    Goal: To develop a reinforcement learning agent to learn the best moves at each step/iteration
+    to maximize the probability of defeating the player.
+
+    Step 1: Define a Reward Function (given at each time step (t = 0, 1, 2, ..., end)
+        - Example 1:
+            1       if the Role took damage
+            0       if no one took damage
+            -1      if the agent took damage
+        - Example 2:
+            1       if the Role took damage
+            -0.5    if no one took damage (b/c the agent didn't hit the target)
+            -1      if the agent took damage
+        - Example 3:
+            Reward = dd * (damage_dealt / role.base_health) - dt * (damage_taken / enemy.base_health)
+
+            dt = (enemy.base_health - enemy.health) / enemy.base_health
+
+                Example 1:
+                    enemy.base_health = 100
+                    enemy.health = 99
+                    damage_taken = 1
+                    -> second_term = .01 * 1 = .01
+
+                Example 2:
+                    enemy.base_health = 100
+                    enemy.health = 19
+                    damage_taken = 1
+                    -> second_term = (100 - 19)/100 * 1 = 0.81
+
+                Therefore, dt penalizes losing health more if the agent has less of it.
+
+            dd = 1
+
+    t = 0:
+        Agent (agent_position = (660, 600), role_position = (0, 600), stats) -> choose between ("attack", "left", "right", "jump")
+
+    MCTS
+    ----
+    N(s,a): Number of times the agent has taken an action a from the state s
+    Q(s,a): Estimation of the expected reward of taking action a from the state s
+         - Q(s,a) = max(Q(s,a), score)  if N(s,a) > 0
+                    0                   if N(s,a) = 0
+
+
+                E.g. piecewise function:
+                    f(x) = x^2  if x > 0
+                           -x   if x <= 0
+    N(s): Number of times the agent has visited the state s
+
+    Q: How do you choose actions?
+    A: Using the upper-confidence tree (UCT) formula
+
+        UCT = Q(s,a) + c*sqrt( ln(N(s)) / N(s,a) )
+
+    where c is the regularization term -> hyperparameter -> controls the exploitation/exploitation tradeoff
+
+    c = sqrt(2) is typical in literature, also 1 is common
+
+    Q(s,a) <- max(Q(s,a), score)
+
+    '''
+    Qsa = {}
+    Nsa = {}
+    Ns = {}
+
+    if os.path.isfile('Qsa.json') and os.path.isfile('Nsa.json') and os.path.isfile('Ns.json'):
+        with open('Qsa.json') as json_file:
+            Qsa = json.load(json_file)
+        with open('Nsa.json') as json_file:
+            Nsa = json.load(json_file)
+        with open('Ns.json') as json_file:
+            Ns = json.load(json_file)
+
+    def save_stats():
+        with open("Qsa.json", "w") as outfile:
+            json.dump(Qsa, outfile)
+        with open("Nsa.json", "w") as outfile:
+            json.dump(Nsa, outfile)
+        with open("Ns.json", "w") as outfile:
+            json.dump(Ns, outfile)
+
+    c = sqrt(2)
+    #    State = namedtuple("State", "agent_x agent_y role_x role_y agent_health") #maybe include role_health as well?
+    enemy_options = ("attack", "left", "right", "jump", "rest")
+    max_score = -np.inf
+    dd = 1
+
     def spawnBadNPC():
+        '''
+        Spawns a random oponent
+        '''
         randnum = randint(1, 100)
-        print(randnum)
         start = 1
         end = 0
         for b in badNPCs:
@@ -2202,8 +2292,10 @@ def QuestGames(Setting, role):
                 enemy.statboost(role)
                 return enemy
 
-    enemy = spawnBadNPC()
-    print(f"Enemy name = {enemy.name}, enemy_image_names.get(enemy.name) = {enemy_image_names.get(enemy.name)}")
+    enemies = [spawnBadNPC() for i in range(10)]
+    enemy = enemies[0]
+    getEnemyHealth = lambda: sum(i.health for i in enemies)
+    getEnemyBaseHealth = lambda: sum(i.base_health for i in enemies)
 
     def renderRole(start_x, start_y):
         global font
@@ -2239,19 +2331,70 @@ def QuestGames(Setting, role):
 
     shotsFired = deque([], maxlen=10)
     shotsEnemyFired = deque([], maxlen=10)
-    K = 10  # Constant factor
+    K = 10  # Constant factor for gravity
 
     global badNPCs  # we're saying that we will be using the global variable badNPCs
     NumberDefeated = 0
-    expEarned = 0  # TODO: Update XP
 
-    enemy_options = ("attack", "left", "right", "jump")
+    start_msg_time = time()
+    start_msg_interval = 2  # At the beginning of each round, a message saying 'spawning new enemy' will appear for 2 seconds
 
+    def generateMove(temp_state):
+        '''
+        Generate a move that the agent should make based on the UCT formula:
+            UCT = Q(s,a) + c*sqrt( ln(N(s)) / N(s,a) )
+        '''
+
+        UCT = 0
+        UCT_best = -np.inf
+        best_act = "None"
+
+        for enemy_option in enemy_options:
+            # If the condition below is true then we can use the UCT formula
+            if Nsa.get(temp_state) and int(Nsa[temp_state].get(enemy_option) or 0) > 0:
+                UCT = Qsa[temp_state][enemy_option] + c * sqrt(ln(Ns[temp_state] / Nsa[temp_state][enemy_option]))
+            else:
+                UCT = np.inf  # encourage this action since it has no visit counts
+            if UCT > UCT_best:
+                best_act = enemy_option
+                UCT_best = UCT
+
+        if Ns.get(temp_state):
+            Ns[temp_state] += 1
+            if Nsa[temp_state].get(best_act):  # if the state-action pair has been visited before
+                Nsa[temp_state][best_act] += 1
+            else:  # if the state has been visited but the action has not been taken from this state yet
+                Nsa[temp_state][best_act] = 1
+        else:  # if the state-action pair has not been visited before
+            Ns[temp_state] = 1
+            Nsa[temp_state] = {}
+            Nsa[temp_state][best_act] = 1
+
+        return enemy_options.index(best_act)
+
+    #        return randint(0, 3)
+
+    n_iter = 0
+
+    max_score = -np.inf
+    check_point_score = -np.inf
     while True:  # pygame loop
-        enemyMove = randint(0, 3)
+        if n_iter != 0 and n_iter % 150 == 0:
+            if check_point_score == max_score:
+                c += sqrt(2)
+            else:
+                c = sqrt(2)
+                check_point_score = max_score
+
+        n_iter += 1
+        last_role_health = role.health
+        last_agent_health = getEnemyHealth()  # enemy.health
+        temp_state = f"State(agent_x = {enemy_x:0.0f}, agent_y = {curr_enemy_y:0.0f}, role_x = {start_x:0.0f}, role_y = {curr_y:0.0f}, agent_health = {enemy.health:0.0f}, agent_flipped = {enemy.flipped})"
+        enemyMove = generateMove(temp_state)
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_RETURN:
+                    save_stats()
                     return
                 elif event.key == pygame.K_SPACE:  # Checking if the role hero fired a shot
                     # Put beam on the screen if role has the stamina for it
@@ -2352,36 +2495,115 @@ def QuestGames(Setting, role):
             if beam_rect.colliderect(
                     enemy_rect) and not shot.hit_target:  # Enemy was hit and this is not a repeat of the same shot
                 role.attack(enemy)
-                if enemy.health <= 0:
+                pygame.draw.rect(screen, red, enemy_rect, 2)
+                if enemy.health == 0:
                     increaseExp(role, enemy.expYield)
-
-                    enemy = spawnBadNPC()
-                    pygame_print("Spawning new enemy: {enemy.name}",
-                                 loc=300)  # TODO: Need timer to display this for X number of seconds
                     NumberDefeated += 1
+                    if NumberDefeated < 10:
+                        enemy = enemies[NumberDefeated]  # spawnBadNPC()
+                        #                        last_agent_health = enemy.health
+                        pygame_print(f"Spawning enemy #{NumberDefeated + 1}/10: {enemy.name}", loc=300)
+                        start_msg_time = time()
+                    else:
+                        role.questLevel += 1
+                        pygame_print(f"You Won!!", loc=300)
 
                 shot.hit_target = True
             pygame.draw.ellipse(screen, orange, beam_rect)  # Drawing the beam
 
         for shot in shotsEnemyFired:
             shot.beam_x = shot.beam_x - 50 if not shot.is_flipped else shot.beam_x + 50
-            beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, buffer_width / 2,
-                                    buffer_width / 4)  # beam object
+            beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, buffer_width / 2, buffer_width / 4)  # beam object
             if beam_rect.colliderect(
                     role_rect) and not shot.hit_target:  # Role was hit and this is not a repeat of the same shot
                 enemy.attack(role)
                 pygame.draw.rect(screen, red, role_rect, 2)
-                if role.health <= 0:
-                    pygame_print("You died!", loc=300)  # TODO: Need timer to display this for X number of seconds
-                    return
+
                 shot.hit_target = True
             pygame.draw.ellipse(screen, red, beam_rect)  # Drawing the beam
+
+        if role.health <= 0:
+            pygame_print("You died!", loc=300)
+        elif time() - start_msg_time < start_msg_interval and NumberDefeated < 10:
+            pygame_print(f"Spawning enemy #{NumberDefeated + 1}/10: {enemy.name}", loc=300)
 
         pygame.display.update()
 
         if NumberDefeated == 10 or role.health <= 0:
             # Do stuff
+            pygame.time.delay(1000)
+            pygame.event.clear(eventtype=pygame.KEYDOWN)
+            save_stats()
             return
+
+        '''
+        Reward = dd * (damage_dealt / role.base_health) - dt * (damage_taken / enemy.base_health)
+
+        dt = (enemy.base_health - enemy.health) / enemy.base_health
+        dd = 1
+        '''
+
+        damage_dealt = last_role_health - role.health
+        damage_taken = last_agent_health - getEnemyHealth()  # enemy.health
+        dt = (getEnemyBaseHealth() - getEnemyHealth()) / getEnemyBaseHealth()
+        score = dd * (damage_dealt / role.base_health) - dt * (damage_taken / getEnemyBaseHealth())
+
+        if score > max_score:
+            max_score = score
+
+        if Qsa.get(temp_state):
+            if Qsa[temp_state].get(enemy_options[enemyMove]):  # if the state-action pair has been visited before
+                Qsa[temp_state][enemy_options[enemyMove]] = max(Qsa[temp_state][enemy_options[enemyMove]], score)
+            else:  # if the state has been visited but the action has not been taken from this state yet
+                Qsa[temp_state][enemy_options[enemyMove]] = score
+        else:  # if the state-action pair has not been visited before
+            Qsa[temp_state] = {}
+            Qsa[temp_state][enemy_options[enemyMove]] = score
+
+        '''
+        What we have to store for continual learning:
+         - Qsa, Nsa, Psa:
+            * NN: stores the weights and biases of the Neural Network
+            * SA: stores the dictionary of all visited state action pairs
+
+        '''
+
+
+def Shop(Role):
+    optionNumber = 0
+    while True:
+        screen.fill(white)  # clear the screen
+        pygame_print("What would you like to do today?", 90, color=black, background_color=white)
+        pygame_print("================================", 130, color=black, background_color=white)
+        pygame_print("Buy", 170, color=(orange if optionNumber == 0 else black), background_color=white)
+        pygame_print("Sell", 210, color=(orange if optionNumber == 1 else black), background_color=white)
+        pygame_print("Trade", 250, color=(orange if optionNumber == 2 else black), background_color=white)
+        pygame_print("Exit", 350, color=red, background_color=white)
+
+        stop_button = AddButton(text="STOP", offset=0, loc=350, background_color=red)
+
+        pygame.display.update()
+        for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
+            if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                if event.key == pygame.K_DOWN:
+                    optionNumber = optionNumber + 1 if optionNumber != 2 else 0
+                elif event.key == pygame.K_UP:
+                    optionNumber = optionNumber - 1 if optionNumber != 0 else 2
+                elif event.key == pygame.K_RETURN:
+                    screen.fill(white)
+                    if optionNumber == 0:  # Buy
+                        pygame_print("Buy", 300, color=black, background_color=white)
+                    elif optionNumber == 1:  # Sell
+                        pygame_print("Sell", 300, color=black, background_color=white)
+                    elif optionNumber == 2:  # Trade
+                        pygame_print("Trade", 300, color=black, background_color=white)
+                    pygame.display.update()
+                    pygame.time.delay(1000)
+                    pygame.event.clear(eventtype=pygame.KEYDOWN)
+
+            elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
+                    pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
+                return
 
 
 def Menu(role, setting):
@@ -2451,7 +2673,7 @@ def Menu(role, setting):
                         elif optionNumber == 3:  # Inventory
                             printInventory(role)
                         elif optionNumber == 4:  # Shop
-                            pass
+                            Shop(role)
                         elif optionNumber == 5:  # Quests
                             QuestGames(setting, role)
                         elif optionNumber == 6:  # Stats
@@ -2493,8 +2715,7 @@ def Menu(role, setting):
 
 
 def game():
-    # TODO: uncomment next line in actual game
-    # slowPrint("Welcome to the Game!")
+    # TODO: replace manual printing with pygame_print
     global font, Quests
     try:
         pygame.display.set_caption('Game Window')
