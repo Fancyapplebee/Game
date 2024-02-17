@@ -182,7 +182,7 @@ cppyy.cppdef(
         std::unordered_map<std::string, double> printSellItems(bool print = false);
         std::vector<std::string> printSellItemsVec(bool print = false, bool upper = true);
         std::vector<std::string> getTradableItems();
-        std::unordered_map<std::string, double> printBuyItems();
+        std::unordered_map<std::string, double> printBuyItems(bool print = true);
         std::pair<std::unordered_map<std::string, std::unordered_map<std::string, double>>, std::vector<std::string>> printTradeInfo();
         double AttackLevelFunc(int level)
         {
@@ -412,25 +412,34 @@ cppyy.cppdef(
         return tradableItems;
     }
 
-    std::unordered_map<std::string, double> Role::printBuyItems()
+    std::unordered_map<std::string, double> Role::printBuyItems(bool print)
     {
         std::unordered_map<std::string, double> buyableItems;
-
-        std::cout << std::setw(20) << "Item" << std::setw(20) << "Picture" <<
-                std::setw(20) << "Buy Value" << '\n' << std::setw(20) << "----" << std::setw(20) << "-------" << std::setw(20) << "---------" << '\n';
+        if (print)
+        {
+            std::cout << std::setw(20) << "Item" << std::setw(20) << "Picture" <<
+                    std::setw(20) << "Buy Value" << '\n' << std::setw(20) << "----" << std::setw(20) << "-------" << std::setw(20) << "---------" << '\n';
+        }
 
         for (auto& i: stringInv)
         {
         //            "Item", "Picture", "Buy Value"
-            if ((numInv[i.first].find("BuyValue") != numInv[i.first].end()) && (numInv[i.first]["Questlevel"] <= this->questLevel))
+            if ((numInv[i.first].find("BuyValue") != numInv[i.first].end()) && (numInv[i.first]["Questlevel"] <= this->questLevel) &&
+                (this->money >= numInv[i.first]["BuyValue"]))
             {
-                std::cout << std::setw(20) << stringInv[i.first]["Name"] << std::setw(20) << stringInv[i.first]["Picture"] << std::setw(20) << numInv[i.first]["BuyValue"] << std::setw(20) << '\n';
+                if (print)
+                {
+                    std::cout << std::setw(20) << stringInv[i.first]["Name"] << std::setw(20) << stringInv[i.first]["Picture"] << std::setw(20) << numInv[i.first]["BuyValue"] << std::setw(20) << '\n';
+                }
                 std::string temp = i.first;
                 std::transform(temp.begin(), temp.end(),temp.begin(), ::toupper);
                 buyableItems[temp] = numInv[i.first]["BuyValue"];
             }
         }
-        std::cout << '\n';
+        if (print)
+        {
+            std::cout << '\n';
+        }
         return buyableItems;
     }
 
@@ -2079,7 +2088,7 @@ def printItem(role, item_name):
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    return
+                    return 0
             elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
                 mouse_pos = pygame.mouse.get_pos()
                 if rect.collidepoint(mouse_pos):
@@ -2105,12 +2114,8 @@ def getItemCounts(role):
 
 def printInventory(role):
     global font, white, black, orange
-    screen.fill(white)
 
-    currentInventory, num_items = getItemCounts(role)
-
-    # If the user doesn't have any items, then we need to handle this differently.
-    if num_items == 0:
+    def print_no_items():
         pygame_print("You don't have any items.", )
         pygame.display.update()
         while True:
@@ -2118,6 +2123,15 @@ def printInventory(role):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         return
+
+    screen.fill(white)
+
+    currentInventory, num_items = getItemCounts(role)
+
+    # If the user doesn't have any items, then we need to handle this differently.
+    if num_items == 0:
+        print_no_items()
+        return
 
     currentInventoryList = list(currentInventory.keys())
     line_count = 80
@@ -2129,6 +2143,9 @@ def printInventory(role):
         screen.fill(white)
         line_count = 80
         currentInventory, num_items = getItemCounts(role)
+        if num_items == 0:
+            print_no_items()
+            return
         currentInventoryList = list(currentInventory.keys())
         for idx, item in enumerate(currentInventory):
             pygame_print(f"{item}: {currentInventory[item]}", loc=line_count,
@@ -2145,8 +2162,9 @@ def printInventory(role):
                 elif event.key == pygame.K_UP:
                     optionNumber = optionNumber - 1 if optionNumber != 0 else num_items - 1
                 elif event.key == pygame.K_RETURN:
+                    print(f"optionNumber = {optionNumber}")
                     print(currentInventoryList[optionNumber])  # item that the user is hovering on
-                    printItem(role, currentInventoryList[optionNumber])
+                    optionNumber = printItem(role, currentInventoryList[optionNumber])
             elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
                 mouse_pos = pygame.mouse.get_pos()
                 if stop_rect.collidepoint(mouse_pos):
@@ -2161,6 +2179,7 @@ class Shot:
         self.is_flipped = is_flipped
 
 
+# TODO: The Role should earn money after completing a quest based on the enemies defeated. For example, more difficult enemies should yield more money than weaker enemies
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red
     role.health = role.base_health  # TODO: delete!
@@ -2569,6 +2588,57 @@ def QuestGames(Setting, role):
         '''
 
 
+def BuyOption(Role):
+    if Role.money == 0:
+        pygame_print("You don't have any money!", 300, color=black, background_color=white)
+        pygame.display.update()
+        pygame.time.delay(1000)
+        pygame.event.clear(eventtype=pygame.KEYDOWN)
+        return
+
+    buyableItems = Role.printBuyItems(False)
+    print("buyableItems.size() =", buyableItems.size())
+    if buyableItems.size() == 0:
+        pygame_print("You don't have enough money!", 300, color=black, background_color=white)
+        pygame.display.update()
+        pygame.time.delay(1000)
+        pygame.event.clear(eventtype=pygame.KEYDOWN)
+        return
+
+    optionNumber = 0
+    while True:
+        screen.fill(white)  # clear the screen
+        pygame_print(f"What would you like to buy today?", 60, color=black, background_color=white)
+        pygame_print("=================================", 100, color=black, background_color=white)
+        text_y = 140
+
+        # TODO: Should have a scrolling option if buyableItems.size() exceeds some threshold, say 10, so that if optionNumber >= buyableItems.size(), then we only display the items from buyableItems[optionNumber - (threshold - 1)] to buyableItems[optionNumber]
+
+        # TODO: Need to set optionNumber to 0 when returning to this function and return from this function once buyableItems.size() == 0
+        for i, item in enumerate(buyableItems):
+            pygame_print(cppStringConvert(item.first), text_y, color=(orange if optionNumber == i else black),
+                         background_color=white)
+            text_y += 40
+
+        pygame_print(f"Your Money = {Role.money:0.2f}", text_y + 20, color=black, background_color=white)
+
+        stop_button = AddButton(text="EXIT", offset=0, loc=text_y + 80, background_color=red)
+
+        pygame.display.update()
+        for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
+            if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                if event.key == pygame.K_DOWN:
+                    optionNumber = optionNumber + 1 if optionNumber != buyableItems.size() - 1 else 0
+                elif event.key == pygame.K_UP:
+                    optionNumber = optionNumber - 1 if optionNumber != 0 else buyableItems.size() - 1
+                elif event.key == pygame.K_RETURN:
+                    # TODO: Call something similar to `printItem(...)` but the API needs to allow the user to specify how many of the item they want
+                    screen.fill(white)
+            elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
+                    pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
+                return
+
+
 def Shop(Role):
     optionNumber = 0
     while True:
@@ -2580,7 +2650,7 @@ def Shop(Role):
         pygame_print("Trade", 250, color=(orange if optionNumber == 2 else black), background_color=white)
         pygame_print("Exit", 350, color=red, background_color=white)
 
-        stop_button = AddButton(text="STOP", offset=0, loc=350, background_color=red)
+        stop_button = AddButton(text="EXIT", offset=0, loc=350, background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
@@ -2592,7 +2662,7 @@ def Shop(Role):
                 elif event.key == pygame.K_RETURN:
                     screen.fill(white)
                     if optionNumber == 0:  # Buy
-                        pygame_print("Buy", 300, color=black, background_color=white)
+                        BuyOption(Role)
                     elif optionNumber == 1:  # Sell
                         pygame_print("Sell", 300, color=black, background_color=white)
                     elif optionNumber == 2:  # Trade
