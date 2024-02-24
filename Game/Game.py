@@ -722,7 +722,7 @@ cppyy.cppdef(
                 },
 
                 {
-                        "Potion",{{"Name", "Potion"}, {"Picture", "Assets/Assets/potion.png"}, {"Description", "A potion, maybe you can drink it (Increases health by 20)"}, {"Type", "Healing"}}
+                        "Potion",{{"Name", "Potion"}, {"Picture", "Assets/potion.png"}, {"Description", "A potion, maybe you can drink it (Increases health by 20)"}, {"Type", "Healing"}}
                 },
 
                 {
@@ -2097,6 +2097,85 @@ def printItem(role, item_name):
                     pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=200, loc=200)
                     pygame.display.update()
 
+def buyItem(role, item_name):
+    global font, white, black, orange
+    screen.fill(white)  # clear the screen
+
+    square_rect = pygame.Rect(40, 100, 320, 235)  # left, top, width, height
+
+    image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
+    image = pygame.transform.scale(image, (320, 235))
+
+    pygame.draw.rect(screen, white, square_rect)
+    screen.blit(image, square_rect.topleft)
+
+    pygame_print(f"Name: {item_name}", offset=-200, loc=380)
+    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset=-200, loc=440)
+    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset=-200,
+                      line_break=23, start_height=550)
+
+    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=200, loc=200)
+    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset=200, loc=260)
+    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset=200, loc=320)
+    pygame_print(f"Your Money:", offset=200, loc=380)
+    font = pygame.font.Font('freesansbold.ttf', 25)
+    pygame_print(f"{role.money:.2f}", offset=200, loc=440)
+    font = pygame.font.Font('freesansbold.ttf', 32)
+
+    num_item = 0 #Count the amount of item_name that the user wants to buy
+    max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
+    pygame_print(f"How many?: {num_item}", offset=200, loc=550)
+
+    rect = AddButton(text="Buy", offset=200, loc=630, background_color=green)
+
+    pygame.display.update()
+
+    while True:
+        
+        screen.fill(white)  # clear the screen
+        pygame.draw.rect(screen, white, square_rect)
+        screen.blit(image, square_rect.topleft)
+
+        pygame_print(f"Name: {item_name}", offset=-200, loc=380)
+        pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset=-200, loc=440)
+        long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset=-200,
+                  line_break=23, start_height=550)
+
+        pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=200, loc=200)
+        pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset=200, loc=260)
+        pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset=200, loc=320)
+        pygame_print(f"Your Money:", offset=200, loc=380)
+        font = pygame.font.Font('freesansbold.ttf', 25)
+        pygame_print(f"{role.money:.2f}", offset=200, loc=440)
+        font = pygame.font.Font('freesansbold.ttf', 32)
+        pygame_print(f"How many?: {num_item}", offset=200, loc=550)
+
+        rect = AddButton(text="Buy", offset=200, loc=630, background_color=green)
+        
+        pygame.display.update()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    return 0
+                elif event.key == pygame.K_DOWN:
+                    num_item = num_item + 1 if num_item != max_amount else 0
+                    pygame_print(f"How many?: {num_item}", offset=200, loc=550)
+#                    pygame.display.update()
+                elif event.key == pygame.K_UP:
+                    num_item = num_item - 1 if num_item != 0 else max_amount
+                    pygame_print(f"How many?: {num_item}", offset=200, loc=550)
+#                    pygame.display.update()
+            #TODO: Modify the color of the button when we are hovering over it
+            elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
+                mouse_pos = pygame.mouse.get_pos()
+                if rect.collidepoint(mouse_pos):
+                    print("Buying the item.")
+                    role.numInv[item_name]['Number'] += num_item
+                    role.money -= num_item * role.numInv[item_name]['BuyValue']
+                    max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
+                    num_item = 0
+
 
 def getItemCounts(role):
     line_count = 80
@@ -2180,6 +2259,7 @@ class Shot:
 
 
 # TODO: The Role should earn money after completing a quest based on the enemies defeated. For example, more difficult enemies should yield more money than weaker enemies
+
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red
     role.health = role.base_health  # TODO: delete!
@@ -2275,20 +2355,21 @@ def QuestGames(Setting, role):
     Nsa = {}
     Ns = {}
 
-    if os.path.isfile('Qsa.json') and os.path.isfile('Nsa.json') and os.path.isfile('Ns.json'):
-        with open('Qsa.json') as json_file:
+    if os.path.isfile('../../../../../Downloads/Qsa.json') and os.path.isfile('../../../../../Downloads/Nsa.json') and os.path.isfile(
+            '../../../../../Downloads/Ns.json'):
+        with open('../../../../../Downloads/Qsa.json') as json_file:
             Qsa = json.load(json_file)
-        with open('Nsa.json') as json_file:
+        with open('../../../../../Downloads/Nsa.json') as json_file:
             Nsa = json.load(json_file)
-        with open('Ns.json') as json_file:
+        with open('../../../../../Downloads/Ns.json') as json_file:
             Ns = json.load(json_file)
 
     def save_stats():
-        with open("Qsa.json", "w") as outfile:
+        with open("../../../../../Downloads/Qsa.json", "w") as outfile:
             json.dump(Qsa, outfile)
-        with open("Nsa.json", "w") as outfile:
+        with open("../../../../../Downloads/Nsa.json", "w") as outfile:
             json.dump(Nsa, outfile)
-        with open("Ns.json", "w") as outfile:
+        with open("../../../../../Downloads/Ns.json", "w") as outfile:
             json.dump(Ns, outfile)
 
     c = sqrt(2)
@@ -2370,7 +2451,7 @@ def QuestGames(Setting, role):
 
         for enemy_option in enemy_options:
             # If the condition below is true then we can use the UCT formula
-            if Nsa.get(temp_state) and int(Nsa[temp_state].get(enemy_option) or 0) > 0:
+            if Nsa.get(temp_state) and int(Nsa[temp_state].get(enemy_option) or 0) > 0 and Qsa.get(temp_state) and Qsa.get(temp_state).get(enemy_option):
                 UCT = Qsa[temp_state][enemy_option] + c * sqrt(ln(Ns[temp_state] / Nsa[temp_state][enemy_option]))
             else:
                 UCT = np.inf  # encourage this action since it has no visit counts
@@ -2597,9 +2678,11 @@ def BuyOption(Role):
         return
 
     buyableItems = Role.printBuyItems(False)
+    buyableItemsList = [cppStringConvert(i.first) for i in buyableItems]
     print("buyableItems.size() =", buyableItems.size())
     if buyableItems.size() == 0:
-        pygame_print("You don't have enough money!", 300, color=black, background_color=white)
+        pygame_print("You don't have enough money and/or", 300, color=black, background_color=white)
+        pygame_print("you haven't completed enough quests!", 340, color=black, background_color=white)
         pygame.display.update()
         pygame.time.delay(1000)
         pygame.event.clear(eventtype=pygame.KEYDOWN)
@@ -2616,7 +2699,7 @@ def BuyOption(Role):
 
         # TODO: Need to set optionNumber to 0 when returning to this function and return from this function once buyableItems.size() == 0
         for i, item in enumerate(buyableItems):
-            pygame_print(cppStringConvert(item.first), text_y, color=(orange if optionNumber == i else black),
+            pygame_print(cppStringConvert(item.first).title(), text_y, color=(orange if optionNumber == i else black),
                          background_color=white)
             text_y += 40
 
@@ -2633,6 +2716,12 @@ def BuyOption(Role):
                     optionNumber = optionNumber - 1 if optionNumber != 0 else buyableItems.size() - 1
                 elif event.key == pygame.K_RETURN:
                     # TODO: Call something similar to `printItem(...)` but the API needs to allow the user to specify how many of the item they want
+                    buyItem(Role, buyableItemsList[optionNumber].title())
+                    buyableItems = Role.printBuyItems(False)
+                    if buyableItems.size() == 0:
+                        return
+                    buyableItemsList = [cppStringConvert(i.first) for i in buyableItems]
+                    optionNumber = 0
                     screen.fill(white)
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
                     pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
@@ -2641,6 +2730,7 @@ def BuyOption(Role):
 
 def Shop(Role):
     optionNumber = 0
+    Role.money = 1e6
     while True:
         screen.fill(white)  # clear the screen
         pygame_print("What would you like to do today?", 90, color=black, background_color=white)
