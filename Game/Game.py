@@ -2695,7 +2695,7 @@ def BuyOption(Role):
         pygame_print("=================================", 100, color=black, background_color=white)
         text_y = 140
 
-        # TODO: Should have a scrolling option if buyableItems.size() exceeds some threshold, say 10, so that if optionNumber >= buyableItems.size(), then we only display the items from buyableItems[optionNumber - (threshold - 1)] to buyableItems[optionNumber]
+        # TODO: Should have a scrolling option if buyableItems.size() exceeds some threshold, say 9, so that if optionNumber >= buyableItems.size(), then we only display the items from buyableItems[optionNumber - (threshold - 1)] to buyableItems[optionNumber]
 
         # TODO: Need to set optionNumber to 0 when returning to this function and return from this function once buyableItems.size() == 0
         for i, item in enumerate(buyableItems):
@@ -2712,8 +2712,13 @@ def BuyOption(Role):
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_DOWN:
                     optionNumber = optionNumber + 1 if optionNumber != buyableItems.size() - 1 else 0
+                    if optionNumber >= buyableItems.size() > 9:
+                         buyableItems[optionNumber - (9 - 1)]  buyableItems[optionNumber]
                 elif event.key == pygame.K_UP:
                     optionNumber = optionNumber - 1 if optionNumber != 0 else buyableItems.size() - 1
+                    if optionNumber <= buyableItems.size() < 9:
+                        buyableItems[optionNumber - (9 - 1)] buyableItems[optionNumber]
+
                 elif event.key == pygame.K_RETURN:
                     # TODO: Call something similar to `printItem(...)` but the API needs to allow the user to specify how many of the item they want
                     buyItem(Role, buyableItemsList[optionNumber].title())
