@@ -7,6 +7,9 @@
     <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="Updated game files//GAME&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Game/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Game.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Game/Ns.json" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Ns.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Game/Nsa.json" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Nsa.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Game/Qsa.json" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Qsa.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -106,7 +109,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-5a2391486177-2887949eec09-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.13763.11" />
+        <option value="bundled-python-sdk-d68999036c7f-b11f5e8da5ad-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.14475.56" />
       </set>
     </attachedChunks>
   </component>
@@ -232,7 +235,9 @@
       <workItem from="1708754749989" duration="107000" />
       <workItem from="1708754941982" duration="4255000" />
       <workItem from="1708794007726" duration="1666000" />
-      <workItem from="1708795974192" duration="944000" />
+      <workItem from="1708795974192" duration="4111000" />
+      <workItem from="1709361720578" duration="249000" />
+      <workItem from="1709361993411" duration="2523000" />
     </task>
     <task id="LOCAL-00001" summary="it works">
       <created>1657430290327</created>
@@ -570,7 +575,15 @@
       <option name="project" value="LOCAL" />
       <updated>1708755168171</updated>
     </task>
-    <option name="localTasksCounter" value="45" />
+    <task id="LOCAL-00045" summary="Updated game files//GAME&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
+      <option name="closed" value="true" />
+      <created>1708797525849</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1708797525849</updated>
+    </task>
+    <option name="localTasksCounter" value="46" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

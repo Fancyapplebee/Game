@@ -2159,11 +2159,11 @@ def buyItem(role, item_name):
                 if event.key == pygame.K_RETURN:
                     return 0
                 elif event.key == pygame.K_DOWN:
-                    num_item = num_item + 1 if num_item != max_amount else 0
+                    num_item = num_item - 1 if num_item != 0 else max_amount
                     pygame_print(f"How many?: {num_item}", offset=200, loc=550)
 #                    pygame.display.update()
                 elif event.key == pygame.K_UP:
-                    num_item = num_item - 1 if num_item != 0 else max_amount
+                    num_item = num_item + 1 if num_item != max_amount else 0
                     pygame_print(f"How many?: {num_item}", offset=200, loc=550)
 #                    pygame.display.update()
             #TODO: Modify the color of the button when we are hovering over it
@@ -2355,21 +2355,20 @@ def QuestGames(Setting, role):
     Nsa = {}
     Ns = {}
 
-    if os.path.isfile('../../../../../Downloads/Qsa.json') and os.path.isfile('../../../../../Downloads/Nsa.json') and os.path.isfile(
-            '../../../../../Downloads/Ns.json'):
-        with open('../../../../../Downloads/Qsa.json') as json_file:
+    if os.path.isfile('Qsa.json') and os.path.isfile('Nsa.json') and os.path.isfile('Ns.json'):
+        with open('Qsa.json') as json_file:
             Qsa = json.load(json_file)
-        with open('../../../../../Downloads/Nsa.json') as json_file:
+        with open('Nsa.json') as json_file:
             Nsa = json.load(json_file)
-        with open('../../../../../Downloads/Ns.json') as json_file:
+        with open('Ns.json') as json_file:
             Ns = json.load(json_file)
 
     def save_stats():
-        with open("../../../../../Downloads/Qsa.json", "w") as outfile:
+        with open("Qsa.json", "w") as outfile:
             json.dump(Qsa, outfile)
-        with open("../../../../../Downloads/Nsa.json", "w") as outfile:
+        with open("Nsa.json", "w") as outfile:
             json.dump(Nsa, outfile)
-        with open("../../../../../Downloads/Ns.json", "w") as outfile:
+        with open("Ns.json", "w") as outfile:
             json.dump(Ns, outfile)
 
     c = sqrt(2)
@@ -2689,18 +2688,21 @@ def BuyOption(Role):
         return
 
     optionNumber = 0
+    maxItems = 3
+    startBuyIdx = 0
+    endBuyIdx = len(buyableItemsList) if len(buyableItemsList) < maxItems else maxItems
     while True:
         screen.fill(white)  # clear the screen
         pygame_print(f"What would you like to buy today?", 60, color=black, background_color=white)
         pygame_print("=================================", 100, color=black, background_color=white)
         text_y = 140
+        enumBuyItems = range(startBuyIdx, endBuyIdx)
 
         # TODO: Should have a scrolling option if buyableItems.size() exceeds some threshold, say 9, so that if optionNumber >= buyableItems.size(), then we only display the items from buyableItems[optionNumber - (threshold - 1)] to buyableItems[optionNumber]
 
         # TODO: Need to set optionNumber to 0 when returning to this function and return from this function once buyableItems.size() == 0
-        for i, item in enumerate(buyableItems):
-            pygame_print(cppStringConvert(item.first).title(), text_y, color=(orange if optionNumber == i else black),
-                         background_color=white)
+        for i in enumBuyItems:
+            pygame_print(buyableItemsList[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
             text_y += 40
 
         pygame_print(f"Your Money = {Role.money:0.2f}", text_y + 20, color=black, background_color=white)
@@ -2712,13 +2714,46 @@ def BuyOption(Role):
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_DOWN:
                     optionNumber = optionNumber + 1 if optionNumber != buyableItems.size() - 1 else 0
-                    if optionNumber >= buyableItems.size() > 9:
-                         buyableItems[optionNumber - (9 - 1)]  buyableItems[optionNumber]
+#                    startBuyIdx = 0 if optionNumber == 0 or optionNumber < maxItems else startBuyIdx + 1 if startBuyIdx + 1 + maxItems <= buyableItems.size() else startBuyIdx
+#                    
+                    if optionNumber == 0 or optionNumber < maxItems:
+                        startBuyIdx = 0
+                    elif startBuyIdx + 1 + maxItems <= buyableItems.size():
+                        startBuyIdx += 1
+                    
+                    endBuyIdx = startBuyIdx + (buyableItems.size() if buyableItems.size() < maxItems else maxItems)
+                    
+                   
+                    '''
+                e.g. maxItems = 3,
+                start: startBuyIdx = 0, endBuyIdx = 3
+                    
+                0.    Water
+                1.    Apple
+                2.    Tomato
+                3.    Melon
+                4.    Orange
+                5.    Pinapple
+                6.    Grapefruit
+                7.    Blueberry
+                8.    Strawberry
+                9.    Tootsie Roll
+                    '''
+                    
                 elif event.key == pygame.K_UP:
                     optionNumber = optionNumber - 1 if optionNumber != 0 else buyableItems.size() - 1
-                    if optionNumber <= buyableItems.size() < 9:
-                        buyableItems[optionNumber - (9 - 1)] buyableItems[optionNumber]
+#                    startBuyIdx = 0 if optionNumber == 0 or optionNumber < maxItems else startBuyIdx - 1 if startBuyIdx > 0 else buyableItems.size() - maxItems
+                    
+#                    if optionNumber == 0 or optionNumber < maxItems:
+#                        startBuyIdx = 0
+#                    elif startBuyIdx + 1 + maxItems <= buyableItems.size():
+#                        startBuyIdx += 1
 
+                    #TODO: Change startBuyIdx calculation so that it scrolls up as expected
+                    startBuyIdx = optionNumber - maxItems + 1 if optionNumber - maxItems + 1 >= 0 else 0
+                    
+                    endBuyIdx = startBuyIdx + (buyableItems.size() if buyableItems.size() < maxItems else maxItems)
+                    
                 elif event.key == pygame.K_RETURN:
                     # TODO: Call something similar to `printItem(...)` but the API needs to allow the user to specify how many of the item they want
                     buyItem(Role, buyableItemsList[optionNumber].title())
@@ -2727,6 +2762,8 @@ def BuyOption(Role):
                         return
                     buyableItemsList = [cppStringConvert(i.first) for i in buyableItems]
                     optionNumber = 0
+                    startBuyIdx = 0
+                    endBuyIdx = buyableItems.size() if buyableItems.size() < maxItems else maxItems
                     screen.fill(white)
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
                     pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
@@ -2735,7 +2772,7 @@ def BuyOption(Role):
 
 def Shop(Role):
     optionNumber = 0
-    Role.money = 1e6
+    Role.money = 1e6 #TODO: delete
     while True:
         screen.fill(white)  # clear the screen
         pygame_print("What would you like to do today?", 90, color=black, background_color=white)
