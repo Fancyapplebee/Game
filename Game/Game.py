@@ -2700,14 +2700,7 @@ def BuyOption(Role):
 
         # TODO: Should have a scrolling option if buyableItems.size() exceeds some threshold, say 9, so that if optionNumber >= buyableItems.size(), then we only display the items from buyableItems[optionNumber - (threshold - 1)] to buyableItems[optionNumber]
 
-
         # TODO: Need to set optionNumber to 0 when returning to this function and return from this function once buyableItems.size() == 0
-#        if optionNumber >= maxItems:
-#            startBuyIdx = optionNumber - (maxItems - 1)
-#            endBuyIdx = startBuyIdx + maxItems
-#            if endBuyIdx > len(buyableItemsList):
-#                endBuyIdx = len(buyableItemsList)
-        enumBuyItems = range(startBuyIdx, endBuyIdx)
         for i in enumBuyItems:
             pygame_print(buyableItemsList[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
             text_y += 40
@@ -2723,14 +2716,13 @@ def BuyOption(Role):
                     optionNumber = optionNumber + 1 if optionNumber != buyableItems.size() - 1 else 0
 #                    startBuyIdx = 0 if optionNumber == 0 or optionNumber < maxItems else startBuyIdx + 1 if startBuyIdx + 1 + maxItems <= buyableItems.size() else startBuyIdx
 #                    
-                    if optionNumber == 0:
+                    if optionNumber == 0 or optionNumber < maxItems:
                         startBuyIdx = 0
-                    elif startBuyIdx + 1 + maxItems <= buyableItems.size() and optionNumber > startBuyIdx - 1 + maxItems:
+                    elif startBuyIdx + 1 + maxItems <= buyableItems.size():
                         startBuyIdx += 1
                     
                     endBuyIdx = startBuyIdx + (buyableItems.size() if buyableItems.size() < maxItems else maxItems)
                     
-                    print(f"startBuyIdx = {startBuyIdx}, optionNumber = {optionNumber}")
                    
                     '''
                 e.g. maxItems = 3,
@@ -2750,22 +2742,17 @@ def BuyOption(Role):
                     
                 elif event.key == pygame.K_UP:
                     optionNumber = optionNumber - 1 if optionNumber != 0 else buyableItems.size() - 1
+#                    startBuyIdx = 0 if optionNumber == 0 or optionNumber < maxItems else startBuyIdx - 1 if startBuyIdx > 0 else buyableItems.size() - maxItems
+                    
+#                    if optionNumber == 0 or optionNumber < maxItems:
+#                        startBuyIdx = 0
+#                    elif startBuyIdx + 1 + maxItems <= buyableItems.size():
+#                        startBuyIdx += 1
 
                     #TODO: Change startBuyIdx calculation so that it scrolls up as expected
-#                    startBuyIdx = optionNumber - maxItems + 1 if optionNumber - maxItems + 1 >= 0 else 0
+                    startBuyIdx = optionNumber - maxItems + 1 if optionNumber - maxItems + 1 >= 0 else 0
                     
-#                    if startBuyIdx <= optionNumber and optionNumber <= startBuyIdx + maxItems:
-#                        startBuyIdx = startBuyIdx
-                    
-                    if optionNumber < startBuyIdx:
-                        startBuyIdx = startBuyIdx - 1 if startBuyIdx - 1 >= 0 else 0
-                    elif optionNumber > startBuyIdx + maxItems - 1:
-                        startBuyIdx = optionNumber - maxItems + 1
-                    
-                    endBuyIdx = startBuyIdx + min(buyableItems.size(), maxItems)
-                    
-                    print(f"startBuyIdx = {startBuyIdx}, optionNumber = {optionNumber}")
-
+                    endBuyIdx = startBuyIdx + (buyableItems.size() if buyableItems.size() < maxItems else maxItems)
                     
                 elif event.key == pygame.K_RETURN:
                     # TODO: Call something similar to `printItem(...)` but the API needs to allow the user to specify how many of the item they want
