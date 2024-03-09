@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="New game file&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Game/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Game.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Game/Ns.json" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Ns.json" afterDir="false" />
@@ -56,13 +55,6 @@
     &quot;assignee&quot;: &quot;Fancyapplebee&quot;
   }
 }</component>
-  <component name="GithubProjectSettings">
-    <option name="branchProtectionPatterns">
-      <list>
-        <option value="master" />
-      </list>
-    </option>
-  </component>
   <component name="GithubPullRequestsUISettings">
     <option name="selectedUrlAndAccountId">
       <UrlAndAccount>
@@ -246,9 +238,7 @@
       <workItem from="1708795974192" duration="4111000" />
       <workItem from="1709361720578" duration="249000" />
       <workItem from="1709361993411" duration="3207000" />
-      <workItem from="1709396800345" duration="6658000" />
-      <workItem from="1709872487059" duration="374000" />
-      <workItem from="1709872922136" duration="1413000" />
+      <workItem from="1709396800345" duration="984000" />
     </task>
     <task id="LOCAL-00001" summary="it works">
       <created>1657430290327</created>
@@ -602,15 +592,7 @@
       <option name="project" value="LOCAL" />
       <updated>1709367121975</updated>
     </task>
-    <task id="LOCAL-00047" summary="New game file&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
-      <option name="closed" value="true" />
-      <created>1709397832124</created>
-      <option name="number" value="00047" />
-      <option name="presentableId" value="LOCAL-00047" />
-      <option name="project" value="LOCAL" />
-      <updated>1709397832124</updated>
-    </task>
-    <option name="localTasksCounter" value="48" />
+    <option name="localTasksCounter" value="47" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -673,7 +655,7 @@
     <option name="LAST_COMMIT_MESSAGE" value="New game file&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Game$Game.coverage" NAME="Game Coverage Results" MODIFIED="1709446028061" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
+    <SUITE FILE_PATH="coverage/Game$Game.coverage" NAME="Game Coverage Results" MODIFIED="1709397607078" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
     <SUITE FILE_PATH="coverage/Game$Game_.coverage" NAME="Game` Coverage Results" MODIFIED="1660411554438" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
   </component>
 </project>
