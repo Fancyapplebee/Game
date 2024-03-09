@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="New game file&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Game/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Game.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Game/Ns.json" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Ns.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Game/Nsa.json" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Nsa.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Game/Qsa.json" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Qsa.json" afterDir="false" />
-    </list>
+    <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="New game file&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
