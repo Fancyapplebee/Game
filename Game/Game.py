@@ -183,6 +183,7 @@ cppyy.cppdef(
         std::vector<std::string> printSellItemsVec(bool print = false, bool upper = true);
         std::vector<std::string> getTradableItems();
         std::unordered_map<std::string, double> printBuyItems(bool print = true);
+        std::vector<std::string> printBuyItemsVec(bool print = true);
         std::pair<std::unordered_map<std::string, std::unordered_map<std::string, double>>, std::vector<std::string>> printTradeInfo();
         double AttackLevelFunc(int level)
         {
@@ -366,8 +367,8 @@ cppyy.cppdef(
         return sellableItems;
     }
 
-    //print = true, prints out AND returns map
-    //print = false, ONLY returns map, doesn't print anything
+    //print = true, prints out AND returns vecotr
+    //print = false, ONLY returns vector, doesn't print anything
     std::vector<std::string> Role::printSellItemsVec(bool print, bool upper)
     {
         if (print)
@@ -434,6 +435,35 @@ cppyy.cppdef(
                 std::string temp = i.first;
                 std::transform(temp.begin(), temp.end(),temp.begin(), ::toupper);
                 buyableItems[temp] = numInv[i.first]["BuyValue"];
+            }
+        }
+        if (print)
+        {
+            std::cout << '\n';
+        }
+        return buyableItems;
+    }
+    
+    std::vector<std::string> Role::printBuyItemsVec(bool print)
+    {
+        std::vector<std::string> buyableItems;
+        if (print)
+        {
+            std::cout << std::setw(20) << "Item" << std::setw(20) << "Picture" <<
+                    std::setw(20) << "Buy Value" << '\n' << std::setw(20) << "----" << std::setw(20) << "-------" << std::setw(20) << "---------" << '\n';
+        }
+
+        for (auto& i: stringInv)
+        {
+        //            "Item", "Picture", "Buy Value"
+            if ((numInv[i.first].find("BuyValue") != numInv[i.first].end()) && (numInv[i.first]["Questlevel"] <= this->questLevel) &&
+                (this->money >= numInv[i.first]["BuyValue"]))
+            {
+                if (print)
+                {
+                    std::cout << std::setw(20) << stringInv[i.first]["Name"] << std::setw(20) << stringInv[i.first]["Picture"] << std::setw(20) << numInv[i.first]["BuyValue"] << std::setw(20) << '\n';
+                }
+                buyableItems.push_back(i.first);
             }
         }
         if (print)
@@ -726,7 +756,7 @@ cppyy.cppdef(
                 },
 
                 {
-                        "Apple",{{"Name", "Apple"}, {"Picture", "Assets/apple.png"}, {"Description", "An apple, maybe you can eat it(Increases health by 10)! "}, {"Type", "Healing"}}
+                        "Apple",{{"Name", "Apple"}, {"Picture", "Assets/apple.png"}, {"Description", "An apple, maybe you can eat it (Increases health by 10)! "}, {"Type", "Healing"}}
                 },
 
                 {
@@ -2097,6 +2127,82 @@ def printItem(role, item_name):
                     pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=200, loc=200)
                     pygame.display.update()
 
+def sellItem(role, item_name):
+    global font, white, black, orange
+    screen.fill(white)  # clear the screen
+
+    square_rect = pygame.Rect(40, 100, 320, 235)  # left, top, width, height
+
+    image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
+    
+    image = pygame.transform.scale(image, (320, 235))
+
+    pygame.draw.rect(screen, white, square_rect)
+    screen.blit(image, square_rect.topleft)
+
+    pygame_print(f"Name: {item_name}", offset=-200, loc=380)
+    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset=-200, loc=440)
+    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset=-200,
+                      line_break=23, start_height=550)
+
+    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=200, loc=200)
+    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset=200, loc=260)
+    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset=200, loc=320)
+    pygame_print(f"Your Money:", offset=200, loc=380)
+    font = pygame.font.Font('freesansbold.ttf', 25)
+    pygame_print(f"{role.money:.2f}", offset=200, loc=440)
+    font = pygame.font.Font('freesansbold.ttf', 32)
+
+    num_item = 0 #Count the amount of item_name that the user wants to buy
+    max_amount = int(role.numInv[item_name]['Number'])
+    pygame_print(f"How many?: {num_item}", offset=200, loc=550)
+
+    rect = AddButton(text="Sell", offset=200, loc=630, background_color=green)
+
+    pygame.display.update()
+
+    while True:
+        
+        screen.fill(white)  # clear the screen
+        pygame.draw.rect(screen, white, square_rect)
+        screen.blit(image, square_rect.topleft)
+
+        pygame_print(f"Name: {item_name}", offset=-200, loc=380)
+        pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset=-200, loc=440)
+        long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset=-200,
+                  line_break=23, start_height=550)
+
+        pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=200, loc=200)
+        pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset=200, loc=260)
+        pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset=200, loc=320)
+        pygame_print(f"Your Money:", offset=200, loc=380)
+        font = pygame.font.Font('freesansbold.ttf', 25)
+        pygame_print(f"{role.money:.2f}", offset=200, loc=440)
+        font = pygame.font.Font('freesansbold.ttf', 32)
+        pygame_print(f"How many?: {num_item}", offset=200, loc=550)
+
+        rect = AddButton(text="Sell", offset=200, loc=630, background_color=green)
+        
+        pygame.display.update()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    return 0
+                elif event.key == pygame.K_DOWN:
+                    num_item = num_item - 1 if num_item != 0 else max_amount
+                elif event.key == pygame.K_UP:
+                    num_item = num_item + 1 if num_item != max_amount else 0
+            #TODO: Modify the color of the button when we are hovering over it
+            elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
+                mouse_pos = pygame.mouse.get_pos()
+                if rect.collidepoint(mouse_pos):
+                    print("Selling the item.")
+                    role.numInv[item_name]['Number'] -= num_item
+                    role.money += num_item * role.numInv[item_name]['SellValue']
+                    max_amount = int(role.numInv[item_name]['Number'])
+                    num_item = 0
+
 def buyItem(role, item_name):
     global font, white, black, orange
     screen.fill(white)  # clear the screen
@@ -2104,6 +2210,7 @@ def buyItem(role, item_name):
     square_rect = pygame.Rect(40, 100, 320, 235)  # left, top, width, height
 
     image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
+    
     image = pygame.transform.scale(image, (320, 235))
 
     pygame.draw.rect(screen, white, square_rect)
@@ -2160,12 +2267,8 @@ def buyItem(role, item_name):
                     return 0
                 elif event.key == pygame.K_DOWN:
                     num_item = num_item - 1 if num_item != 0 else max_amount
-                    pygame_print(f"How many?: {num_item}", offset=200, loc=550)
-#                    pygame.display.update()
                 elif event.key == pygame.K_UP:
                     num_item = num_item + 1 if num_item != max_amount else 0
-                    pygame_print(f"How many?: {num_item}", offset=200, loc=550)
-#                    pygame.display.update()
             #TODO: Modify the color of the button when we are hovering over it
             elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
                 mouse_pos = pygame.mouse.get_pos()
@@ -2249,7 +2352,6 @@ def printInventory(role):
                 if stop_rect.collidepoint(mouse_pos):
                     return
 
-
 class Shot:
     def __init__(self, beam_x, beam_y, hit_target, is_flipped):
         self.beam_x = beam_x
@@ -2257,8 +2359,8 @@ class Shot:
         self.hit_target = hit_target
         self.is_flipped = is_flipped
 
-
-# TODO: The Role should earn money after completing a quest based on the enemies defeated. For example, more difficult enemies should yield more money than weaker enemies
+# TODO: The Role should earn money after completing a quest based on the enemies defeated. For example, more difficult enemies should yield more money than weaker enemies.
+#TODO: Maybe have a health bar and/or display the StatLevel so the increase in health isn't alarming.
 
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red
@@ -2273,12 +2375,8 @@ def QuestGames(Setting, role):
     buffer_width = 40
 
     '''
-
-
     🤺          👹
     (100,600)   (660, 600)
-
-
     '''
 
     start_x, start_y, curr_y, enemy_x, enemy_y, curr_enemy_y = 100, 600, 600, 700 - buffer_width, 600, 600
@@ -2667,6 +2765,85 @@ def QuestGames(Setting, role):
 
         '''
 
+def SellOption(Role):
+    if not HasSellableItems(Role.numInv):
+        pygame_print("You don't have any sellable items!", 300, color=black, background_color=white)
+        pygame.display.update()
+        pygame.time.delay(1000)
+        pygame.event.clear(eventtype=pygame.KEYDOWN)
+        return
+    
+    sellableItems = Role.printSellItemsVec(False, False)
+    
+    optionNumber = 0
+    maxItems = 3
+    startSellIdx = 0
+    endSellIdx = min(sellableItems.size(), maxItems)
+    while True:
+        screen.fill(white)  # clear the screen
+        pygame_print(f"What would you like to sell today?", 60, color=black, background_color=white)
+        pygame_print("=================================", 100, color=black, background_color=white)
+        text_y = 140
+        for i in range(startSellIdx, endSellIdx):
+            pygame_print(sellableItems[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
+            text_y += 40
+
+        pygame_print(f"Your Money = {Role.money:0.2f}", text_y + 20, color=black, background_color=white)
+
+        stop_button = AddButton(text="EXIT", offset=0, loc=text_y + 80, background_color=red)
+
+        pygame.display.update()
+        for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
+            if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                if event.key == pygame.K_DOWN:
+                    optionNumber = optionNumber + 1 if optionNumber != sellableItems.size() - 1 else 0
+                    if optionNumber == 0:
+                        startSellIdx = 0
+                    elif startSellIdx + 1 + maxItems <= sellableItems.size() and optionNumber > startSellIdx - 1 + maxItems:
+                        startSellIdx += 1
+                    
+                    endSellIdx = startSellIdx + min(sellableItems.size(), maxItems)
+                                       
+                    '''
+                e.g. maxItems = 3,
+                start: startSellIdx = 0, startSellIdx = 3
+                    
+                0.    Water
+                1.    Apple
+                2.    Tomato
+                3.    Melon
+                4.    Orange
+                5.    Pinapple
+                6.    Grapefruit
+                7.    Blueberry
+                8.    Strawberry
+                9.    Tootsie Roll
+                    '''
+                    
+                elif event.key == pygame.K_UP:
+                    optionNumber = optionNumber - 1 if optionNumber != 0 else sellableItems.size() - 1
+
+                    if optionNumber < startSellIdx:
+                        startSellIdx = startSellIdx - 1 if startSellIdx - 1 >= 0 else 0
+                    elif optionNumber > startSellIdx + maxItems - 1:
+                        startSellIdx = optionNumber - maxItems + 1
+                    
+                    endSellIdx = startSellIdx + min(sellableItems.size(), maxItems)
+                    
+                elif event.key == pygame.K_RETURN:
+                    sellItem(Role, sellableItems[optionNumber].title())
+                    sellableItems = Role.printSellItemsVec(False, False)
+                    if sellableItems.size() == 0:
+                        return
+                    
+                    optionNumber = 0
+                    startSellIdx = 0
+                    endSellIdx = min(sellableItems.size(), maxItems)
+                    screen.fill(white)
+            elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
+                    pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
+                return
+
 
 def BuyOption(Role):
     if Role.money == 0:
@@ -2676,9 +2853,7 @@ def BuyOption(Role):
         pygame.event.clear(eventtype=pygame.KEYDOWN)
         return
 
-    buyableItems = Role.printBuyItems(False)
-    buyableItemsList = [cppStringConvert(i.first) for i in buyableItems]
-    print("buyableItems.size() =", buyableItems.size())
+    buyableItems = Role.printBuyItemsVec(False)
     if buyableItems.size() == 0:
         pygame_print("You don't have enough money and/or", 300, color=black, background_color=white)
         pygame_print("you haven't completed enough quests!", 340, color=black, background_color=white)
@@ -2690,26 +2865,15 @@ def BuyOption(Role):
     optionNumber = 0
     maxItems = 3
     startBuyIdx = 0
-    endBuyIdx = len(buyableItemsList) if len(buyableItemsList) < maxItems else maxItems
+    endBuyIdx = min(buyableItems.size(), maxItems)
+    
     while True:
         screen.fill(white)  # clear the screen
         pygame_print(f"What would you like to buy today?", 60, color=black, background_color=white)
         pygame_print("=================================", 100, color=black, background_color=white)
         text_y = 140
-        enumBuyItems = range(startBuyIdx, endBuyIdx)
-
-        # TODO: Should have a scrolling option if buyableItems.size() exceeds some threshold, say 9, so that if optionNumber >= buyableItems.size(), then we only display the items from buyableItems[optionNumber - (threshold - 1)] to buyableItems[optionNumber]
-
-
-        # TODO: Need to set optionNumber to 0 when returning to this function and return from this function once buyableItems.size() == 0
-#        if optionNumber >= maxItems:
-#            startBuyIdx = optionNumber - (maxItems - 1)
-#            endBuyIdx = startBuyIdx + maxItems
-#            if endBuyIdx > len(buyableItemsList):
-#                endBuyIdx = len(buyableItemsList)
-        enumBuyItems = range(startBuyIdx, endBuyIdx)
-        for i in enumBuyItems:
-            pygame_print(buyableItemsList[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
+        for i in range(startBuyIdx, endBuyIdx):
+            pygame_print(buyableItems[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
             text_y += 40
 
         pygame_print(f"Your Money = {Role.money:0.2f}", text_y + 20, color=black, background_color=white)
@@ -2721,17 +2885,13 @@ def BuyOption(Role):
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_DOWN:
                     optionNumber = optionNumber + 1 if optionNumber != buyableItems.size() - 1 else 0
-#                    startBuyIdx = 0 if optionNumber == 0 or optionNumber < maxItems else startBuyIdx + 1 if startBuyIdx + 1 + maxItems <= buyableItems.size() else startBuyIdx
-#                    
                     if optionNumber == 0:
                         startBuyIdx = 0
                     elif startBuyIdx + 1 + maxItems <= buyableItems.size() and optionNumber > startBuyIdx - 1 + maxItems:
                         startBuyIdx += 1
                     
-                    endBuyIdx = startBuyIdx + (buyableItems.size() if buyableItems.size() < maxItems else maxItems)
-                    
-                    print(f"startBuyIdx = {startBuyIdx}, optionNumber = {optionNumber}")
-                   
+                    endBuyIdx = startBuyIdx + min(buyableItems.size(), maxItems)
+                                       
                     '''
                 e.g. maxItems = 3,
                 start: startBuyIdx = 0, endBuyIdx = 3
@@ -2751,12 +2911,6 @@ def BuyOption(Role):
                 elif event.key == pygame.K_UP:
                     optionNumber = optionNumber - 1 if optionNumber != 0 else buyableItems.size() - 1
 
-                    #TODO: Change startBuyIdx calculation so that it scrolls up as expected
-#                    startBuyIdx = optionNumber - maxItems + 1 if optionNumber - maxItems + 1 >= 0 else 0
-                    
-#                    if startBuyIdx <= optionNumber and optionNumber <= startBuyIdx + maxItems:
-#                        startBuyIdx = startBuyIdx
-                    
                     if optionNumber < startBuyIdx:
                         startBuyIdx = startBuyIdx - 1 if startBuyIdx - 1 >= 0 else 0
                     elif optionNumber > startBuyIdx + maxItems - 1:
@@ -2764,19 +2918,16 @@ def BuyOption(Role):
                     
                     endBuyIdx = startBuyIdx + min(buyableItems.size(), maxItems)
                     
-                    print(f"startBuyIdx = {startBuyIdx}, optionNumber = {optionNumber}")
-
-                    
                 elif event.key == pygame.K_RETURN:
-                    # TODO: Call something similar to `printItem(...)` but the API needs to allow the user to specify how many of the item they want
-                    buyItem(Role, buyableItemsList[optionNumber].title())
-                    buyableItems = Role.printBuyItems(False)
+                    print("buyableItems[optionNumber].title() =",buyableItems[optionNumber].title())
+                    buyItem(Role, buyableItems[optionNumber].title())
+                    buyableItems = Role.printBuyItemsVec(False)
                     if buyableItems.size() == 0:
                         return
-                    buyableItemsList = [cppStringConvert(i.first) for i in buyableItems]
+                    
                     optionNumber = 0
                     startBuyIdx = 0
-                    endBuyIdx = buyableItems.size() if buyableItems.size() < maxItems else maxItems
+                    endBuyIdx = min(buyableItems.size(), maxItems)
                     screen.fill(white)
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
                     pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
@@ -2809,11 +2960,10 @@ def Shop(Role):
                     if optionNumber == 0:  # Buy
                         BuyOption(Role)
                     elif optionNumber == 1:  # Sell
-                        pygame_print("Sell", 300, color=black, background_color=white)
+                        SellOption(Role)
                     elif optionNumber == 2:  # Trade
                         pygame_print("Trade", 300, color=black, background_color=white)
                     pygame.display.update()
-                    pygame.time.delay(1000)
                     pygame.event.clear(eventtype=pygame.KEYDOWN)
 
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
