@@ -1299,113 +1299,113 @@ def displayHeroes(printing=False):
 
 # User can buy or sell as many items as they wish, given that they have enough
 # money
-def shop(Role):
-    #    inventory = Role.inventory  # alias
-    while True:
-        print("What would you like to do today? (Type 'exit' to exit)")
-        print("======================================================")
-        print("Buy\nSell\nTrade\n")
-        option = cS(input())
-        # Input validation
-        while option != "BUY" and option != "SELL" and option != "EXIT" and option != "TRADE":
-            print("Try again!")
-            option = cS(input("Enter either 'buy', 'sell', 'trade' or 'exit': "))
-
-        if option == "EXIT":
-            return
-
-        elif option == "BUY":
-            if Role.money == 0:
-                print("You don't have any money!")
-                continue
-
-            '''
-            print out the items that have the QuestLevel key
-
-            buyableItems = Role.printBuyItems()
-            '''
-
-            print(f"\nYour Money = {Role.money:0.2f}\n")
-            buyableItems = Role.printBuyItems()
-            BuyOption = cS(input("What would you like to buy today? "))
-
-            while buyableItems.find(BuyOption) == buyableItems.end():
-                print(f"Error! {BuyOption} is not one of your buyable items")
-                BuyOption = cS(input("What would you like to buy today? "))
-            AmountToBuy = input(f"How many {BuyOption} would you like to buy? ")
-            while not AmountToBuy.isdigit() or int(AmountToBuy) * buyableItems[BuyOption] > Role.money:
-                # Note: not AmountToSell.isdigit() is being evaluated twice
-                if not AmountToBuy.isdigit():
-                    print(f"Error! {AmountToBuy} is not a valid digit! ")
-                    AmountToBuy = input(f"How many {BuyOption} would you like to buy? ")
-                elif int(AmountToBuy) * buyableItems[BuyOption] > Role.money:
-                    print(f"Error! You don't have enough money to buy {AmountToBuy} {BuyOption}")
-                    AmountToBuy = input(f"How many {BuyOption} would you like to buy? ")
-            ATB = int(AmountToBuy)
-            # Converting from all caps to first letter uppercase of each word
-            # (rest lowercase)
-            BuyOption = DictKeyFormatter(BuyOption.split())
-
-            TTS = Role.numInv[BuyOption]["BuyValue"]
-            Role.money = Role.money - ATB * TTS
-
-            Role.numInv[BuyOption]["Number"] += ATB
-
-        elif option == "SELL":
-            if not HasSellableItems(Role.numInv):
-                print("You don't have any sellable items!")
-                continue
-
-            sellableItems = Role.printSellItems(True)
-            print(f"\nYour Money = {Role.money:0.2f}\n")
-            SellOption = cS(input("What would you like to sell today? "))
-
-            # Check if SellOption is a sellable item: Input validation
-            while sellableItems.find(SellOption) == sellableItems.end():
-                print(f"Error! {SellOption} is not one of your sellable items")
-                SellOption = cS(input("What would you like to sell today? "))
-
-            AmountToSell = input(f"How many {SellOption} would you like to sell? ")
-            # short-circuit evaluation
-            while not AmountToSell.isdigit() or int(AmountToSell) > sellableItems[SellOption]:
-                # Note: not AmountToSell.isdigit() is being evaluated twice
-                if not AmountToSell.isdigit():
-                    print(f"Error! {AmountToSell} is not a valid digit! ")
-                    AmountToSell = input(f"How many {SellOption} would you like to sell? ")
-                elif int(AmountToSell) > sellableItems[SellOption]:
-                    print(f"Error! You don't have {AmountToSell} {SellOption} to sell.")
-                    AmountToSell = input(f"How many {SellOption} would you like to sell? ")
-                    # Role.money
-            ATS = int(AmountToSell)
-            # Converting from all caps to first letter uppercase of each word
-            # (rest lowercase)
-            SellOption = DictKeyFormatter(SellOption.split())
-
-            TTS = Role.numInv[SellOption].at("SellValue")
-            Role.money = Role.money + ATS * TTS
-
-            # SyntaxError: 'function call' is an illegal expression for augmented assignment
-            #            Role.numInv[SellOption].at("Number")
-            Role.numInv[SellOption]["Number"] -= ATS
-
-        elif option == "TRADE":
-            if not HasSellableItems(Role.numInv):
-                print("You don't have any tradable items!")
-                continue
-            Info = Role.printTradeInfo()
-            TradeInfo = Info.first
-            SellInfo = Info.second
-
-            print(f"\nYour Money = {Role.money:0.2f}\n")
-            TradeOption = cS(input("What would you like to trade for today? ")).title()
-
-            while TradeInfo.find(TradeOption) == TradeInfo.end():
-                print(f"Error! {TradeOption} is not one of the tradeable items.")
-                TradeOption = cS(input("What would you like to trade for today? ")).title()
-
-            RequiredTradeItems = TradeInfo[TradeOption]
-
-            TradeFor(Role, SellInfo, RequiredTradeItems, TradeOption)
+#def shop(Role):
+#    #    inventory = Role.inventory  # alias
+#    while True:
+#        print("What would you like to do today? (Type 'exit' to exit)")
+#        print("======================================================")
+#        print("Buy\nSell\nTrade\n")
+#        option = cS(input())
+#        # Input validation
+#        while option != "BUY" and option != "SELL" and option != "EXIT" and option != "TRADE":
+#            print("Try again!")
+#            option = cS(input("Enter either 'buy', 'sell', 'trade' or 'exit': "))
+#
+#        if option == "EXIT":
+#            return
+#
+#        elif option == "BUY":
+#            if Role.money == 0:
+#                print("You don't have any money!")
+#                continue
+#
+#            '''
+#            print out the items that have the QuestLevel key
+#
+#            buyableItems = Role.printBuyItems()
+#            '''
+#
+#            print(f"\nYour Money = {Role.money:0.2f}\n")
+#            buyableItems = Role.printBuyItems()
+#            BuyOption = cS(input("What would you like to buy today? "))
+#
+#            while buyableItems.find(BuyOption) == buyableItems.end():
+#                print(f"Error! {BuyOption} is not one of your buyable items")
+#                BuyOption = cS(input("What would you like to buy today? "))
+#            AmountToBuy = input(f"How many {BuyOption} would you like to buy? ")
+#            while not AmountToBuy.isdigit() or int(AmountToBuy) * buyableItems[BuyOption] > Role.money:
+#                # Note: not AmountToSell.isdigit() is being evaluated twice
+#                if not AmountToBuy.isdigit():
+#                    print(f"Error! {AmountToBuy} is not a valid digit! ")
+#                    AmountToBuy = input(f"How many {BuyOption} would you like to buy? ")
+#                elif int(AmountToBuy) * buyableItems[BuyOption] > Role.money:
+#                    print(f"Error! You don't have enough money to buy {AmountToBuy} {BuyOption}")
+#                    AmountToBuy = input(f"How many {BuyOption} would you like to buy? ")
+#            ATB = int(AmountToBuy)
+#            # Converting from all caps to first letter uppercase of each word
+#            # (rest lowercase)
+#            BuyOption = DictKeyFormatter(BuyOption.split())
+#
+#            TTS = Role.numInv[BuyOption]["BuyValue"]
+#            Role.money = Role.money - ATB * TTS
+#
+#            Role.numInv[BuyOption]["Number"] += ATB
+#
+#        elif option == "SELL":
+#            if not HasSellableItems(Role.numInv):
+#                print("You don't have any sellable items!")
+#                continue
+#
+#            sellableItems = Role.printSellItems(True)
+#            print(f"\nYour Money = {Role.money:0.2f}\n")
+#            SellOption = cS(input("What would you like to sell today? "))
+#
+#            # Check if SellOption is a sellable item: Input validation
+#            while sellableItems.find(SellOption) == sellableItems.end():
+#                print(f"Error! {SellOption} is not one of your sellable items")
+#                SellOption = cS(input("What would you like to sell today? "))
+#
+#            AmountToSell = input(f"How many {SellOption} would you like to sell? ")
+#            # short-circuit evaluation
+#            while not AmountToSell.isdigit() or int(AmountToSell) > sellableItems[SellOption]:
+#                # Note: not AmountToSell.isdigit() is being evaluated twice
+#                if not AmountToSell.isdigit():
+#                    print(f"Error! {AmountToSell} is not a valid digit! ")
+#                    AmountToSell = input(f"How many {SellOption} would you like to sell? ")
+#                elif int(AmountToSell) > sellableItems[SellOption]:
+#                    print(f"Error! You don't have {AmountToSell} {SellOption} to sell.")
+#                    AmountToSell = input(f"How many {SellOption} would you like to sell? ")
+#                    # Role.money
+#            ATS = int(AmountToSell)
+#            # Converting from all caps to first letter uppercase of each word
+#            # (rest lowercase)
+#            SellOption = DictKeyFormatter(SellOption.split())
+#
+#            TTS = Role.numInv[SellOption].at("SellValue")
+#            Role.money = Role.money + ATS * TTS
+#
+#            # SyntaxError: 'function call' is an illegal expression for augmented assignment
+#            #            Role.numInv[SellOption].at("Number")
+#            Role.numInv[SellOption]["Number"] -= ATS
+#
+#        elif option == "TRADE":
+#            if not HasSellableItems(Role.numInv):
+#                print("You don't have any tradable items!")
+#                continue
+#            Info = Role.printTradeInfo()
+#            TradeInfo = Info.first
+#            SellInfo = Info.second
+#
+#            print(f"\nYour Money = {Role.money:0.2f}\n")
+#            TradeOption = cS(input("What would you like to trade for today? ")).title()
+#
+#            while TradeInfo.find(TradeOption) == TradeInfo.end():
+#                print(f"Error! {TradeOption} is not one of the tradeable items.")
+#                TradeOption = cS(input("What would you like to trade for today? ")).title()
+#
+#            RequiredTradeItems = TradeInfo[TradeOption]
+#
+#            TradeFor(Role, SellInfo, RequiredTradeItems, TradeOption)
 
 
 #            TODO: Create a boolean function that takes WhatToTradeFor, and SellInfo, and returns true if it can be traded for and false otherwise.
@@ -1431,93 +1431,93 @@ def shop(Role):
 #            ==============                      =======================
 #            Sands: 🟫 x 1                       Armor 🛡️: 🪨 x 20, ..., $ = 142857
 
-def GetMenuOption():
-    option = cS(input(
-        "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
-    while option not in ("MAP", "SEARCH", "QUESTS", "MINE", "INV", "SHOP", "STATS"):
-        print("Try again!")
-        option = cS(input(
-            "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
-    return option
+#def GetMenuOption():
+#    option = cS(input(
+#        "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
+#    while option not in ("MAP", "SEARCH", "QUESTS", "MINE", "INV", "SHOP", "STATS"):
+#        print("Try again!")
+#        option = cS(input(
+#            "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
+#    return option
 
 
-def ProcessInvRequest(role):
-    currentInventory = role.printInventory()
-    if not currentInventory:  # checking if it's empty
-        print("Empty Inventory!\n")
-        return
-    option = cS(input("Select one of the above items: "))
-    #    print(*[j+"\n" if i > 0 else " "+j+"\n"  for i, j in enumerate(currentInventory)])
-    while option not in currentInventory:
-        print("Select one of the following items\n=================================")
-        currentInventory = role.printInventory()
-        option = cS(input())
-    todo = cS(input("Enter either 'description' for a description of the item, or 'use' to use the item: "))
-    # Entry controlled loop
-    options = ("DESCRIPTION", "USE")
-    while todo not in options:
-        print("Try again!")
-        todo = cS(input("Enter either 'description' for a description of the item, or 'use' to use the item: "))
+#def ProcessInvRequest(role):
+#    currentInventory = role.printInventory()
+#    if not currentInventory:  # checking if it's empty
+#        print("Empty Inventory!\n")
+#        return
+#    option = cS(input("Select one of the above items: "))
+#    #    print(*[j+"\n" if i > 0 else " "+j+"\n"  for i, j in enumerate(currentInventory)])
+#    while option not in currentInventory:
+#        print("Select one of the following items\n=================================")
+#        currentInventory = role.printInventory()
+#        option = cS(input())
+#    todo = cS(input("Enter either 'description' for a description of the item, or 'use' to use the item: "))
+#    # Entry controlled loop
+#    options = ("DESCRIPTION", "USE")
+#    while todo not in options:
+#        print("Try again!")
+#        todo = cS(input("Enter either 'description' for a description of the item, or 'use' to use the item: "))
+#
+#    option = option.split()
+#    if todo == "DESCRIPTION":
+#        print()
+#        print(role.stringInv[DictKeyFormatter(option)]["Description"])
+#        print()
+#    elif todo == "USE":
+#        print()
+#        role.useInv[DictKeyFormatter(option)]["Use"]()
+#        print()
 
-    option = option.split()
-    if todo == "DESCRIPTION":
-        print()
-        print(role.stringInv[DictKeyFormatter(option)]["Description"])
-        print()
-    elif todo == "USE":
-        print()
-        role.useInv[DictKeyFormatter(option)]["Use"]()
-        print()
 
-
-def HeroGame(playerhero):
-    if playerhero == "PERCY JACKSON":
-        RoleHero = PercyJackson(playerhero)
-    elif playerhero == "ELF":
-        RoleHero = Elf(playerhero)
-    elif playerhero == "ZELDA":
-        RoleHero = Zelda(playerhero)
-    print("Where am I?")
-    print("You see a chest.")
-    open = cS(input("Do you open the chest? "))
-    while open != "YES" and open != "NO":
-        print("Try again")
-        open = cS(input("Do you open the chest? "))
-    if open == "YES":
-        print("You do not have the key.")
-    elif open == "NO":
-        print("You continue on with your day.")
-    map()
-    placetogo = cS(input("Where do you want to go? "))
-    while placetogo not in places:
-        print("Try again")
-        placetogo = cS(input("Where do you want to go? "))
-    print("Going to {}".format(placetogo))
-    print(f"You are now at {placetogo}")
-    if placetogo == "HOUSE":
-        Place = House()
-        Menu(RoleHero, Place)
-    elif placetogo == "BEACH":
-        Place = Beach()
-        Menu(RoleHero, Place)
-    elif placetogo == "FOREST":
-        Place = Forest()
-        Menu(RoleHero, Place)
-    elif placetogo == "MOUNTAIN":
-        Place = Mountain()
-        Menu(RoleHero, Place)
-    elif placetogo == "DESERT":
-        Place = Desert()
-        Menu(RoleHero, Place)
-    print("New thing unlocked! Quests have been unlocked.")
-    global Quests, Shop
-    Quests = True
-    print("To open quests, in the menu quests will be unlocked.")
-    Menu(RoleHero, Place)
-    Quest1(RoleHero)
-    Shop = True  # shop unlocked
-    print("New thing unlocked! Shop has been unlocked.")
-    Menu(RoleHero, Place)
+#def HeroGame(playerhero):
+#    if playerhero == "PERCY JACKSON":
+#        RoleHero = PercyJackson(playerhero)
+#    elif playerhero == "ELF":
+#        RoleHero = Elf(playerhero)
+#    elif playerhero == "ZELDA":
+#        RoleHero = Zelda(playerhero)
+#    print("Where am I?")
+#    print("You see a chest.")
+#    open = cS(input("Do you open the chest? "))
+#    while open != "YES" and open != "NO":
+#        print("Try again")
+#        open = cS(input("Do you open the chest? "))
+#    if open == "YES":
+#        print("You do not have the key.")
+#    elif open == "NO":
+#        print("You continue on with your day.")
+#    map()
+#    placetogo = cS(input("Where do you want to go? "))
+#    while placetogo not in places:
+#        print("Try again")
+#        placetogo = cS(input("Where do you want to go? "))
+#    print("Going to {}".format(placetogo))
+#    print(f"You are now at {placetogo}")
+#    if placetogo == "HOUSE":
+#        Place = House()
+#        Menu(RoleHero, Place)
+#    elif placetogo == "BEACH":
+#        Place = Beach()
+#        Menu(RoleHero, Place)
+#    elif placetogo == "FOREST":
+#        Place = Forest()
+#        Menu(RoleHero, Place)
+#    elif placetogo == "MOUNTAIN":
+#        Place = Mountain()
+#        Menu(RoleHero, Place)
+#    elif placetogo == "DESERT":
+#        Place = Desert()
+#        Menu(RoleHero, Place)
+#    print("New thing unlocked! Quests have been unlocked.")
+#    global Quests, Shop
+#    Quests = True
+#    print("To open quests, in the menu quests will be unlocked.")
+#    Menu(RoleHero, Place)
+#    Quest1(RoleHero)
+#    Shop = True  # shop unlocked
+#    print("New thing unlocked! Shop has been unlocked.")
+#    Menu(RoleHero, Place)
 
 
 #################################################################################################
@@ -1525,6 +1525,7 @@ def HeroGame(playerhero):
 pygame.init()
 white = (255, 255, 255)
 green = (0, 255, 0)
+dark_green = (0, 128, 0)
 blue = (0, 0, 128)
 black = (0, 0, 0)
 red = (255, 0, 0)
@@ -2180,10 +2181,6 @@ def sellItem(role, item_name):
         pygame_print(f"{role.money:.2f}", offset=200, loc=440)
         font = pygame.font.Font('freesansbold.ttf', 32)
         pygame_print(f"How many?: {num_item}", offset=200, loc=550)
-
-        rect = AddButton(text="Sell", offset=200, loc=630, background_color=green)
-        
-        pygame.display.update()
         
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -2193,7 +2190,6 @@ def sellItem(role, item_name):
                     num_item = num_item - 1 if num_item != 0 else max_amount
                 elif event.key == pygame.K_UP:
                     num_item = num_item + 1 if num_item != max_amount else 0
-            #TODO: Modify the color of the button when we are hovering over it
             elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
                 mouse_pos = pygame.mouse.get_pos()
                 if rect.collidepoint(mouse_pos):
@@ -2202,6 +2198,12 @@ def sellItem(role, item_name):
                     role.money += num_item * role.numInv[item_name]['SellValue']
                     max_amount = int(role.numInv[item_name]['Number'])
                     num_item = 0
+            elif rect.collidepoint(pygame.mouse.get_pos()):
+                rect = AddButton(text="Sell", offset=200, loc=630, background_color=orange)
+                pygame.display.update()
+            elif not rect.collidepoint(pygame.mouse.get_pos()):
+                rect = AddButton(text="Sell", offset=200, loc=630, background_color=green)
+                pygame.display.update()
 
 def buyItem(role, item_name):
     global font, white, black, orange
@@ -2233,10 +2235,9 @@ def buyItem(role, item_name):
     max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
     pygame_print(f"How many?: {num_item}", offset=200, loc=550)
 
-
-
     pygame.display.update()
     rect = AddButton(text="Buy", offset=200, loc=630, background_color=green)
+    
     while True:
         
         screen.fill(white)  # clear the screen
@@ -2265,7 +2266,6 @@ def buyItem(role, item_name):
                     num_item = num_item - 1 if num_item != 0 else max_amount
                 elif event.key == pygame.K_UP:
                     num_item = num_item + 1 if num_item != max_amount else 0
-            #TODO: Modify the color of the button when we are hovering over it
             elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
                 mouse_pos = pygame.mouse.get_pos()
                 if rect.collidepoint(mouse_pos):
@@ -2361,13 +2361,13 @@ class Shot:
         self.hit_target = hit_target
         self.is_flipped = is_flipped
 
-# TODO: The Role should earn money after completing a quest based on the enemies defeated. For example, more difficult enemies should yield more money than weaker enemies.
 #TODO: Maybe have a health bar and/or display the StatLevel so the increase in health isn't alarming.
 
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red
     role.health = role.base_health  # TODO: delete!
     role.attackpower = 1000  # TODO: delete!
+    money = 0
 
     role_image_name = role.name.lower().replace(" jackson", "") + "-start.png"
     role_image_name_flipped = role_image_name.replace(".png", "flip.png")
@@ -2511,7 +2511,10 @@ def QuestGames(Setting, role):
         pygame_print(f"Quest #{role.questLevel + 1}", loc=60)
         # Role
         font = pygame.font.Font('freesansbold.ttf', 25)
-        pygame_print(f"{role.name.title()} health = {role.health:.2f}", loc=175, offset=-200)
+#        pygame_print(f"{role.name.title()} health = {role.health:.2f}", loc=175, offset=-200)
+        pygame.draw.rect(screen, black, (200, 175, 150, 20))
+        pygame.draw.rect(screen, green, (200, 175, int(150*role.health/role.base_health), 20))
+        
         role_image = pygame.image.load(
             f"Assets/{role_image_name}" if not role.flipped else f"Assets/{role_image_name_flipped}")
         role_image = pygame.transform.scale(role_image, (buffer_width, buffer_width))
@@ -2696,6 +2699,7 @@ def QuestGames(Setting, role):
                 role.attack(enemy)
                 pygame.draw.rect(screen, red, enemy_rect, 2)
                 if enemy.health == 0:
+                    money += enemy.expYield*10
                     increaseExp(role, enemy.expYield)
                     NumberDefeated += 1
                     if NumberDefeated < 10:
@@ -2705,6 +2709,7 @@ def QuestGames(Setting, role):
                         start_msg_time = time()
                     else:
                         role.questLevel += 1
+                        role.money += money
                         pygame_print(f"You Won!!", loc=300)
 
                 shot.hit_target = True
@@ -2927,7 +2932,6 @@ def BuyOption(Role):
                     endBuyIdx = startBuyIdx + min(buyableItems.size(), maxItems)
                     
                 elif event.key == pygame.K_RETURN:
-                    print("buyableItems[optionNumber].title() =",buyableItems[optionNumber].title())
                     buyItem(Role, buyableItems[optionNumber].title())
                     buyableItems = Role.printBuyItemsVec(False)
                     if buyableItems.size() == 0:
@@ -2951,26 +2955,22 @@ def Shop(Role):
         pygame_print("================================", 130, color=black, background_color=white)
         pygame_print("Buy", 170, color=(orange if optionNumber == 0 else black), background_color=white)
         pygame_print("Sell", 210, color=(orange if optionNumber == 1 else black), background_color=white)
-        pygame_print("Trade", 250, color=(orange if optionNumber == 2 else black), background_color=white)
-        pygame_print("Exit", 350, color=red, background_color=white)
 
-        stop_button = AddButton(text="EXIT", offset=0, loc=350, background_color=red)
+        stop_button = AddButton(text="EXIT", offset=0, loc=310, background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_DOWN:
-                    optionNumber = optionNumber + 1 if optionNumber != 2 else 0
+                    optionNumber = optionNumber + 1 if optionNumber != 1 else 0
                 elif event.key == pygame.K_UP:
-                    optionNumber = optionNumber - 1 if optionNumber != 0 else 2
+                    optionNumber = optionNumber - 1 if optionNumber != 0 else 1
                 elif event.key == pygame.K_RETURN:
                     screen.fill(white)
                     if optionNumber == 0:  # Buy
                         BuyOption(Role)
                     elif optionNumber == 1:  # Sell
                         SellOption(Role)
-                    elif optionNumber == 2:  # Trade
-                        pygame_print("Trade", 300, color=black, background_color=white)
                     pygame.display.update()
                     pygame.event.clear(eventtype=pygame.KEYDOWN)
 
@@ -3053,42 +3053,7 @@ def Menu(role, setting):
                             Stats(role)
                         return
 
-        option = cS(input(
-            "Enter one of the following options\n==================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
-
-        # Input validation
-        while option not in ("MAP", "SEARCH", "QUESTS", "MINE", "INV", "SHOP", "STATS"):
-            print("Try again!")
-            option = cS(input(
-                "Enter one of the following options\n==================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
-
-        while option in ("MAP", "SEARCH", "MINE", "INV", "SHOP", "STATS"):
-            if option == "MAP":
-                setting.map()
-                option = GetMenuOption()
-            elif option == "SEARCH":
-                search(setting, role)
-                option = GetMenuOption()
-            elif option == "STATS":
-                role.baseLineStats()
-                option = GetMenuOption()
-            elif option == "MINE":
-                Mine(role, setting)
-                option = GetMenuOption()
-            elif option == "INV":
-                ProcessInvRequest(role)
-                option = GetMenuOption()
-            elif option == "SHOP":
-                if Shop == True:
-                    shop(role)
-                    option = GetMenuOption()
-                else:
-                    print("You do not have access to the shop yet!")
-                    option = GetMenuOption()
-
-
 def game():
-    # TODO: replace manual printing with pygame_print
     global font, Quests
     try:
         pygame.display.set_caption('Game Window')
