@@ -2233,10 +2233,10 @@ def buyItem(role, item_name):
     max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
     pygame_print(f"How many?: {num_item}", offset=200, loc=550)
 
-    rect = AddButton(text="Buy", offset=200, loc=630, background_color=green)
+
 
     pygame.display.update()
-
+    rect = AddButton(text="Buy", offset=200, loc=630, background_color=green)
     while True:
         
         screen.fill(white)  # clear the screen
@@ -2257,10 +2257,6 @@ def buyItem(role, item_name):
         font = pygame.font.Font('freesansbold.ttf', 32)
         pygame_print(f"How many?: {num_item}", offset=200, loc=550)
 
-        rect = AddButton(text="Buy", offset=200, loc=630, background_color=green)
-        
-        pygame.display.update()
-        
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
@@ -2278,6 +2274,12 @@ def buyItem(role, item_name):
                     role.money -= num_item * role.numInv[item_name]['BuyValue']
                     max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
                     num_item = 0
+            elif rect.collidepoint(pygame.mouse.get_pos()):
+                rect = AddButton(text="Buy", offset=200, loc=630, background_color=orange)
+                pygame.display.update()
+            elif not rect.collidepoint(pygame.mouse.get_pos()):
+                rect = AddButton(text="Buy", offset=200, loc=630, background_color=green)
+                pygame.display.update()
 
 
 def getItemCounts(role):
