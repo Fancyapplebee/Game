@@ -2842,6 +2842,12 @@ def SellOption(Role):
                     startSellIdx = 0
                     endSellIdx = min(sellableItems.size(), maxItems)
                     screen.fill(white)
+                elif rect.collidepoint(pygame.mouse.get_pos()):
+                    rect = AddButton(text="Buy", offset=200, loc=630, background_color=orange)
+                    pygame.display.update()
+                elif not rect.collidepoint(pygame.mouse.get_pos()):
+                    rect = AddButton(text="Buy", offset=200, loc=630, background_color=green)
+                    pygame.display.update()
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
                     pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
                 return
