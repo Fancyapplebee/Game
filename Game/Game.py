@@ -2514,7 +2514,7 @@ def QuestGames(Setting, role):
 #        pygame_print(f"{role.name.title()} health = {role.health:.2f}", loc=175, offset=-200)
         pygame.draw.rect(screen, black, (200, 175, 150, 20))
         pygame.draw.rect(screen, green, (200, 175, int(150*role.health/role.base_health), 20))
-        
+        pygame_print("QuestLevel = "+ str(role.questLevel), loc=225, offset=-115)
         role_image = pygame.image.load(
             f"Assets/{role_image_name}" if not role.flipped else f"Assets/{role_image_name_flipped}")
         role_image = pygame.transform.scale(role_image, (buffer_width, buffer_width))
