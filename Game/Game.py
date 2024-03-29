@@ -1527,7 +1527,6 @@ white = (255, 255, 255)
 green = (0, 255, 0)
 dark_green = (0, 128, 0)
 blue = (0, 0, 128)
-cyan = (0, 255, 255)
 black = (0, 0, 0)
 red = (255, 0, 0)
 yellow = (255, 255, 0)
@@ -2511,34 +2510,17 @@ def QuestGames(Setting, role):
             displayImage("StartHouse.png", p=1, update=False)
         pygame_print(f"Quest #{role.questLevel + 1}", loc=60)
         # Role
-        
-        font = pygame.font.Font('freesansbold.ttf', 22)
-        pygame_print(cppStringConvert(role.name), loc = 150, offset=-150)
-        font = pygame.font.Font('freesansbold.ttf', 20)
-        pygame_print("Lv. = "+ str(role.currLevel), loc=175, offset=-100)
-        font = pygame.font.Font('freesansbold.ttf', 22)
-        pygame.draw.rect(screen, black, (165, 195, 150, 20))
-        pygame.draw.rect(screen, green, (165, 195, int(150*role.health/role.base_health), 20)) #Health bar
-        font = pygame.font.Font('freesansbold.ttf', 20)
-        pygame_print(f"{role.health:.0f} / {role.base_health:.0f}", loc=230, offset=-125)
-        font = pygame.font.Font('freesansbold.ttf', 22)
-        pygame.draw.rect(screen, black, (165, 242, 170, 10))
-        pygame.draw.rect(screen, cyan, (165, 242, int(170*role.currExp/role.LevelExp), 10)) #Exp bar
-
-        
+        font = pygame.font.Font('freesansbold.ttf', 25)
+#        pygame_print(f"{role.name.title()} health = {role.health:.2f}", loc=175, offset=-200)
+        pygame.draw.rect(screen, black, (200, 175, 150, 20))
+        pygame.draw.rect(screen, green, (200, 175, int(150*role.health/role.base_health), 20))
+        pygame_print("QuestLevel = "+ str(role.questLevel), loc=225, offset=-115)
         role_image = pygame.image.load(
             f"Assets/{role_image_name}" if not role.flipped else f"Assets/{role_image_name_flipped}")
         role_image = pygame.transform.scale(role_image, (buffer_width, buffer_width))
         screen.blit(role_image, role_rect.topleft)
         # Enemy
-        pygame_print(cppStringConvert(enemy.name), loc = 170, offset=+150)
-        pygame.draw.rect(screen, black, (485, 195, 150, 20))
-        pygame.draw.rect(screen, red, (485, 195, int(150*enemy.health/enemy.base_health), 20)) #Health bar
-        font = pygame.font.Font('freesansbold.ttf', 20)
-        pygame_print(f"{enemy.health:.0f} / {enemy.base_health:.0f}", loc=230, offset=+125)
-        font = pygame.font.Font('freesansbold.ttf', 22)
-#        pygame_print(f"{enemy.name.title()} health = {enemy.health:.2f}", loc=175, offset=+200)
-        
+        pygame_print(f"{enemy.name.title()} health = {enemy.health:.2f}", loc=175, offset=+200)
         enemy_image = pygame.image.load(
             f"Assets/{enemy_image_names[enemy.name]}" if not enemy.flipped else f"Assets/{enemy_image_names_flipped[enemy.name]}")
         enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
@@ -2872,7 +2854,7 @@ def SellOption(Role):
                     rect = AddButton(text="Buy", offset=200, loc=630, background_color=green)
                     pygame.display.update()
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
-                pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
+                    pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
                 return
 
 
@@ -2959,9 +2941,9 @@ def BuyOption(Role):
                     startBuyIdx = 0
                     endBuyIdx = min(buyableItems.size(), maxItems)
                     screen.fill(white)
-            elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
-                pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
-                return
+                elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
+                    pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
+                    return
 
 
 def Shop(Role):
@@ -2993,7 +2975,7 @@ def Shop(Role):
                     pygame.event.clear(eventtype=pygame.KEYDOWN)
 
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
-                pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
+                    pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
                 return
 
 
