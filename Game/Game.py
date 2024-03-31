@@ -41,7 +41,7 @@ def Defense(Def):
 # saving => writes information to a file (e.g. time, stats, items, time that the RoleHero last searched etc.)
 # modify search option so that it can only occur once per people day ✅
 # Axes that can increase drop-chances for mine function
-# Find out where we can increase money besides selling
+# Find out where we can increase money besides selling ✅
 
 
 '''
@@ -213,6 +213,10 @@ cppyy.cppdef(
     void BadNPC::attack(Role& RoleHero)
     {
         RoleHero.health -= (Defense(RoleHero.defense) * attackpower);
+        if (RoleHero.health < 0)
+        {
+            RoleHero.health = 0;
+        }
     }
 
     void Role::defend() //:: is the scope resolution operator
@@ -1296,230 +1300,6 @@ def displayHeroes(printing=False):
     print("\n".join(lines)) if not printing else print()
     return lines
 
-
-# User can buy or sell as many items as they wish, given that they have enough
-# money
-#def shop(Role):
-#    #    inventory = Role.inventory  # alias
-#    while True:
-#        print("What would you like to do today? (Type 'exit' to exit)")
-#        print("======================================================")
-#        print("Buy\nSell\nTrade\n")
-#        option = cS(input())
-#        # Input validation
-#        while option != "BUY" and option != "SELL" and option != "EXIT" and option != "TRADE":
-#            print("Try again!")
-#            option = cS(input("Enter either 'buy', 'sell', 'trade' or 'exit': "))
-#
-#        if option == "EXIT":
-#            return
-#
-#        elif option == "BUY":
-#            if Role.money == 0:
-#                print("You don't have any money!")
-#                continue
-#
-#            '''
-#            print out the items that have the QuestLevel key
-#
-#            buyableItems = Role.printBuyItems()
-#            '''
-#
-#            print(f"\nYour Money = {Role.money:0.2f}\n")
-#            buyableItems = Role.printBuyItems()
-#            BuyOption = cS(input("What would you like to buy today? "))
-#
-#            while buyableItems.find(BuyOption) == buyableItems.end():
-#                print(f"Error! {BuyOption} is not one of your buyable items")
-#                BuyOption = cS(input("What would you like to buy today? "))
-#            AmountToBuy = input(f"How many {BuyOption} would you like to buy? ")
-#            while not AmountToBuy.isdigit() or int(AmountToBuy) * buyableItems[BuyOption] > Role.money:
-#                # Note: not AmountToSell.isdigit() is being evaluated twice
-#                if not AmountToBuy.isdigit():
-#                    print(f"Error! {AmountToBuy} is not a valid digit! ")
-#                    AmountToBuy = input(f"How many {BuyOption} would you like to buy? ")
-#                elif int(AmountToBuy) * buyableItems[BuyOption] > Role.money:
-#                    print(f"Error! You don't have enough money to buy {AmountToBuy} {BuyOption}")
-#                    AmountToBuy = input(f"How many {BuyOption} would you like to buy? ")
-#            ATB = int(AmountToBuy)
-#            # Converting from all caps to first letter uppercase of each word
-#            # (rest lowercase)
-#            BuyOption = DictKeyFormatter(BuyOption.split())
-#
-#            TTS = Role.numInv[BuyOption]["BuyValue"]
-#            Role.money = Role.money - ATB * TTS
-#
-#            Role.numInv[BuyOption]["Number"] += ATB
-#
-#        elif option == "SELL":
-#            if not HasSellableItems(Role.numInv):
-#                print("You don't have any sellable items!")
-#                continue
-#
-#            sellableItems = Role.printSellItems(True)
-#            print(f"\nYour Money = {Role.money:0.2f}\n")
-#            SellOption = cS(input("What would you like to sell today? "))
-#
-#            # Check if SellOption is a sellable item: Input validation
-#            while sellableItems.find(SellOption) == sellableItems.end():
-#                print(f"Error! {SellOption} is not one of your sellable items")
-#                SellOption = cS(input("What would you like to sell today? "))
-#
-#            AmountToSell = input(f"How many {SellOption} would you like to sell? ")
-#            # short-circuit evaluation
-#            while not AmountToSell.isdigit() or int(AmountToSell) > sellableItems[SellOption]:
-#                # Note: not AmountToSell.isdigit() is being evaluated twice
-#                if not AmountToSell.isdigit():
-#                    print(f"Error! {AmountToSell} is not a valid digit! ")
-#                    AmountToSell = input(f"How many {SellOption} would you like to sell? ")
-#                elif int(AmountToSell) > sellableItems[SellOption]:
-#                    print(f"Error! You don't have {AmountToSell} {SellOption} to sell.")
-#                    AmountToSell = input(f"How many {SellOption} would you like to sell? ")
-#                    # Role.money
-#            ATS = int(AmountToSell)
-#            # Converting from all caps to first letter uppercase of each word
-#            # (rest lowercase)
-#            SellOption = DictKeyFormatter(SellOption.split())
-#
-#            TTS = Role.numInv[SellOption].at("SellValue")
-#            Role.money = Role.money + ATS * TTS
-#
-#            # SyntaxError: 'function call' is an illegal expression for augmented assignment
-#            #            Role.numInv[SellOption].at("Number")
-#            Role.numInv[SellOption]["Number"] -= ATS
-#
-#        elif option == "TRADE":
-#            if not HasSellableItems(Role.numInv):
-#                print("You don't have any tradable items!")
-#                continue
-#            Info = Role.printTradeInfo()
-#            TradeInfo = Info.first
-#            SellInfo = Info.second
-#
-#            print(f"\nYour Money = {Role.money:0.2f}\n")
-#            TradeOption = cS(input("What would you like to trade for today? ")).title()
-#
-#            while TradeInfo.find(TradeOption) == TradeInfo.end():
-#                print(f"Error! {TradeOption} is not one of the tradeable items.")
-#                TradeOption = cS(input("What would you like to trade for today? ")).title()
-#
-#            RequiredTradeItems = TradeInfo[TradeOption]
-#
-#            TradeFor(Role, SellInfo, RequiredTradeItems, TradeOption)
-
-
-#            TODO: Create a boolean function that takes WhatToTradeFor, and SellInfo, and returns true if it can be traded for and false otherwise.
-
-#
-#        1. Figure out if the item the user enters is a tradeable item
-#            -> A list of the tradeable items
-#        2. How many of said tradeable item the user wants to trade for
-#            -> Input validation, as before
-#        3. Check if the user has enough money and the necessary items to trade for x number of said item.
-#            -> Calculate how much x of said items cost
-#            -> See if user has enough money
-#            -> See if user has enough items to trade for x of said items
-#
-#
-#        Things we need
-#        ==============
-#        1. A list of sellable items: vector<string>
-#        2. unordered_map<string, unordered_map<string, double>> ✅
-
-
-#            User Inventory                      Stuff you can trade for
-#            ==============                      =======================
-#            Sands: 🟫 x 1                       Armor 🛡️: 🪨 x 20, ..., $ = 142857
-
-#def GetMenuOption():
-#    option = cS(input(
-#        "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
-#    while option not in ("MAP", "SEARCH", "QUESTS", "MINE", "INV", "SHOP", "STATS"):
-#        print("Try again!")
-#        option = cS(input(
-#            "Enter one of the following options\n=================================\n'Map'\n'Search'\n'Mine'\n'Inv'\n'Shop'\n'Quests'\n'Stats'\n\n"))
-#    return option
-
-
-#def ProcessInvRequest(role):
-#    currentInventory = role.printInventory()
-#    if not currentInventory:  # checking if it's empty
-#        print("Empty Inventory!\n")
-#        return
-#    option = cS(input("Select one of the above items: "))
-#    #    print(*[j+"\n" if i > 0 else " "+j+"\n"  for i, j in enumerate(currentInventory)])
-#    while option not in currentInventory:
-#        print("Select one of the following items\n=================================")
-#        currentInventory = role.printInventory()
-#        option = cS(input())
-#    todo = cS(input("Enter either 'description' for a description of the item, or 'use' to use the item: "))
-#    # Entry controlled loop
-#    options = ("DESCRIPTION", "USE")
-#    while todo not in options:
-#        print("Try again!")
-#        todo = cS(input("Enter either 'description' for a description of the item, or 'use' to use the item: "))
-#
-#    option = option.split()
-#    if todo == "DESCRIPTION":
-#        print()
-#        print(role.stringInv[DictKeyFormatter(option)]["Description"])
-#        print()
-#    elif todo == "USE":
-#        print()
-#        role.useInv[DictKeyFormatter(option)]["Use"]()
-#        print()
-
-
-#def HeroGame(playerhero):
-#    if playerhero == "PERCY JACKSON":
-#        RoleHero = PercyJackson(playerhero)
-#    elif playerhero == "ELF":
-#        RoleHero = Elf(playerhero)
-#    elif playerhero == "ZELDA":
-#        RoleHero = Zelda(playerhero)
-#    print("Where am I?")
-#    print("You see a chest.")
-#    open = cS(input("Do you open the chest? "))
-#    while open != "YES" and open != "NO":
-#        print("Try again")
-#        open = cS(input("Do you open the chest? "))
-#    if open == "YES":
-#        print("You do not have the key.")
-#    elif open == "NO":
-#        print("You continue on with your day.")
-#    map()
-#    placetogo = cS(input("Where do you want to go? "))
-#    while placetogo not in places:
-#        print("Try again")
-#        placetogo = cS(input("Where do you want to go? "))
-#    print("Going to {}".format(placetogo))
-#    print(f"You are now at {placetogo}")
-#    if placetogo == "HOUSE":
-#        Place = House()
-#        Menu(RoleHero, Place)
-#    elif placetogo == "BEACH":
-#        Place = Beach()
-#        Menu(RoleHero, Place)
-#    elif placetogo == "FOREST":
-#        Place = Forest()
-#        Menu(RoleHero, Place)
-#    elif placetogo == "MOUNTAIN":
-#        Place = Mountain()
-#        Menu(RoleHero, Place)
-#    elif placetogo == "DESERT":
-#        Place = Desert()
-#        Menu(RoleHero, Place)
-#    print("New thing unlocked! Quests have been unlocked.")
-#    global Quests, Shop
-#    Quests = True
-#    print("To open quests, in the menu quests will be unlocked.")
-#    Menu(RoleHero, Place)
-#    Quest1(RoleHero)
-#    Shop = True  # shop unlocked
-#    print("New thing unlocked! Shop has been unlocked.")
-#    Menu(RoleHero, Place)
-
-
 #################################################################################################
 
 pygame.init()
@@ -1538,14 +1318,12 @@ Y = 750
 screen = pygame.display.set_mode((X, Y))
 font = pygame.font.Font('freesansbold.ttf', 32)
 
-
 def pygame_print(text, loc=Y // 2, color=black, background_color=white, offset=0):
     text = font.render(text, True, color, background_color)
     textRect = text.get_rect()
     textRect.center = (X // 2 + offset, loc)
     screen.blit(text, textRect)
     return textRect
-
 
 def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = 40, height: float = 4,
                new_screen=True) -> None:
@@ -2362,8 +2140,6 @@ class Shot:
         self.hit_target = hit_target
         self.is_flipped = is_flipped
 
-#TODO: Maybe have a health bar and/or display the StatLevel so the increase in health isn't alarming.
-
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red
     role.health = role.base_health  # TODO: delete!
@@ -2510,34 +2286,38 @@ def QuestGames(Setting, role):
         elif Setting == "HOUSE":
             displayImage("StartHouse.png", p=1, update=False)
         pygame_print(f"Quest #{role.questLevel + 1}", loc=60)
-        # Role
-        
+       
+        # Role Health Bar Health Bar
+        #min(Y) = 150, min(X) = 165, max(Y) = 252, max(X) = 335
+        pygame.draw.rect(screen, white, (150, 137, 200, 120))
         font = pygame.font.Font('freesansbold.ttf', 22)
         pygame_print(cppStringConvert(role.name), loc = 150, offset=-150)
         font = pygame.font.Font('freesansbold.ttf', 20)
         pygame_print("Lv. = "+ str(role.currLevel), loc=175, offset=-100)
         font = pygame.font.Font('freesansbold.ttf', 22)
-        pygame.draw.rect(screen, black, (165, 195, 150, 20))
+        pygame.draw.rect(screen, black, (165, 195, 150, 20)) #165 -> 165/800*X, 195 -> 195/750*Y
         pygame.draw.rect(screen, green, (165, 195, int(150*role.health/role.base_health), 20)) #Health bar
         font = pygame.font.Font('freesansbold.ttf', 20)
         pygame_print(f"{role.health:.0f} / {role.base_health:.0f}", loc=230, offset=-125)
         font = pygame.font.Font('freesansbold.ttf', 22)
         pygame.draw.rect(screen, black, (165, 242, 170, 10))
         pygame.draw.rect(screen, cyan, (165, 242, int(170*role.currExp/role.LevelExp), 10)) #Exp bar
-
         
         role_image = pygame.image.load(
             f"Assets/{role_image_name}" if not role.flipped else f"Assets/{role_image_name_flipped}")
         role_image = pygame.transform.scale(role_image, (buffer_width, buffer_width))
         screen.blit(role_image, role_rect.topleft)
-        # Enemy
+        
+        # Enemy Health Bar
+        #min(Y) = 170, min(X) = 485, max(Y) = 230, max(X) = 635
+        pygame.draw.rect(screen, white, (465, 140, 190, 120))
+
         pygame_print(cppStringConvert(enemy.name), loc = 170, offset=+150)
         pygame.draw.rect(screen, black, (485, 195, 150, 20))
         pygame.draw.rect(screen, red, (485, 195, int(150*enemy.health/enemy.base_health), 20)) #Health bar
         font = pygame.font.Font('freesansbold.ttf', 20)
         pygame_print(f"{enemy.health:.0f} / {enemy.base_health:.0f}", loc=230, offset=+125)
         font = pygame.font.Font('freesansbold.ttf', 22)
-#        pygame_print(f"{enemy.name.title()} health = {enemy.health:.2f}", loc=175, offset=+200)
         
         enemy_image = pygame.image.load(
             f"Assets/{enemy_image_names[enemy.name]}" if not enemy.flipped else f"Assets/{enemy_image_names_flipped[enemy.name]}")
@@ -2720,6 +2500,7 @@ def QuestGames(Setting, role):
                     money += enemy.expYield*10
                     increaseExp(role, enemy.expYield)
                     NumberDefeated += 1
+                    renderRole(start_x, curr_y)
                     if NumberDefeated < 10:
                         enemy = enemies[NumberDefeated]  # spawnBadNPC()
                         #                        last_agent_health = enemy.health
