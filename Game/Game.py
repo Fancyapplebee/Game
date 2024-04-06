@@ -2293,7 +2293,7 @@ def QuestGames(Setting, role):
         font = pygame.font.Font('freesansbold.ttf', 22)
         pygame_print(cppStringConvert(role.name), loc = 150, offset=-150)
         font = pygame.font.Font('freesansbold.ttf', 20)
-        pygame_print("Lv. = "+ str(role.currLevel), loc=175, offset=-100)
+        pygame_print("Lv. = "+ str(role.currLevel), loc=175, offset=-115)
         font = pygame.font.Font('freesansbold.ttf', 22)
         pygame.draw.rect(screen, black, (165, 195, 150, 20)) #165 -> 165/800*X, 195 -> 195/750*Y
         pygame.draw.rect(screen, green, (165, 195, int(150*role.health/role.base_health), 20)) #Health bar
@@ -2316,7 +2316,7 @@ def QuestGames(Setting, role):
         pygame.draw.rect(screen, black, (485, 195, 150, 20))
         pygame.draw.rect(screen, red, (485, 195, int(150*enemy.health/enemy.base_health), 20)) #Health bar
         font = pygame.font.Font('freesansbold.ttf', 20)
-        pygame_print(f"{enemy.health:.0f} / {enemy.base_health:.0f}", loc=230, offset=+125)
+        pygame_print(f"{enemy.health:.0f} / {enemy.base_health:.0f}", loc=230, offset=+187)
         font = pygame.font.Font('freesansbold.ttf', 22)
         
         enemy_image = pygame.image.load(
