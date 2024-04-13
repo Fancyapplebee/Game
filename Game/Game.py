@@ -2341,7 +2341,7 @@ def QuestGames(Setting, role):
 
     def generateMove(temp_state):
         '''
-        Generate a move that the agent should make based on the UCT formula:
+        Generate a move that the agent should make based on the UCT   a:
             UCT = Q(s,a) + c*sqrt( ln(N(s)) / N(s,a) )
         '''
 
@@ -2549,7 +2549,7 @@ def QuestGames(Setting, role):
         damage_dealt = last_role_health - role.health
         damage_taken = last_agent_health - getEnemyHealth()  # enemy.health
         dt = (getEnemyBaseHealth() - getEnemyHealth()) / getEnemyBaseHealth()
-        score = dd * (damage_dealt / role.base_health) - dt * (damage_taken / getEnemyBaseHealth())
+        score = dd * (damage_dealt / role.base_health) - dt * (damage_taken / getEnemyBaseHealth()) * 1.3
 
         if score > max_score:
             max_score = score
