@@ -2272,6 +2272,7 @@ def QuestGames(Setting, role):
     enemy = enemies[0]
     getEnemyHealth = lambda: sum(i.health for i in enemies)
     getEnemyBaseHealth = lambda: sum(i.base_health for i in enemies)
+    TotalEnemyBaseHealth = getEnemyBaseHealth()
 
     def renderRole(start_x, start_y):
         global font
@@ -2347,17 +2348,24 @@ def QuestGames(Setting, role):
 
         UCT = 0
         UCT_best = -np.inf
-        best_act = "None"
+        best_act = "none"
+        best_acts = []
 
         for enemy_option in enemy_options:
             # If the condition below is true then we can use the UCT formula
             if Nsa.get(temp_state) and int(Nsa[temp_state].get(enemy_option) or 0) > 0 and Qsa.get(temp_state) and Qsa.get(temp_state).get(enemy_option):
                 UCT = Qsa[temp_state][enemy_option] + c * sqrt(ln(Ns[temp_state] / Nsa[temp_state][enemy_option]))
             else:
-                UCT = np.inf  # encourage this action since it has no visit counts
+                best_acts.append(enemy_option)
+                UCT = -np.inf  # encourage this action since it has no visit counts
             if UCT > UCT_best:
                 best_act = enemy_option
                 UCT_best = UCT
+        
+        if best_act != "none":
+            best_acts.append(best_act)
+        if len(best_acts) > 0:
+            best_act = np.random.choice(best_acts)
 
         if Ns.get(temp_state):
             Ns[temp_state] += 1
@@ -2379,6 +2387,7 @@ def QuestGames(Setting, role):
     max_score = -np.inf
     check_point_score = -np.inf
     while True:  # pygame loop
+        print(f"n_iter = {n_iter}", end = '\r')
         if n_iter != 0 and n_iter % 150 == 0:
             if check_point_score == max_score:
                 c += sqrt(2)
@@ -2389,7 +2398,7 @@ def QuestGames(Setting, role):
         n_iter += 1
         last_role_health = role.health
         last_agent_health = getEnemyHealth()  # enemy.health
-        temp_state = f"State(agent_x = {enemy_x:0.0f}, agent_y = {curr_enemy_y:0.0f}, role_x = {start_x:0.0f}, role_y = {curr_y:0.0f}, agent_health = {enemy.health:0.0f}, agent_flipped = {enemy.flipped})"
+        temp_state = f"agent_x = {enemy_x:0.0f}, agent_y = {curr_enemy_y:0.0f}, role_x = {start_x:0.0f}, role_y = {curr_y:0.0f}, agent_health = {last_agent_health / TotalEnemyBaseHealth:0.0f}, agent_flipped = {enemy.flipped}, shotsFired = {shotsFired}, shotsEnemyFired = {shotsEnemyFired}" #last_agent_health / TotalEnemyBaseHealth
         enemyMove = generateMove(temp_state)
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
