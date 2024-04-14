@@ -2152,10 +2152,19 @@ def QuestGames(Setting, role):
     enemy_image_names_flipped = {"NINJA": "ninjaflip.png", "OGRE": "ogreflip.png", "DEMON": "demonflip.png"}
 
     buffer_width = 40
+    beam_height = buffer_width / 4
+    beam_width = buffer_width / 2
 
     '''
-    🤺          👹
-    (100,600)   (660, 600)
+    🤺            ⬬            ⬬                 👹
+    (100,600)   (300, 600)     (400, 600)         (660, 600)
+    
+                                              ⬬
+                                              (580, 670)
+    
+    Focus on beam closest to agent (in this case, the one at (400, 600))
+    
+    
     '''
 
     start_x, start_y, curr_y, enemy_x, enemy_y, curr_enemy_y = 100, 600, 600, 700 - buffer_width, 600, 600
@@ -2387,7 +2396,6 @@ def QuestGames(Setting, role):
     max_score = -np.inf
     check_point_score = -np.inf
     while True:  # pygame loop
-        print(f"n_iter = {n_iter}", end = '\r')
         if n_iter != 0 and n_iter % 150 == 0:
             if check_point_score == max_score:
                 c += sqrt(2)
@@ -2398,7 +2406,27 @@ def QuestGames(Setting, role):
         n_iter += 1
         last_role_health = role.health
         last_agent_health = getEnemyHealth()  # enemy.health
-        temp_state = f"agent_x = {enemy_x:0.0f}, agent_y = {curr_enemy_y:0.0f}, role_x = {start_x:0.0f}, role_y = {curr_y:0.0f}, agent_health = {last_agent_health / TotalEnemyBaseHealth:0.0f}, agent_flipped = {enemy.flipped}, shotsFired = {shotsFired}, shotsEnemyFired = {shotsEnemyFired}" #last_agent_health / TotalEnemyBaseHealth
+        #800*750*800*750*1000*2 = 7.2*10^14 possible states?
+        
+        
+#        temp_state = f"agent_x = {enemy_x:0.0f}, agent_y = {curr_enemy_y:0.0f}, role_x = {start_x:0.0f}, role_y = {curr_y:0.0f}, agent_health = {last_agent_health / TotalEnemyBaseHealth:0.0f}, agent_flipped = {enemy.flipped}, shotsFired = {shotsFired}" #last_agent_health / TotalEnemyBaseHealth
+    
+        DangerShotVal = start_x if curr_y - beam_height <= enemy_y <= curr_y + beam_height else max(X - enemy_x, enemy_x)
+        
+        if len(shotsFired):
+            DangerShots = filter(lambda shot: ((shot.beam_y - beam_height) <= enemy_y <= (shot.beam_y + beam_height)) and not shot.hit_target, shotsFired)
+            
+            DangerShots = tuple(DangerShots)
+            if len(DangerShots):
+                DangerShot = min(DangerShots, key = lambda shot: abs(enemy_x - shot.beam_x))
+                DangerShotVal = min(abs(enemy_x - DangerShot.beam_x), DangerShotVal)
+                
+        temp_state = f"{DangerShotVal}"
+        print(temp_state)
+        #TODO: Check the logic of the above Danger Shot calculation (computing the x coordinate of the most dangerous shot (or potential shot))
+            
+            
+    
         enemyMove = generateMove(temp_state)
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
@@ -2499,8 +2527,8 @@ def QuestGames(Setting, role):
 
         for shot in shotsFired:
             shot.beam_x = shot.beam_x + 50 if not shot.is_flipped else shot.beam_x - 50  # TODO: make the shot speed depend on the role's stats?
-            beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, buffer_width / 2,
-                                    buffer_width / 4)  # beam object
+            beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width,
+                                    beam_height)  # beam object
             if beam_rect.colliderect(
                     enemy_rect) and not shot.hit_target:  # Enemy was hit and this is not a repeat of the same shot
                 role.attack(enemy)
@@ -2525,7 +2553,7 @@ def QuestGames(Setting, role):
 
         for shot in shotsEnemyFired:
             shot.beam_x = shot.beam_x - 50 if not shot.is_flipped else shot.beam_x + 50
-            beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, buffer_width / 2, buffer_width / 4)  # beam object
+            beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width, beam_height)  # beam object
             if beam_rect.colliderect(
                     role_rect) and not shot.hit_target:  # Role was hit and this is not a repeat of the same shot
                 enemy.attack(role)
