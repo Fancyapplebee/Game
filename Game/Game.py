@@ -2140,6 +2140,10 @@ class Shot:
         self.hit_target = hit_target
         self.is_flipped = is_flipped
 
+#https://stackoverflow.com/a/64745177/18255427
+def overlaps(x_start, x_end, y_start, y_end):
+    return max(x_start, y_start) < min(x_end, y_end)
+
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red
     role.health = role.base_health  # TODO: delete!
@@ -2339,6 +2343,7 @@ def QuestGames(Setting, role):
     enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
     renderRole(start_x, start_y)
 
+    #TODO: Make these lists that have the shots off the screen be deleted
     shotsFired = deque([], maxlen=10)
     shotsEnemyFired = deque([], maxlen=10)
     K = 10  # Constant factor for gravity
@@ -2408,22 +2413,31 @@ def QuestGames(Setting, role):
         last_agent_health = getEnemyHealth()  # enemy.health
         #800*750*800*750*1000*2 = 7.2*10^14 possible states?
         
-        
 #        temp_state = f"agent_x = {enemy_x:0.0f}, agent_y = {curr_enemy_y:0.0f}, role_x = {start_x:0.0f}, role_y = {curr_y:0.0f}, agent_health = {last_agent_health / TotalEnemyBaseHealth:0.0f}, agent_flipped = {enemy.flipped}, shotsFired = {shotsFired}" #last_agent_health / TotalEnemyBaseHealth
     
-        DangerShotVal = start_x if curr_y - beam_height <= enemy_y <= curr_y + beam_height else max(X - enemy_x, enemy_x)
-        
+        DangerShotVal = abs(enemy_x - start_x) if curr_y - beam_height <= enemy_y <= curr_y + beam_height else max(X - enemy_x, enemy_x)
+        '''
+        E.g. enemy_x = 450 -> DangerShotVal = max(800-450, 450) = max(350, 450) = 450
+             enemy_x = 350 -> DangerShotVal = max(800-350, 350) = max(450, 350) = 450
+
+        (0,0)     (350,0)       (800,0)  --> DangerShotVal = 450
+        (0,0)         (450,0)   (800,0)  --> DangerShotVal = 450
+        '''
         if len(shotsFired):
-            DangerShots = filter(lambda shot: ((shot.beam_y - beam_height) <= enemy_y <= (shot.beam_y + beam_height)) and not shot.hit_target, shotsFired)
+            '''
+            We want to check if the range (shot.beam_y - beam_height, shot.beam_y + beam_height) intersects with the range (enemy_y, enemy_y + buffer_width)
+            [620, 640], [600, 640]
             
-            DangerShots = tuple(DangerShots)
+            [420, 440], [500, 540]
+            '''
+            
+            DangerShots = [shot for shot in shotsFired if overlaps(shot.beam_y - beam_height, shot.beam_y + beam_height, enemy_y, enemy_y + buffer_width) and not shot.hit_target]
             if len(DangerShots):
-                DangerShot = min(DangerShots, key = lambda shot: abs(enemy_x - shot.beam_x))
+                DangerShot = min(DangerShots, key = lambda shot: abs(enemy_x - shot.beam_x)) #The closest danger shot to the enemy (agent)
                 DangerShotVal = min(abs(enemy_x - DangerShot.beam_x), DangerShotVal)
                 
-        temp_state = f"{DangerShotVal}"
-        print(temp_state)
-        #TODO: Check the logic of the above Danger Shot calculation (computing the x coordinate of the most dangerous shot (or potential shot))
+        temp_state = int(DangerShotVal)
+#        print(temp_state)
             
             
     
