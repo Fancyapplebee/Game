@@ -705,6 +705,28 @@ cppyy.cppdef(
     //        for (auto i : stringInv)
     //        for i in stringInv
 
+    /*
+    InputMap:
+    
+    Idea: Intially empty
+    
+        Keys of InputMap: strings denoting keys on the keyboard
+        Values of InputMap: The item that the given key on the keyboard maps to
+    
+    User Interface:
+    
+        1. Select an item
+        2. Select the key(s) that you want to map to this item
+        
+        3. for key in key_selected: InputMap[key] = item
+    
+    QuestGames:
+        We need to check if a key in the current InputMap was selected.
+            -> We need a constant dictionary (say, pygameKeys) routing every possible key on a standard keyboard to the corresponding pygame.KEYDOWN event
+        
+        E.g. for key in InputMap: if event.key == pygameKeys[key] -> use(InputMap[key])
+    
+    */
         stringInv =
         {
                 {
@@ -2144,11 +2166,20 @@ class Shot:
 def overlaps(x_start, x_end, y_start, y_end):
     return max(x_start, y_start) < min(x_end, y_end)
 
+
+'''
+Rolling a dice:
+ - 6 possibilities: {1, 2, 3, 4, 5, 6}, each with probability 1/6
+ - E(x = outcome): sum_{i=1}^{n=6} possibility_i * prob_i = 1*1/6 + 2*1/6 + 3*1/6 + 4*1/6 + 5*1/6 + 6*1/6 = 1/6+2/6+3/6+4/6+5/6+6/6 = 27/6 = 3.5
+ 
+'''
+
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red
     role.health = role.base_health  # TODO: delete!
     role.attackpower = 1000  # TODO: delete!
     money = 0
+    shotSpeed = 5
 
     role_image_name = role.name.lower().replace(" jackson", "") + "-start.png"
     role_image_name_flipped = role_image_name.replace(".png", "flip.png")
@@ -2343,9 +2374,8 @@ def QuestGames(Setting, role):
     enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
     renderRole(start_x, start_y)
 
-    #TODO: Make these lists that have the shots off the screen be deleted
-    shotsFired = deque([], maxlen=10)
-    shotsEnemyFired = deque([], maxlen=10)
+    shotsFired = []
+    shotsEnemyFired = []
     K = 10  # Constant factor for gravity
 
     global badNPCs  # we're saying that we will be using the global variable badNPCs
@@ -2437,10 +2467,7 @@ def QuestGames(Setting, role):
                 DangerShotVal = min(abs(enemy_x - DangerShot.beam_x), DangerShotVal)
                 
         temp_state = int(DangerShotVal)
-#        print(temp_state)
             
-            
-    
         enemyMove = generateMove(temp_state)
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
@@ -2540,7 +2567,7 @@ def QuestGames(Setting, role):
         renderRole(start_x, curr_y)
 
         for shot in shotsFired:
-            shot.beam_x = shot.beam_x + 50 if not shot.is_flipped else shot.beam_x - 50  # TODO: make the shot speed depend on the role's stats?
+            shot.beam_x = shot.beam_x + shotSpeed if not shot.is_flipped else shot.beam_x - shotSpeed
             beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width,
                                     beam_height)  # beam object
             if beam_rect.colliderect(
@@ -2554,7 +2581,6 @@ def QuestGames(Setting, role):
                     renderRole(start_x, curr_y)
                     if NumberDefeated < 10:
                         enemy = enemies[NumberDefeated]  # spawnBadNPC()
-                        #                        last_agent_health = enemy.health
                         pygame_print(f"Spawning enemy #{NumberDefeated + 1}/10: {enemy.name}", loc=300)
                         start_msg_time = time()
                     else:
@@ -2566,7 +2592,7 @@ def QuestGames(Setting, role):
             pygame.draw.ellipse(screen, orange, beam_rect)  # Drawing the beam
 
         for shot in shotsEnemyFired:
-            shot.beam_x = shot.beam_x - 50 if not shot.is_flipped else shot.beam_x + 50
+            shot.beam_x = shot.beam_x - shotSpeed if not shot.is_flipped else shot.beam_x + shotSpeed
             beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width, beam_height)  # beam object
             if beam_rect.colliderect(
                     role_rect) and not shot.hit_target:  # Role was hit and this is not a repeat of the same shot
@@ -2575,6 +2601,10 @@ def QuestGames(Setting, role):
 
                 shot.hit_target = True
             pygame.draw.ellipse(screen, red, beam_rect)  # Drawing the beam
+
+        #Deleting shots that have trailed off the page
+        shotsFired = [shot for shot in shotsFired if shot.beam_x >= 0 and shot.beam_x <= X]
+        shotsEnemyFired = [shot for shot in shotsEnemyFired if shot.beam_x >= 0 and shot.beam_x <= X]
 
         if role.health <= 0:
             pygame_print("You died!", loc=300)
@@ -2901,6 +2931,7 @@ def Menu(role, setting):
                             QuestGames(setting, role)
                         elif optionNumber == 6:  # Stats
                             Stats(role)
+                        #TODO: Add InputMap option
                         return
 
 def game():
