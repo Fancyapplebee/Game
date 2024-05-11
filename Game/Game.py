@@ -184,6 +184,7 @@ cppyy.cppdef(
         std::vector<std::string> getTradableItems();
         std::unordered_map<std::string, double> printBuyItems(bool print = true);
         std::vector<std::string> printBuyItemsVec(bool print = true);
+        std::vector<std::string> QuestItemsVec();
         std::pair<std::unordered_map<std::string, std::unordered_map<std::string, double>>, std::vector<std::string>> printTradeInfo();
         double AttackLevelFunc(int level)
         {
@@ -475,6 +476,21 @@ cppyy.cppdef(
             std::cout << '\n';
         }
         return buyableItems;
+    }
+    
+    std::vector<std::string> Role::QuestItemsVec()
+    {
+        std::vector<std::string> questItems;
+        
+        for (auto& i: stringInv)
+        {
+            //if (numInv[i.first].find("QuestLevel") != numInv[i.first].end())
+            //{
+            questItems.push_back(i.first);
+            //}
+        }
+        
+        return questItems;
     }
 
     std::unordered_map<std::string, double> TradeItemDict(const std::string& construction)
@@ -1220,10 +1236,14 @@ def cppStringConvert(string):
         temp = temp + string[i]
     return temp  # a python string
 
+class IPBase:
+    def __init__(self):
+        self.InputMapDict = {}
 
-class PercyJackson(Role):
+class PercyJackson(Role, IPBase):
     def __init__(self, name):
-        super().__init__(name)
+        Role.__init__(self, name)
+        IPBase.__init__(self)
         self.picture = "⚡️"
         self.attackpower = 20
         self.base_health = 200
@@ -1243,9 +1263,10 @@ class PercyJackson(Role):
 #        MacAndCheese : pascal case
 #        macAndCheese : camel case
 
-class Elf(Role):
+class Elf(Role, IPBase):
     def __init__(self, name):
-        super().__init__(name)
+        Role.__init__(self, name)
+        IPBase.__init__(self)
         self.picture = "🧝"
         self.attackpower = 10
         self.base_health = 50
@@ -1260,9 +1281,10 @@ class Elf(Role):
         self.money = 200
 
 
-class Zelda(Role):
+class Zelda(Role, IPBase):
     def __init__(self, name):
-        super().__init__(name)
+        Role.__init__(self, name)
+        IPBase.__init__(self)
         self.picture = "🗡"
         # TODO: Change back to 20 for actual game
         self.attackpower = 2000
@@ -2858,15 +2880,132 @@ def Shop(Role):
                 pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
                 return
 
-def InputMap():
+def ViewInputMap(role):
+    screen.fill(white)  # clear the screen
+    if not role.InputMapDict:
+        pygame_print("No keys have been mapped!")
+        pygame.display.update()
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                    return
+    #TODO: Create a scrolling menu for viewing the inputmap
+    #...
+    #for key in role.InputMapDict: ... pygame_print(key + " -> " + role.InputMapDict[key], ...)
+
+def UpdateInputMap(role):
+    key = None
+    breakFlag = False
+    screen.fill(white)  # clear the screen
     while True:
-        screen.fill(white)  # clear the screen
         pygame_print("Select the key you would like to remap", 90, color=black, background_color=white)
         pygame_print("================================", 130, color=black, background_color=white)
 #        stop_button = AddButton(text="EXIT", offset=0, loc=310, background_color=red)
         pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                key = event.key
+                breakFlag = True
+                break
+        if breakFlag:
+            break
+                
+    questItems = role.QuestItemsVec()
+    
+    optionNumber = 0
+    maxItems = 3
+    startIdx = 0
+    endIdx = min(questItems.size(), maxItems)
+    
+    while True:
+        screen.fill(white)  # clear the screen
+        pygame_print(f"Which item would you like to map the key {pygame.key.name(key)} to?", 60, color=black, background_color=white)
+        pygame_print("=================================", 100, color=black, background_color=white)
+        text_y = 140
+        for i in range(startIdx, endIdx):
+            pygame_print(questItems[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
+            text_y += 40
 
+        stop_button = AddButton(text="EXIT", offset=0, loc=text_y + 80, background_color=red)
+
+        pygame.display.update()
+        for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
+            if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                if event.key == pygame.K_DOWN:
+                    optionNumber = optionNumber + 1 if optionNumber != questItems.size() - 1 else 0
+                    if optionNumber == 0:
+                        startIdx = 0
+                    elif startIdx + 1 + maxItems <= questItems.size() and optionNumber > startIdx - 1 + maxItems:
+                        startIdx += 1
+                    
+                    endIdx = startIdx + min(questItems.size(), maxItems)
+                                       
+                    '''
+                e.g. maxItems = 3,
+                start: startIdx = 0, endIdx = 3
+                    
+                0.    Water
+                1.    Apple
+                2.    Tomato
+                3.    Melon
+                4.    Orange
+                5.    Pinapple
+                6.    Grapefruit
+                7.    Blueberry
+                8.    Strawberry
+                9.    Tootsie Roll
+                    '''
+                    
+                elif event.key == pygame.K_UP:
+                    optionNumber = optionNumber - 1 if optionNumber != 0 else questItems.size() - 1
+                    if optionNumber < startIdx:
+                        startIdx = startIdx - 1 if startIdx - 1 >= 0 else 0
+                    elif optionNumber > startIdx + maxItems - 1:
+                        startIdx = optionNumber - maxItems + 1
+                    endIdx = startIdx + min(questItems.size(), maxItems)
+                    
+                elif event.key == pygame.K_RETURN:
+                    role.InputMapDict[key] = cppStringConvert(questItems[optionNumber])
+                    print(role.InputMapDict)
+                    return
+                    
+            elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
+                pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
+                return
+
+                
     pygame.display.update()
+
+def InputMap(role):
+    #TODO: small menu of two options: either view current input map or remap keys to items -> one function for each option
+
+    optionNumber = 0
+
+    while True:
+        screen.fill(white)
+        pygame_print("Choose an option", 90, color=black, background_color=white)
+        pygame_print("================", 130, color=black, background_color=white)
+        pygame_print("View Current Input Map", 170, color=(orange if optionNumber == 0 else black), background_color=white)
+        pygame_print("Map Key to Quest Item", 210, color=(orange if optionNumber == 1 else black), background_color=white)
+        stop_button = AddButton(text="EXIT", offset=0, loc=290, background_color=red)
+
+        pygame.display.update()
+        for event in pygame.event.get():  # update the option number if necessary
+            if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                if event.key == pygame.K_DOWN:
+                    optionNumber = optionNumber + 1 if optionNumber != 1 else 0
+                elif event.key == pygame.K_UP:
+                    optionNumber = optionNumber - 1 if optionNumber != 0 else 1
+                elif event.key == pygame.K_RETURN:
+                    if optionNumber == 0:  # View
+                        ViewInputMap(role)
+                    elif optionNumber == 1:  # Remap
+                        UpdateInputMap(role)
+            elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
+                pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
+                return
+
+
 def Menu(role, setting):
     # Only going to execute once
     global Quests, orange, black, white, X
@@ -2941,7 +3080,7 @@ def Menu(role, setting):
                         elif optionNumber == 6:  # Stats
                             Stats(role)
                         elif optionNumber == 7:
-                            InputMap()
+                            InputMap(role)
                         #TODO: Add InputMap option
                         return
 
