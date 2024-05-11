@@ -2858,7 +2858,15 @@ def Shop(Role):
                 pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
                 return
 
+def InputMap():
+    while True:
+        screen.fill(white)  # clear the screen
+        pygame_print("Select the key you would like to remap", 90, color=black, background_color=white)
+        pygame_print("================================", 130, color=black, background_color=white)
+#        stop_button = AddButton(text="EXIT", offset=0, loc=310, background_color=red)
+        pygame.display.update()
 
+    pygame.display.update()
 def Menu(role, setting):
     # Only going to execute once
     global Quests, orange, black, white, X
@@ -2909,13 +2917,14 @@ def Menu(role, setting):
             pygame_print("Shop", 330, color=(orange if optionNumber == 4 else black), background_color=white)
             pygame_print("Quests", 370, color=(orange if optionNumber == 5 else black), background_color=white)
             pygame_print("Stats", 410, color=(orange if optionNumber == 6 else black), background_color=white)
+            pygame_print("InputMap", 450, color=(orange if optionNumber == 7 else black), background_color=white)
             pygame.display.update()
             for event in pygame.event.get():  # update the option number if necessary
                 if event.type == pygame.KEYDOWN:  # checking if any key was selected
                     if event.key == pygame.K_DOWN:
-                        optionNumber = optionNumber + 1 if optionNumber != 6 else 0
+                        optionNumber = optionNumber + 1 if optionNumber != 7 else 0
                     elif event.key == pygame.K_UP:
-                        optionNumber = optionNumber - 1 if optionNumber != 0 else 6
+                        optionNumber = optionNumber - 1 if optionNumber != 0 else 7
                     elif event.key == pygame.K_RETURN:
                         if optionNumber == 0:  # Map
                             setting.map()
@@ -2931,6 +2940,8 @@ def Menu(role, setting):
                             QuestGames(setting, role)
                         elif optionNumber == 6:  # Stats
                             Stats(role)
+                        elif optionNumber == 7:
+                            InputMap()
                         #TODO: Add InputMap option
                         return
 
