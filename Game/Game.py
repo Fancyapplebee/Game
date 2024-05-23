@@ -1239,7 +1239,6 @@ def cppStringConvert(string):
 class IPBase:
     def __init__(self):
         self.InputMapDict = {}
-        self.InputMapDictKeys = []
 
 class PercyJackson(Role, IPBase):
     def __init__(self, name):
@@ -2507,9 +2506,6 @@ def QuestGames(Setting, role):
                                                role.flipped))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
                         # Update the wait-time here.
                         role.update_wait_time()
-                elif event.key in role.InputMapDict:
-                    pass
-                    #TODO: Call the "use" function corresponding to this item in the inventory, i.e., something like role.useInv[role.InputMapDict[event.key]]["Use"]() with potentially some modifications
 
         if enemy_options[enemyMove] == "jump" and enemy_y + 200 >= ground_y:  # Holding down jump makes it bigger
             curr_enemy_y -= 5
@@ -2884,7 +2880,7 @@ def Shop(Role):
                 pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
                 return
 
-def DeleteInputMapKey(role):
+def ViewInputMap(role):
     screen.fill(white)  # clear the screen
     if not role.InputMapDict:
         pygame_print("No keys have been mapped!")
@@ -2893,95 +2889,13 @@ def DeleteInputMapKey(role):
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     return
-    
     #TODO: Create a scrolling menu for viewing the inputmap
     #...
-    
-    optionNumber = 0
-    maxItems = 3
-    startIdx = 0
-    endIdx = min(len(role.InputMapDict), maxItems)
-    
-#    for key in role.InputMapDict:
-#        pygame_print(key + " -> " + role.InputMapDict[key], ...)
-    
-    while True:
-        screen.fill(white)  # clear the screen
-        pygame_print(f"Select Key-Value Pair to Delete", 60, color=black, background_color=white)
-        pygame_print("===============================", 100, color=black, background_color=white)
-        text_y = 140
-        for i in range(startIdx, endIdx):
-            pygame_print(f"{pygame.key.name(role.InputMapDictKeys[i])}: {role.InputMapDict[role.InputMapDictKeys[i]]}", text_y, color=(red if optionNumber == i else black), background_color=white)
-            text_y += 40
+    #for key in role.InputMapDict: ... pygame_print(key + " -> " + role.InputMapDict[key], ...)
 
-        stop_button = AddButton(text="EXIT", offset=0, loc=text_y + 80, background_color=red)
-
-        pygame.display.update()
-        for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
-            if event.type == pygame.KEYDOWN:  # checking if any key was selected
-                if event.key == pygame.K_DOWN:
-                    optionNumber = optionNumber + 1 if optionNumber != len(role.InputMapDict) - 1 else 0
-                    if optionNumber == 0:
-                        startIdx = 0
-                    elif startIdx + 1 + maxItems <= len(role.InputMapDict) and optionNumber > startIdx - 1 + maxItems:
-                        startIdx += 1
-                    
-                    endIdx = startIdx + min(len(role.InputMapDict), maxItems)
-                                       
-                    '''
-                e.g. maxItems = 3,
-                start: startIdx = 0, endIdx = 3
-                    
-                0.    Water
-                1.    Apple
-                2.    Tomato
-                3.    Melon
-                4.    Orange
-                5.    Pinapple
-                6.    Grapefruit
-                7.    Blueberry
-                8.    Strawberry
-                9.    Tootsie Roll
-                    '''
-                    
-                elif event.key == pygame.K_UP:
-                    optionNumber = optionNumber - 1 if optionNumber != 0 else len(role.InputMapDict) - 1
-                    if optionNumber < startIdx:
-                        startIdx = startIdx - 1 if startIdx - 1 >= 0 else 0
-                    elif optionNumber > startIdx + maxItems - 1:
-                        startIdx = optionNumber - maxItems + 1
-                    endIdx = startIdx + min(len(role.InputMapDict), maxItems)
-                
-                elif event.key == pygame.K_RETURN:
-                    del role.InputMapDict[role.InputMapDictKeys[optionNumber]]
-                    del role.InputMapDictKeys[optionNumber]
-                    
-                    if len(role.InputMapDict) == 0:
-                        return
-
-                    optionNumber = 0
-                    startIdx = 0
-                    endIdx = min(len(role.InputMapDict), maxItems)
-                    screen.fill(white)
-                    
-            elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
-                pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
-                return
-    pygame.display.update()
-    
-def printKeyError(key):
-    screen.fill(white)
-    pygame_print(f"ERROR, \"{pygame.key.name(key).upper()}\" CANNOT BE MAPPED!", color=red, background_color=white)
-    pygame.display.update()
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                return
-    
-def AddInputMapKey(role):
+def UpdateInputMap(role):
     key = None
     breakFlag = False
-    invalidKeys = (pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_RETURN, pygame.K_SPACE)
     screen.fill(white)  # clear the screen
     while True:
         pygame_print("Select the key you would like to remap", 90, color=black, background_color=white)
@@ -2990,13 +2904,9 @@ def AddInputMapKey(role):
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                if event.key in invalidKeys:
-                    printKeyError(event.key)
-                    screen.fill(white)
-                else:
-                    key = event.key
-                    breakFlag = True
-                    break
+                key = event.key
+                breakFlag = True
+                break
         if breakFlag:
             break
                 
@@ -3009,11 +2919,9 @@ def AddInputMapKey(role):
     
     while True:
         screen.fill(white)  # clear the screen
-        pygame_print("Which item would you like to map", 60, color=black, background_color=white)
-        pygame_print(f"the key \"{pygame.key.name(key)}\" to?", 100, color=black, background_color=white)
-
-        pygame_print("=================================", 140, color=black, background_color=white)
-        text_y = 180
+        pygame_print(f"Which item would you like to map the key {pygame.key.name(key)} to?", 60, color=black, background_color=white)
+        pygame_print("=================================", 100, color=black, background_color=white)
+        text_y = 140
         for i in range(startIdx, endIdx):
             pygame_print(questItems[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
             text_y += 40
@@ -3058,7 +2966,7 @@ def AddInputMapKey(role):
                     
                 elif event.key == pygame.K_RETURN:
                     role.InputMapDict[key] = cppStringConvert(questItems[optionNumber])
-                    role.InputMapDictKeys.append(key)
+                    print(role.InputMapDict)
                     return
                     
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
@@ -3077,8 +2985,8 @@ def InputMap(role):
         screen.fill(white)
         pygame_print("Choose an option", 90, color=black, background_color=white)
         pygame_print("================", 130, color=black, background_color=white)
-        pygame_print("Add Key to Input Map", 170, color=(orange if optionNumber == 0 else black), background_color=white)
-        pygame_print("Delete Key from Input Map", 210, color=(red if optionNumber == 1 else black), background_color=white)
+        pygame_print("View Current Input Map", 170, color=(orange if optionNumber == 0 else black), background_color=white)
+        pygame_print("Map Key to Quest Item", 210, color=(orange if optionNumber == 1 else black), background_color=white)
         stop_button = AddButton(text="EXIT", offset=0, loc=290, background_color=red)
 
         pygame.display.update()
@@ -3089,10 +2997,10 @@ def InputMap(role):
                 elif event.key == pygame.K_UP:
                     optionNumber = optionNumber - 1 if optionNumber != 0 else 1
                 elif event.key == pygame.K_RETURN:
-                    if optionNumber == 0:  # Add
-                        AddInputMapKey(role)
-                    elif optionNumber == 1:  # Delete
-                        DeleteInputMapKey(role)
+                    if optionNumber == 0:  # View
+                        ViewInputMap(role)
+                    elif optionNumber == 1:  # Remap
+                        UpdateInputMap(role)
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
                 pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
                 return
