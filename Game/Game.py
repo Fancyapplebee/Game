@@ -2203,7 +2203,6 @@ def QuestGames(Setting, role):
     role.attackpower = 1000  # TODO: delete!
     money = 0
     shotSpeed = 5
-
     role_image_name = role.name.lower().replace(" jackson", "") + "-start.png"
     role_image_name_flipped = role_image_name.replace(".png", "flip.png")
     enemy_image_names = {"NINJA": "ninja.png", "OGRE": "ogre.png", "DEMON": "demon.png"}
@@ -2508,7 +2507,11 @@ def QuestGames(Setting, role):
                         # Update the wait-time here.
                         role.update_wait_time()
                 elif event.key in role.InputMapDict:
-                    pass
+                    def find_value(InputMapDict, target):
+                        return next((value for value, key in role.InputMapDict.items() if value == target), None)
+                        if value:
+                            role.useInv[role.InputMapDict[event.key]]["Use"]()
+                            pass
                     #TODO: Call the "use" function corresponding to this item in the inventory, i.e., something like role.useInv[role.InputMapDict[event.key]]["Use"]() with potentially some modifications
 
         if enemy_options[enemyMove] == "jump" and enemy_y + 200 >= ground_y:  # Holding down jump makes it bigger
