@@ -91,8 +91,15 @@ cppyy.cppdef(
     std::unordered_map<std::string, double> badNPCs = {{"NINJA", 0.33} , {"OGRE", 0.33} , {"DEMON", 0.34}};
 
     struct Role;
+    
+    struct SpecialShot
+    {
+        std::string specialShotImage;
+        std::string specialShotType;
+        bool isSpecialShot;
+    };
 
-    struct BadNPC
+    struct BadNPC : public SpecialShot
     {
         const std::string name;
         std::string picture;
@@ -159,7 +166,7 @@ cppyy.cppdef(
     }
 
 
-    struct Role
+    struct Role : public SpecialShot
     {
         std::string name;
         int questLevel;
@@ -944,6 +951,7 @@ cppyy.cppdef(
                 "Cookies",{{"Use",
                                    [&]()
                                    {
+                                        this->isSpecialShot = false;
                                         if (numInv["Cookies"]["Number"] == 0)
                                         {
                                             return;
@@ -962,6 +970,7 @@ cppyy.cppdef(
                 "Logs",{{"Use",
                                     [&]()
                                     {
+                                        this->isSpecialShot = true;
                                         if (numInv["Logs"]["Number"] == 0)
                                         {
                                             return;
@@ -975,6 +984,7 @@ cppyy.cppdef(
                 "Key 1",{{"Use",
                                    [&]()
                                    {
+                                        this->isSpecialShot = false;
                                         if (numInv["Key 1"]["Number"] == 0)
                                         {
                                             return;
@@ -988,6 +998,7 @@ cppyy.cppdef(
                 "Sands",{{"Use",
                                    [&]()
                                    {
+                                        this->isSpecialShot = true;
                                         if (numInv["Sands"]["Number"] == 0)
                                         {
                                             return;
@@ -1001,11 +1012,14 @@ cppyy.cppdef(
                 "Rocks",{{"Use",
                                    [&]()
                                    {
+                                        this->isSpecialShot = true;
                                         if (numInv["Rocks"]["Number"] == 0)
                                         {
                                             return;
                                         }
                                         numInv["Rocks"]["Number"]--;
+                                        this->specialShotImage = this->stringInv["Rocks"]["Picture"];
+                                        //std::cout << this->specialShotImage << '\n';
                                    }
                            }}
             },
@@ -1014,6 +1028,7 @@ cppyy.cppdef(
                 "Silvers",{{"Use",
                                    [&]()
                                    {
+                                        this->isSpecialShot = true;
                                         if (numInv["Silvers"]["Number"] == 0)
                                         {
                                             return;
@@ -1027,6 +1042,7 @@ cppyy.cppdef(
                 "Golds",{{"Use",
                                    [&]()
                                    {
+                                        this->isSpecialShot = true;
                                         if (numInv["Golds"]["Number"] == 0)
                                         {
                                             return;
@@ -1040,6 +1056,7 @@ cppyy.cppdef(
                 "Diamonds",{{"Use",
                                    [&]()
                                    {
+                                        this->isSpecialShot = true;
                                         if (numInv["Diamonds"]["Number"] == 0)
                                         {
                                             return;
@@ -1053,6 +1070,7 @@ cppyy.cppdef(
                 "Emeralds",{{"Use",
                                    [&]()
                                    {
+                                        this->isSpecialShot = true;
                                         if (numInv["Emeralds"]["Number"] == 0)
                                         {
                                             return;
@@ -1066,6 +1084,7 @@ cppyy.cppdef(
                 "Cactuses",{{"Use",
                                    [&]()
                                    {
+                                        this->isSpecialShot = true;
                                         if (numInv["Cactuses"]["Number"] == 0)
                                         {
                                             return;
@@ -1079,6 +1098,7 @@ cppyy.cppdef(
                 "Golden Saplings",{{"Use",
                                    [&]()
                                    {
+                                        this->isSpecialShot = true;
                                         if (numInv["Golden Saplings"]["Number"] > 0)
                                         {
                                             return;
@@ -1092,6 +1112,7 @@ cppyy.cppdef(
                 "Golden Logs",{{"Use",
                                    [&]()
                                    {
+                                        this->isSpecialShot = true;
                                         if (numInv["Golden Logs"]["Number"] == 0)
                                         {
                                             return;
@@ -1105,6 +1126,7 @@ cppyy.cppdef(
                 "Sand Pails",{{"Use",
                                    [&]()
                                    {
+                                        this->isSpecialShot = true;
                                         if (numInv["Sand Pails"]["Number"] == 0)
                                         {
                                             return;
@@ -1118,6 +1140,7 @@ cppyy.cppdef(
                 "Potion",{{"Use",
                                    [&]()
                                    {
+                                       this->isSpecialShot = false;
                                        health += 20;
                                        if (this->health > base_health)
                                        {
@@ -1135,6 +1158,7 @@ cppyy.cppdef(
                 "Apple",{{"Use",
                                    [&]()
                                    {
+                                       this->isSpecialShot = false;
                                        if (numInv["Apple"]["Number"] == 0)
                                        {
                                             return;
@@ -1153,6 +1177,7 @@ cppyy.cppdef(
                 "Knife",{{"Use",
                                     [&]()
                                     {
+                                        this->isSpecialShot = true;
                                         if (numInv["Knife"]["Number"] == 0)
                                         {
                                             return;
@@ -1166,6 +1191,7 @@ cppyy.cppdef(
                 "Parrot",{{"Use",
                                     [&]()
                                     {
+                                        this->isSpecialShot = true;
                                         if (numInv["Parrot"]["Number"] == 0)
                                         {
                                             return;
@@ -1179,6 +1205,7 @@ cppyy.cppdef(
                 "Ring",{{"Use",
                                     [&]()
                                     {
+                                        this->isSpecialShot = true;
                                         if (numInv["Ring"]["Number"] == 0)
                                         {
                                             return;
@@ -1192,6 +1219,7 @@ cppyy.cppdef(
                 "Cape",{{"Use",
                                     [&]()
                                     {
+                                        this->isSpecialShot = false;
                                         if (numInv["Cape"]["Number"] == 0)
                                         {
                                             return;
@@ -1205,6 +1233,7 @@ cppyy.cppdef(
                 "Armor",{{"Use",
                                     [&]()
                                     {
+                                        this->isSpecialShot = false;
                                         if (numInv["Armor"]["Number"] == 0)
                                         {
                                             return;
@@ -1218,6 +1247,7 @@ cppyy.cppdef(
                 "Water Guns",{{"Use",
                                     [&]()
                                     {
+                                        this->isSpecialShot = true;
                                         if (numInv["Water Guns"]["Number"] == 0)
                                         {
                                             return;
@@ -1249,7 +1279,6 @@ cppyy.cppdef(
 
 ''')
 from cppyy.gbl import Role, BadNPC, badNPCs, HasSellableItems, Shot
-
 
 # Takes in a C++ string, and returns a correct python string
 def cppStringConvert(string):
@@ -2204,6 +2233,7 @@ def printInventory(role):
                     return
 
 #https://stackoverflow.com/a/64745177/18255427
+#Returns true if the range x_start, y_start overlaps with the range x_end, y_end
 def overlaps(x_start, x_end, y_start, y_end):
     return max(x_start, y_start) < min(x_end, y_end)
 
@@ -2426,6 +2456,8 @@ def QuestGames(Setting, role):
         '''
         Generate a move that the agent should make based on the UCT   a:
             UCT = Q(s,a) + c*sqrt( ln(N(s)) / N(s,a) )
+        
+        Returns: index corresponding to element in enemy_options list that enemy should make
         '''
 
         UCT = 0
@@ -2471,9 +2503,9 @@ def QuestGames(Setting, role):
     while True:  # pygame loop
         if n_iter != 0 and n_iter % 150 == 0:
             if check_point_score == max_score:
-                c += sqrt(2)
+                c += sqrt(2) #Increase the exploration
             else:
-                c = sqrt(2)
+                c = sqrt(2) #Keep exploration the same
                 check_point_score = max_score
 
         n_iter += 1
@@ -2530,8 +2562,10 @@ def QuestGames(Setting, role):
 #                            pass
 #                    find_value(role.InputMapDict, )
 #                    if role.can_attack():
-                        
+                    print(f"{event.key} is in {role.InputMapDict}")
                     role.useInv[role.InputMapDict[event.key]]["Use"]()
+#                    if role.specialShotSwitch:
+                        #Add special shot to queue
 
         if enemy_options[enemyMove] == "jump" and enemy_y + 200 >= ground_y:  # Holding down jump makes it bigger
             curr_enemy_y -= 5
