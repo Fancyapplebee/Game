@@ -3191,7 +3191,7 @@ def AddInputMapKey(role):
                     
                 elif event.key == pygame.K_RETURN:
                     role.InputMapDict[key] = cppStringConvert(questItems[optionNumber])
-                    print(f"Key Value Pair: key = {chr(key)}, value = {role.InputMapDict[key]}")
+#                    print(f"Key Value Pair: key = {chr(key)}, value = {role.InputMapDict[key]}")
                     if key not in role.InputMapDictKeys:
                         role.InputMapDictKeys.append(key)
                     return
