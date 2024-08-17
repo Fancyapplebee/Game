@@ -67,13 +67,17 @@ cppyy.cppdef(
     struct Shot
     {
         double beam_x, beam_y;
-        bool hit_target, is_flipped;
-        Shot(double beam_x, double beam_y, bool hit_target, bool is_flipped)
+        bool hit_target, is_flipped, is_special_shot;
+        std::string special_image;
+        
+        Shot(double beam_x, double beam_y, bool hit_target, bool is_flipped, bool is_special_shot = false, std::string special_image = "")
         {
             this->beam_x = beam_x;
             this->beam_y = beam_y;
             this->hit_target = hit_target;
             this->is_flipped = is_flipped;
+            this->is_special_shot = is_special_shot;
+            this->special_image = special_image;
         }
     };
     
@@ -975,6 +979,7 @@ cppyy.cppdef(
                                         {
                                             return;
                                         }
+                                        this->specialShotImage = this->stringInv["Logs"]["Picture"];
                                         numInv["Logs"]["Number"]--;
                                     }
                            }}
@@ -1003,6 +1008,7 @@ cppyy.cppdef(
                                         {
                                             return;
                                         }
+                                        this->specialShotImage = this->stringInv["Sands"]["Picture"];
                                         numInv["Sands"]["Number"]--;
                                    }
                            }}
@@ -1033,6 +1039,7 @@ cppyy.cppdef(
                                         {
                                             return;
                                         }
+                                        this->specialShotImage = this->stringInv["Silvers"]["Picture"];
                                         numInv["Silvers"]["Number"]--;
                                    }
                            }}
@@ -1047,6 +1054,7 @@ cppyy.cppdef(
                                         {
                                             return;
                                         }
+                                        this->specialShotImage = this->stringInv["Golds"]["Picture"];
                                         numInv["Golds"]["Number"]--;
                                    }
                            }}
@@ -1061,6 +1069,7 @@ cppyy.cppdef(
                                         {
                                             return;
                                         }
+                                        this->specialShotImage = this->stringInv["Diamonds"]["Picture"];
                                         numInv["Diamonds"]["Number"]--;
                                    }
                            }}
@@ -1075,6 +1084,7 @@ cppyy.cppdef(
                                         {
                                             return;
                                         }
+                                        this->specialShotImage = this->stringInv["Emeralds"]["Picture"];
                                         numInv["Emeralds"]["Number"]--;
                                    }
                            }}
@@ -1089,6 +1099,7 @@ cppyy.cppdef(
                                         {
                                             return;
                                         }
+                                        this->specialShotImage = this->stringInv["Cactuses"]["Picture"];
                                         numInv["Cactuses"]["Number"]--;
                                    }
                            }}
@@ -1103,6 +1114,7 @@ cppyy.cppdef(
                                         {
                                             return;
                                         }
+                                        this->specialShotImage = this->stringInv["Golden Saplings"]["Picture"];
                                         numInv["Golden Saplings"]["Number"]--;
                                    }
                            }}
@@ -1117,6 +1129,7 @@ cppyy.cppdef(
                                         {
                                             return;
                                         }
+                                        this->specialShotImage = this->stringInv["Golden Logs"]["Picture"];
                                         numInv["Golden Logs"]["Number"]--;
                                    }
                            }}
@@ -1131,6 +1144,7 @@ cppyy.cppdef(
                                         {
                                             return;
                                         }
+                                        this->specialShotImage = this->stringInv["Sand Pails"]["Picture"];
                                         numInv["Sand Pails"]["Number"]--;
                                    }
                            }}
@@ -1182,6 +1196,7 @@ cppyy.cppdef(
                                         {
                                             return;
                                         }
+                                        this->specialShotImage = this->stringInv["Knife"]["Picture"];
                                         numInv["Knife"]["Number"]--;
                                     }
                         }}
@@ -1196,6 +1211,7 @@ cppyy.cppdef(
                                         {
                                             return;
                                         }
+                                        this->specialShotImage = this->stringInv["Parrot"]["Picture"];
                                         numInv["Parrot"]["Number"]--;
                                     }
                         }}
@@ -1210,6 +1226,7 @@ cppyy.cppdef(
                                         {
                                             return;
                                         }
+                                        this->specialShotImage = this->stringInv["Ring"]["Picture"];
                                         numInv["Ring"]["Number"]--;
                                     }
                         }}
@@ -1252,6 +1269,7 @@ cppyy.cppdef(
                                         {
                                             return;
                                         }
+                                        this->specialShotImage = this->stringInv["Water Guns"]["Picture"];
                                         numInv["Water Guns"]["Number"]--;
                                     }
                         }}
@@ -2554,18 +2572,20 @@ def QuestGames(Setting, role):
                                                role.flipped))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
                         # Update the wait-time here.
                         role.update_wait_time()
-                elif event.key in role.InputMapDict:
-#                    def find_value(InputMapDict, target):
-#                        return next((key for key, value in role.InputMapDict.items() if key == target), None)
-#                        if key:
-#                            role.useInv[role.InputMapDict[event.key]]["Use"]()
-#                            pass
-#                    find_value(role.InputMapDict, )
-#                    if role.can_attack():
-                    print(f"{event.key} is in {role.InputMapDict}")
+                elif event.key in role.InputMapDict and role.numInv[role.InputMapDict[event.key]]["Number"] > 0:
+#                    print(f"{event.key} is in {role.InputMapDict}")
                     role.useInv[role.InputMapDict[event.key]]["Use"]()
-#                    if role.specialShotSwitch:
-                        #Add special shot to queue
+                    if role.isSpecialShot:
+                        if role.can_attack():
+                            beam_x = start_x + (buffer_width if not role.flipped else 0)
+                            beam_y = curr_y + buffer_width / 2
+                            # Puts the coordinate of the shots fired on the screen
+                            shotsFired.append(Shot(beam_x, beam_y, False,
+                                                   role.flipped, True, role.specialShotImage))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
+                            # Update the wait-time here.
+                            role.update_wait_time()
+                        else:
+                            role.numInv[role.InputMapDict[event.key]]["Number"] += 1
 
         if enemy_options[enemyMove] == "jump" and enemy_y + 200 >= ground_y:  # Holding down jump makes it bigger
             curr_enemy_y -= 5
@@ -2672,6 +2692,11 @@ def QuestGames(Setting, role):
 
                 shot.hit_target = True
             pygame.draw.ellipse(screen, orange, beam_rect)  # Drawing the beam
+            if shot.is_special_shot:
+#                print(shot.special_image, cppStringConvert(shot.special_image))
+                image = pygame.image.load(cppStringConvert(shot.special_image))
+                image = pygame.transform.scale(image, (beam_width, beam_height))
+                screen.blit(image, beam_rect.topleft)
 
         for shot in shotsEnemyFired:
             shot.beam_x = shot.beam_x - enemy.shot_speed if not shot.is_flipped else shot.beam_x + enemy.shot_speed
@@ -3073,15 +3098,6 @@ def ViewInputMapKey(role):
                         startIdx = optionNumber - maxItems + 1
                     endIdx = startIdx + min(len(role.InputMapDict), maxItems)
 
-
-                    if len(role.InputMapDict) == 0:
-                        return
-
-                    optionNumber = 0
-                    startIdx = 0
-                    endIdx = min(len(role.InputMapDict), maxItems)
-                    screen.fill(white)
-
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
                     pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
                 return
@@ -3175,7 +3191,9 @@ def AddInputMapKey(role):
                     
                 elif event.key == pygame.K_RETURN:
                     role.InputMapDict[key] = cppStringConvert(questItems[optionNumber])
-                    role.InputMapDictKeys.append(key)
+                    print(f"Key Value Pair: key = {chr(key)}, value = {role.InputMapDict[key]}")
+                    if key not in role.InputMapDictKeys:
+                        role.InputMapDictKeys.append(key)
                     return
                     
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
