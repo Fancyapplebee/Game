@@ -184,6 +184,7 @@ cppyy.cppdef(
         std::unordered_map<std::string, std::unordered_map<std::string,std::string>> stringInv;
         std::unordered_map<std::string, std::unordered_map<std::string,double>> numInv;
         std::unordered_map<std::string,std::unordered_map<std::string,std::function<void()>>> useInv;
+        std::unordered_map<std::string, double> specialShotMultipliers;
 
         double health;
         double base_health;
@@ -205,7 +206,7 @@ cppyy.cppdef(
         bool can_attack();
         void update_wait_time();
         void defend();
-        void attack(BadNPC& enemy);
+        void attack(BadNPC& enemy, double multiplier = 1.0);
         void baseLineStats();
         std::vector<std::string> printInventory();
         std::unordered_map<std::string, double> printSellItems(bool print = false);
@@ -308,9 +309,9 @@ cppyy.cppdef(
         waitTime = static_cast<uint64_t>(attackStamina*1000);
     }
 
-    void Role::attack(BadNPC& enemy)
+    void Role::attack(BadNPC& enemy, double multiplier)
     {
-        enemy.health -= (Defense(enemy.defense) * attackpower); //the enemy's health can go below 0, so see below :)
+        enemy.health -= (Defense(enemy.defense) * attackpower * multiplier); //the enemy's health can go below 0, so see below :)
         if (enemy.health < 0)
         {
             enemy.health = 0;
@@ -1110,7 +1111,7 @@ cppyy.cppdef(
                                    [&]()
                                    {
                                         this->isSpecialShot = true;
-                                        if (numInv["Golden Saplings"]["Number"] > 0)
+                                        if (numInv["Golden Saplings"]["Number"] == 0)
                                         {
                                             return;
                                         }
@@ -1275,6 +1276,8 @@ cppyy.cppdef(
                         }}
             }
         };
+        
+        this->specialShotMultipliers = {{"Assets/parrot.png", 2.36024}, {"Assets/knife.png", 2.46055}, {"Assets/sapling.png", 2.22583}, {"Assets/cactus.png", 2.38649}, {"Assets/diamond.png", 2.23146}, {"Assets/gold.png", 2.06248}, {"Assets/water gun.png", 2.2429}, {"Assets/Sand Pail.png", 2.43646}, {"Assets/rock.png", 2.41957}, {"Assets/Golden Log.png", 2.17529}, {"Assets/emerald.png", 2.18229}, {"Assets/sand.png", 2.30797}, {"Assets/silver.png", 2.47529}, {"Assets/log.png", 2.37766}, {"Assets/ring.png", 2.12051}};
     }
 
     Role::~Role()
@@ -2265,7 +2268,7 @@ Rolling a dice:
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red
     role.health = role.base_health  # TODO: delete!
-    role.attackpower = 1000  # TODO: delete!
+#    role.attackpower = 1000  # TODO: delete!
     money = 0
     role_image_name = role.name.lower().replace(" jackson", "") + "-start.png"
     role_image_name_flipped = role_image_name.replace(".png", "flip.png")
@@ -2674,7 +2677,7 @@ def QuestGames(Setting, role):
                                     beam_height)  # beam object
             if beam_rect.colliderect(
                     enemy_rect) and not shot.hit_target:  # Enemy was hit and this is not a repeat of the same shot
-                role.attack(enemy)
+                role.attack(enemy, multiplier = 1 if not shot.is_special_shot else role.specialShotMultipliers[shot.specialShotImage])
                 pygame.draw.rect(screen, red, enemy_rect, 2)
                 if enemy.health == 0:
                     money += enemy.expYield*10
@@ -2691,8 +2694,9 @@ def QuestGames(Setting, role):
                         pygame_print(f"You Won!!", loc=300)
 
                 shot.hit_target = True
-            pygame.draw.ellipse(screen, orange, beam_rect)  # Drawing the beam
-            if shot.is_special_shot:
+            if not shot.is_special_shot:
+                pygame.draw.ellipse(screen, orange, beam_rect)  # Drawing the beam
+            else:
 #                print(shot.special_image, cppStringConvert(shot.special_image))
                 image = pygame.image.load(cppStringConvert(shot.special_image))
                 image = pygame.transform.scale(image, (beam_width, beam_height))
@@ -3191,7 +3195,6 @@ def AddInputMapKey(role):
                     
                 elif event.key == pygame.K_RETURN:
                     role.InputMapDict[key] = cppStringConvert(questItems[optionNumber])
-                    print(f"Key Value Pair: key = {chr(key)}, value = {role.InputMapDict[key]}")
                     if key not in role.InputMapDictKeys:
                         role.InputMapDictKeys.append(key)
                     return
