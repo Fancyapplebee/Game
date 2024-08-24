@@ -2677,7 +2677,7 @@ def QuestGames(Setting, role):
                                     beam_height)  # beam object
             if beam_rect.colliderect(
                     enemy_rect) and not shot.hit_target:  # Enemy was hit and this is not a repeat of the same shot
-                role.attack(enemy, multiplier = 1 if not shot.is_special_shot else role.specialShotMultipliers[shot.specialShotImage])
+                role.attack(enemy, multiplier = 1 if not shot.is_special_shot else role.specialShotMultipliers[role.specialShotImage])
                 pygame.draw.rect(screen, red, enemy_rect, 2)
                 if enemy.health == 0:
                     money += enemy.expYield*10

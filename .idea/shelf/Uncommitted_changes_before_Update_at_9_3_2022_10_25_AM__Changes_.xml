@@ -2,7 +2,6 @@
   <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_9_3_2022_10_25_AM_[Changes]/shelved.patch" />
   <option name="DESCRIPTION" value="Uncommitted changes before Update at 9/3/2022 10:25 AM [Changes]" />
   <binary>
-    <option name="BEFORE_PATH" />
     <option name="AFTER_PATH" value="Game/Test.so" />
     <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_9_3_2022_10_25_AM_[Changes]/Test.so" />
   </binary>
