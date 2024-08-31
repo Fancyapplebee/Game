@@ -2385,7 +2385,7 @@ def QuestGames(Setting, role):
     #    State = namedtuple("State", "agent_x agent_y role_x role_y agent_health") #maybe include role_health as well?
     enemy_options = ("attack", "left", "right", "jump", "rest")
     max_score = -np.inf
-    dd = 1
+    dd = 5
 
     def spawnBadNPC():
         '''
@@ -2521,13 +2521,26 @@ def QuestGames(Setting, role):
 
     max_score = -np.inf
     check_point_score = -np.inf
+    score = 0
+    avg_score = 0
+    update_iter = 150
     while True:  # pygame loop
-        if n_iter != 0 and n_iter % 150 == 0:
-            if check_point_score == max_score:
-                c += sqrt(2) #Increase the exploration
+        if n_iter != 0 and n_iter % update_iter == 0:
+            if check_point_score == max_score: #if no new max
+                score_ratio = avg_score/(update_iter*(max_score or max_score + np.finfo(float).eps))
+                print(f"avg_score/max_score = {score_ratio}")
+                if random() >= score_ratio:
+                    c = c + sqrt(2)
+                    print(f"Increasing exploration, no luck, c = {c}")
+                else:
+                    c = sqrt(2)
+                    print(f"Lucky, resetting exploration, c = {c}")
             else:
                 c = sqrt(2) #Keep exploration the same
+                print(f"New max, resetting exploration, c = {c}")
+
                 check_point_score = max_score
+            avg_score = 0
 
         n_iter += 1
         last_role_health = role.health
@@ -2741,10 +2754,24 @@ def QuestGames(Setting, role):
         damage_dealt = last_role_health - role.health
         damage_taken = last_agent_health - getEnemyHealth()  # enemy.health
         dt = (getEnemyBaseHealth() - getEnemyHealth()) / getEnemyBaseHealth()
-        score = dd * (damage_dealt / role.base_health) - dt * (damage_taken / getEnemyBaseHealth()) * 1.3
+        
+        '''
+        getEnemyBaseHealth()    getEnemyHealth()    dt
+        --------------------    ----------------    --
+        100                     40                  (100-40)/100 = 60/100 = 0.6
+        100                     30                  (100-30)/100 = 70/100 = 0.7
+        100                     100                 (100-100)/100 = 0/100 = 0
+        
+        
+        '''
+        
+        score = 0.05 + (dd * (damage_dealt / role.base_health) - dt * (damage_taken / getEnemyBaseHealth()) * 1.3)
+        avg_score += score
+#        print(f"score = {score}, damage_dealt / role.base_health = {damage_dealt / role.base_health}, damage_dealt = {damage_dealt}")
 
         if score > max_score:
             max_score = score
+            print(f"New max score, {max_score}")
 
         if Qsa.get(temp_state):
             if Qsa[temp_state].get(enemy_options[enemyMove]):  # if the state-action pair has been visited before
