@@ -2028,7 +2028,7 @@ def sellItem(role, item_name):
     global font, white, black, orange
     screen.fill(white)  # clear the screen
 
-    square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), 320, 235)  # left, top, width, height
+    square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
 
     image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
     
@@ -2037,24 +2037,23 @@ def sellItem(role, item_name):
     pygame.draw.rect(screen, white, square_rect)
     screen.blit(image, square_rect.topleft)
 
-    pygame_print(f"Name: {item_name}", offset=-200, loc=380)
-    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset=-200, loc=440)
-    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset=-200,
-                      line_break=23, start_height=550)
+    pygame_print(f"Name: {item_name}", offset=-int(0.25*X), loc=int(0.5067*Y))
+    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset=-int(0.25*X), loc=int(0.5867*Y))
+    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset=-int(0.25*X), loc=int(0.6667*Y))
 
-    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=200, loc=200)
-    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset=200, loc=260)
-    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset=200, loc=320)
-    pygame_print(f"Your Money:", offset=200, loc=380)
+    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=int(0.25 * X), loc=int(0.2667 * Y))
+    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset=int(0.25 * X), loc=int(0.3467 * Y))
+    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset=int(0.25 * X), loc=int(0.4267 * Y))
+    pygame_print(f"Your Money:", offset=int(0.25 * X), loc=int(0.5067 * Y))
     font = pygame.font.Font('freesansbold.ttf', 25)
-    pygame_print(f"{role.money:.2f}", offset=200, loc=440)
+    pygame_print(f"{role.money:.2f}", offset=int(0.25*X), loc=int(0.5867*Y))
     font = pygame.font.Font('freesansbold.ttf', 32)
 
     num_item = 0 #Count the amount of item_name that the user wants to buy
     max_amount = int(role.numInv[item_name]['Number'])
-    pygame_print(f"How many?: {num_item}", offset=200, loc=550)
+    pygame_print(f"How many?: {num_item}", offset=int(0.25*X), loc=int(0.6667*Y))
 
-    rect = AddButton(text="Sell", offset=200, loc=630, background_color=green)
+    rect = AddButton(text="Sell", offset=int(0.25*X), loc=int(0.7334*Y), background_color=green)
 
     pygame.display.update()
 
@@ -2105,7 +2104,7 @@ def buyItem(role, item_name):
     global font, white, black, orange
     screen.fill(white)  # clear the screen
 
-    square_rect = pygame.Rect(40, 100, 320, 235)  # left, top, width, height
+    square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
 
     image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
     
@@ -2114,25 +2113,26 @@ def buyItem(role, item_name):
     pygame.draw.rect(screen, white, square_rect)
     screen.blit(image, square_rect.topleft)
 
-    pygame_print(f"Name: {item_name}", offset=-200, loc=380)
-    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset=-200, loc=440)
-    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset=-200,
-                      line_break=23, start_height=550)
+    pygame_print(f"Name: {item_name}", offset=-int(0.25 * X), loc=int(0.5067 * Y))
+    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset=-int(0.25 * X),
+                 loc=int(0.5867 * Y))
+    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}",
+                      offset=-int(0.25 * X), loc=int(0.6667 * Y))
 
-    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=200, loc=200)
-    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset=200, loc=260)
-    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset=200, loc=320)
-    pygame_print(f"Your Money:", offset=200, loc=380)
+    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=int(0.25 * X), loc=int(0.2667 * Y))
+    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset=int(0.25 * X), loc=int(0.3467 * Y))
+    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset=int(0.25 * X), loc=int(0.4267 * Y))
+    pygame_print(f"Your Money:", offset=int(0.25 * X), loc=int(0.5067 * Y))
     font = pygame.font.Font('freesansbold.ttf', 25)
-    pygame_print(f"{role.money:.2f}", offset=200, loc=440)
+    pygame_print(f"{role.money:.2f}", offset=int(0.25*X), loc=int(0.5867*Y))
     font = pygame.font.Font('freesansbold.ttf', 32)
 
     num_item = 0 #Count the amount of item_name that the user wants to buy
     max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
-    pygame_print(f"How many?: {num_item}", offset=200, loc=550)
+    pygame_print(f"How many?: {num_item}", offset=int(0.25*X), loc=int(0.6667*Y))
 
     pygame.display.update()
-    rect = AddButton(text="Buy", offset=200, loc=630, background_color=green)
+    rect = AddButton(text="Buy", offset=int(0.25*X), loc=int(0.7334*Y), background_color=green)
     
     while True:
         
