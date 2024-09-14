@@ -2,9 +2,9 @@ from string import punctuation
 import json
 import os
 from math import sqrt, log as ln
-from random import random
+from random import random, randint
 from string import punctuation
-
+from time import time
 import cppyy
 import numpy as np
 import pygame
@@ -1293,7 +1293,7 @@ cppyy.cppdef(
     }
 
 ''')
-from cppyy.gbl import Role, BadNPC, HasSellableItems, Shot
+from cppyy.gbl import Role, BadNPC, badNPCs, HasSellableItems, Shot
 
 # Takes in a C++ string, and returns a correct python string
 def cppStringConvert(string):
@@ -1427,8 +1427,8 @@ red = (255, 0, 0)
 yellow = (255, 255, 0)
 light_pink = (255, 182, 193)
 orange = (255, 165, 0)
-X = 800
-Y = 750
+X = 540
+Y = 300
 screen = pygame.display.set_mode((X, Y))
 font = pygame.font.Font('freesansbold.ttf', int(0.0427*Y))
 
@@ -1439,7 +1439,9 @@ def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset
     screen.blit(text, textRect)
     return textRect
 
-def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = int(0.053*Y), height: float = 4,
+#def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = int(0.053*Y), height: float = 4,
+#               new_screen=True) -> None:
+def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = int(0.1*Y), height: float = 4,
                new_screen=True) -> None:
     count = 0
     screen.fill(color) if new_screen else True
@@ -1470,11 +1472,8 @@ def displayImage(rsp, height: bool = False, p: int = 0, update: bool = True):
 
 
 def openChestOption(optionNumber=None):
-    pygame_print("Yes", Y // 1.5 + int(0.08*Y),
-                 color=(orange if optionNumber == 0 else black)) if optionNumber == 0 else pygame_print("Yes",
-                                                                                                        Y // 1.5 + int(0.08*Y),
-                                                                                                        color=black)
-    pygame_print("No", Y // 1.5 + int(0.134*Y), color=(orange if optionNumber == 1 else black))
+    pygame_print("Yes", Y // 1.5 + int(0.11*Y), color=(orange if optionNumber == 0 else black))
+    pygame_print("No", Y // 1.5 + int(0.22*Y), color=(orange if optionNumber == 1 else black))
     pygame.display.update()
 
 
@@ -2191,7 +2190,6 @@ def print_no_items():
 def printInventory(role):
     global font, white, black, orange
 
-    print_no_items()
     screen.fill(white)
     currentInventory, num_items = getItemCounts(role)
 
@@ -2391,7 +2389,7 @@ def QuestGames(Setting, role):
     getEnemyHealth = lambda: sum(i.health for i in enemies)
     getEnemyBaseHealth = lambda: sum(i.base_health for i in enemies)
     TotalEnemyBaseHealth = getEnemyBaseHealth()
-
+    
     def renderRole(start_x, start_y):
         global font
         if Setting == "DESERT":
@@ -2404,23 +2402,23 @@ def QuestGames(Setting, role):
             displayImage("StartBeach.png", p=1, update=False)
         elif Setting == "HOUSE":
             displayImage("StartHouse.png", p=1, update=False)
-        pygame_print(f"Quest #{role.questLevel + 1}", loc_y=int(0.08*Y))
+        pygame_print(f"Quest #{role.questLevel + 1}", loc_y=0.08*Y)
        
         # Role Health Bar Health Bar
         #min(Y) = 150, min(X) = 165, max(Y) = 252, max(X) = 335
-        pygame.draw.rect(screen, white, (int(0.1875*X), int(0.18267*Y), int(0.25*X), int(0.16*Y)))
-        font = pygame.font.Font('freesansbold.ttf', int(0.0293*Y))
-        pygame_print(cppStringConvert(role.name), loc_y = int(0.2*Y), offset_x=-int(0.2*Y))
-        font = pygame.font.Font('freesansbold.ttf', int(0.0267*Y))
-        pygame_print("Lv. = "+ str(role.currLevel), loc_y=int(0.2333*Y), offset_x=-int(0.14375*X))
-        font = pygame.font.Font('freesansbold.ttf', int(0.0293*Y))
-        pygame.draw.rect(screen, black, (int(0.20625*X), int(0.26*Y), int(0.1875*X), int(0.02667))) #165 -> 165/800*X, 195 -> 195/750*Y
-        pygame.draw.rect(screen, green, (int(0.20625*X), int(0.26*Y), int(int(0.1875*X)*role.health/role.base_health), int(0.02667))) #Health bar
-        font = pygame.font.Font('freesansbold.ttf', int(0.0267*Y))
-        pygame_print(f"{role.health:.0f} / {role.base_health:.0f}", loc_y=int(0.30667), offset_x=-int(0.15625*X))
-        font = pygame.font.Font('freesansbold.ttf', int(0.0293*Y))
-        pygame.draw.rect(screen, black, (int(0.20625*X), int(0.322667*Y), int(0.2125*X), int(0.0133*Y)))
-        pygame.draw.rect(screen, cyan, (int(0.20625*X), int(0.322667*Y), int(int(0.2125*X)*role.currExp/role.LevelExp), int(0.0133*Y))) #Exp bar
+        pygame.draw.rect(screen, white, (0.1875*X, 0.18266*Y, 0.25*X, 0.16*Y))
+        font = pygame.font.Font('freesansbold.ttf', int(0.029333333333333333*Y))
+        pygame_print(cppStringConvert(role.name), loc_y = 0.2*Y, offset_x=-0.1875*X)
+        font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
+        pygame_print("Lv. = "+ str(role.currLevel), loc_y=0.233*Y, offset_x=-0.14375*X)
+        font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
+        pygame.draw.rect(screen, black, (0.20625*X, 0.26*Y, 0.1875*X, 0.02667*Y)) #165 -> 165/800*X, 195 -> 195/750*Y
+        pygame.draw.rect(screen, green, (0.20625*X, 0.26*Y, 0.1875*X*role.health/role.base_health, 0.02667*Y)) #Health bar
+        font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
+        pygame_print(f"{role.health:.0f} / {role.base_health:.0f}", loc_y=0.30667*Y, offset_x=-0.15625*X)
+        font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
+        pygame.draw.rect(screen, black, (0.20625*X, 0.32266*Y, 0.2125*X, 0.01333*Y))
+        pygame.draw.rect(screen, cyan, (0.20625*X, 0.32266*Y, 0.2125*X*role.currExp/role.LevelExp, 0.01333*Y)) #Exp bar
         
         role_image = pygame.image.load(
             f"Assets/{role_image_name}" if not role.flipped else f"Assets/{role_image_name_flipped}")
@@ -2429,14 +2427,14 @@ def QuestGames(Setting, role):
         
         # Enemy Health Bar
         #min(Y) = 170, min(X) = 485, max(Y) = 230, max(X) = 635
-        pygame.draw.rect(screen, white, (int(0.58125*X), int(0.1866*Y), int(0.2375*X), int(0.16*Y))
+        pygame.draw.rect(screen, white, (0.58125*X, 0.18667*Y, 0.2375*X, 0.16*Y))
 
-        pygame_print(cppStringConvert(enemy.name), loc_y = int(0.22667*Y), offset_x=int(0.1875*X))
-        pygame.draw.rect(screen, black, (int(0.60625*X), int(0.26*Y), int(0.1875*X), int(0.02667)))
-        pygame.draw.rect(screen, red, (int(0.60625*X), int(0.26*Y), int(int(0.1875*X)*enemy.health/enemy.base_health), int(0.02667))) #Health bar
-        font = pygame.font.Font('freesansbold.ttf', int(0.0267*Y))
-        pygame_print(f"{enemy.health:.0f} / {enemy.base_health:.0f}", loc_y=int(0.30667*Y), offset_x=int(0.23375*X))
-        font = pygame.font.Font('freesansbold.ttf', int(0.0293*Y))
+        pygame_print(cppStringConvert(enemy.name), loc_y = 0.22667*Y, offset_x=0.1875*X)
+        pygame.draw.rect(screen, black, (0.60625*X, 0.26*Y, 0.1875*X, 0.02667*Y))
+        pygame.draw.rect(screen, red, (0.60625*X, 0.26*Y, 0.1875*X*enemy.health/enemy.base_health, 0.02667*Y)) #Health bar
+        font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
+        pygame_print(f"{enemy.health:.0f} / {enemy.base_health:.0f}", loc_y=0.306667*Y, offset_x=0.23375*X)
+        font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
         
         enemy_image = pygame.image.load(
             f"Assets/{enemy_image_names[enemy.name]}" if not enemy.flipped else f"Assets/{enemy_image_names_flipped[enemy.name]}")
@@ -2589,7 +2587,7 @@ def QuestGames(Setting, role):
                             role.numInv[role.InputMapDict[event.key]]["Number"] += 1
 
         if enemy_options[enemyMove] == "jump" and enemy_y + int(0.2666*Y) >= ground_y:  # Holding down jump makes it bigger
-            curr_enemy_y -= 5
+            curr_enemy_y -= 0.006666666666666667*Y
             enemy_y = curr_enemy_y
             enemy_jump_t = time()
         if enemy_options[enemyMove] == "attack" and enemy.can_attack():
@@ -2616,7 +2614,7 @@ def QuestGames(Setting, role):
 
         if curr_y != ground_y:  # if the hero is in free-fall
             fall_time = time() - role_jump_t
-            s = K * 0.5 * 9.81 * fall_time ** 2  # The absolute value the hero has fallen since role_jump_t
+            s = ((K * 0.5 * 9.81 * fall_time ** 2)/750)*Y  # The absolute value the hero has fallen since role_jump_t
 
             '''
             Example: You fell from a cliff 2 km above sea-level at 10:00:00.
@@ -2632,7 +2630,7 @@ def QuestGames(Setting, role):
                 start_y = ground_y
         if curr_enemy_y != ground_y:
             fall_time = time() - enemy_jump_t
-            s = K * 0.5 * 9.81 * fall_time ** 2
+            s = ((K * 0.5 * 9.81 * fall_time ** 2)/750)*Y
             position = enemy_y + s
             if position <= ground_y:
                 curr_enemy_y = position
@@ -2777,7 +2775,7 @@ def QuestGames(Setting, role):
 
 def SellOption(Role):
     if not HasSellableItems(Role.numInv):
-        pygame_print("You don't have any sellable items!", 300, color=black, background_color=white)
+        pygame_print("You don't have any sellable items!", 0.4*Y, color=black, background_color=white)
         pygame.display.update()
         pygame.time.delay(1000)
         pygame.event.clear(eventtype=pygame.KEYDOWN)
@@ -2796,11 +2794,11 @@ def SellOption(Role):
         text_y = (0.1867*Y)
         for i in range(startSellIdx, endSellIdx):
             pygame_print(sellableItems[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
-            text_y += 40
+            text_y += 0.05334*Y
 
-        pygame_print(f"Your Money = {Role.money:0.2f}", text_y + 20, color=black, background_color=white)
+        pygame_print(f"Your Money = {Role.money:0.2f}", text_y + 0.02667*Y, color=black, background_color=white)
 
-        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 80, background_color=red)
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 0.10667*Y, background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
@@ -2890,11 +2888,11 @@ def BuyOption(Role):
         text_y = (0.1867*Y)
         for i in range(startBuyIdx, endBuyIdx):
             pygame_print(buyableItems[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
-            text_y += 40
+            text_y += 0.05334*Y
 
-        pygame_print(f"Your Money = {Role.money:0.2f}", text_y + 20, color=black, background_color=white)
+        pygame_print(f"Your Money = {Role.money:0.2f}", text_y + 0.02667*Y, color=black, background_color=white)
 
-        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 80, background_color=red)
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 0.10667*Y, background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
@@ -3006,9 +3004,9 @@ def DeleteInputMapKey(role):
         text_y = (0.1867*Y)
         for i in range(startIdx, endIdx):
             pygame_print(f"{pygame.key.name(role.InputMapDictKeys[i])}: {role.InputMapDict[role.InputMapDictKeys[i]]}", text_y, color=(red if optionNumber == i else black), background_color=white)
-            text_y += 40
+            text_y += 0.0533*Y
 
-        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 80, background_color=red)
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 0.10667*Y, background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
@@ -3090,9 +3088,9 @@ def ViewInputMapKey(role):
         for i in range(startIdx, endIdx):
             pygame_print(f"{pygame.key.name(role.InputMapDictKeys[i])}: {role.InputMapDict[role.InputMapDictKeys[i]]}",
                          text_y, color=(orange if optionNumber == i else black), background_color=white)
-            text_y += 40
+            text_y += 0.05334*Y
 
-        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 80, background_color=red)
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 0.10667*Y, background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
@@ -3165,9 +3163,9 @@ def AddInputMapKey(role):
         text_y = (0.24*Y)
         for i in range(startIdx, endIdx):
             pygame_print(questItems[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
-            text_y += 40
+            text_y += 0.05334*Y
 
-        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 80, background_color=red)
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 0.10667*Y, background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
@@ -3333,6 +3331,7 @@ def game():
     global font, Quests
     try:
         pygame.display.set_caption('Game Window')
+        font = pygame.font.Font('freesansbold.ttf', int(0.1027*Y))
         text = font.render('Welcome to the Game!', True, black, light_pink)
         textRect = text.get_rect()
         textRect.center = (X // 2, Y // 2)
@@ -3362,7 +3361,7 @@ def game():
                     quit()
                 elif not displayedHeroes:
                     pygame.time.delay(1000)
-                    updateList(heroes, optionNumber)
+                    updateList(heroes, optionNumber, inc = 0.1*Y)
                     displayedHeroes = True
                 elif displayedHeroes and not dispayedChest:
                     if event.type == pygame.KEYDOWN:  # checking if any key was selected
@@ -3454,16 +3453,16 @@ def game():
                             eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block
 
                 elif displayedPlaces and not Quests:
-                    font = pygame.font.Font('freesansbold.ttf', 28)
+                    font = pygame.font.Font('freesansbold.ttf', int(0.03733*Y))
                     text = font.render("Where do you want to go?", True, black, white)
                     textRect = text.get_rect()
-                    textRect.center = (X // 2, 50)
+                    textRect.center = (X // 2, 0.0667*Y)
                     screen.blit(text, textRect)
                     text = font.render("========================", True, black, white)
                     textRect = text.get_rect()
-                    textRect.center = (X // 2, 90)
+                    textRect.center = (X // 2, 0.12*Y)
                     screen.blit(text, textRect)
-                    font = pygame.font.Font('freesansbold.ttf', 32)
+                    font = pygame.font.Font('freesansbold.ttf', int(0.0426*Y))
                     PlaceOption(optionNumber)
                     pygame.display.update()
                     if event.type == pygame.KEYDOWN:  # checking if any key was selected
@@ -3506,19 +3505,19 @@ def game():
                             pygame.display.update()
 
                             screen.fill(white)
-                            font = pygame.font.Font('freesansbold.ttf', 32)
+                            font = pygame.font.Font('freesansbold.ttf', int(0.0426*Y))
                             text = font.render("New things unlocked!", True, black, white)
                             textRect = text.get_rect()
-                            textRect.center = (X // 2, 90)
+                            textRect.center = (X // 2, 0.12*Y)
                             screen.blit(text, textRect)
                             pygame.display.update()
                             pygame.time.delay(500)
 
                             screen.fill(white)
-                            font = pygame.font.Font('freesansbold.ttf', 26)
+                            font = pygame.font.Font('freesansbold.ttf', int(0.03467*Y))
                             text = font.render("Quests have been unlocked.", True, black, white)
                             textRect = text.get_rect()
-                            textRect.center = (X // 2, 90)
+                            textRect.center = (X // 2, 0.12*Y)
                             screen.blit(text, textRect)
                             pygame.display.update()
                             pygame.time.delay(500)
@@ -3526,15 +3525,15 @@ def game():
                             screen.fill(white)
                             text = font.render("To open quests", True, black, white)
                             textRect = text.get_rect()
-                            textRect.center = (X // 2, 70)
+                            textRect.center = (X // 2, 0.0933*Y)
                             screen.blit(text, textRect)
                             pygame.display.update()
                             pygame.time.delay(500)
-                            font = pygame.font.Font('freesansbold.ttf', 28)
+                            font = pygame.font.Font('freesansbold.ttf', int(0.03733*Y))
                             text = font.render("Select 'Quests' in the menu", True, black, white)
                             textRect = text.get_rect()
-                            textRect.center = (X // 2, 120)
-                            font = pygame.font.Font('freesansbold.ttf', 32)
+                            textRect.center = (X // 2, 0.16*Y)
+                            font = pygame.font.Font('freesansbold.ttf', int(0.0426*Y))
                             screen.blit(text, textRect)
                             pygame.display.update()
                             pygame.time.delay(1000)
