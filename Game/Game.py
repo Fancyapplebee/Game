@@ -1438,10 +1438,10 @@ Y = 750
 screen = pygame.display.set_mode((X, Y))
 font = pygame.font.Font('freesansbold.ttf', int(0.0427*Y))
 
-def pygame_print(text, loc=Y // 2, color=black, background_color=white, offset=0):
+def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0):
     text = font.render(text, True, color, background_color)
     textRect = text.get_rect()
-    textRect.center = (X // 2 + offset, loc)
+    textRect.center = (X // 2 + offset_x, loc_y)
     screen.blit(text, textRect)
     return textRect
 
@@ -1793,26 +1793,26 @@ def Stats(RoleHero):
 
 
 # prints a long pygame message
-def long_pygame_print(message, count=0, line_break=24, color=black, background_color=white, offset=0, start_height=int(0.12*Y)):
+def long_pygame_print(message, count=0, line_break=24, color=black, background_color=white, offset_x=0, start_height=int(0.12*Y)):
     temp = ""
     # i is for indexing the string message
     message = message.split()
     for token in message:
         if len(temp + token) + 1 >= line_break:
-            pygame_print(temp, loc=start_height + count, color=color, background_color=background_color, offset=offset)
+            pygame_print(temp, loc_y=start_height + count, color=color, background_color=background_color, offset_x=offset_x)
             temp = token + " "
             count += int(0.0534*Y)
         else:
             temp += token + " "
 
-    pygame_print(temp, loc=start_height + count, color=color, background_color=background_color, offset=offset)
+    pygame_print(temp, loc_y=start_height + count, color=color, background_color=background_color, offset_x=offset_x)
     return count
 
 
-def AddButton(text="STOP", offset=0, loc=int(0.048*Y), background_color=red):
+def AddButton(text="STOP", offset_x=0, loc_y=int(0.048*Y), background_color=red):
     global font
     font = pygame.font.Font('freesansbold.ttf', int(0.03467*Y))
-    stop_rect = pygame_print(text, loc=loc, background_color=background_color, offset=offset)
+    stop_rect = pygame_print(text, loc_y=loc_y, background_color=background_color, offset_x=offset_x)
     font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
 
     return stop_rect
@@ -1862,11 +1862,11 @@ def Mine(role, setting):
         screen.fill(white)
 
         font = pygame.font.Font('freesansbold.ttf', int(0.0267*Y))
-        pygame_print(f"Player Wins = {wins}", loc=int(0.1334*Y), offset=int(0.33125*X))
-        pygame_print(f"{Opponent.role} Wins = {losses}", loc=int(0.1867*Y), offset=int(0.33125*X))
-        pygame_print(f"Draws = {draws}", loc=int(0.24*Y), offset=int(0.33125*X))
+        pygame_print(f"Player Wins = {wins}", loc_y=int(0.1334*Y), offset_x=int(0.33125*X))
+        pygame_print(f"{Opponent.role} Wins = {losses}", loc_y=int(0.1867*Y), offset_x=int(0.33125*X))
+        pygame_print(f"Draws = {draws}", loc_y=int(0.24*Y), offset_x=int(0.33125*X))
 
-        stop_rect = AddButton(offset=-int(0.125*X))
+        stop_rect = AddButton(offset_x=-int(0.125*X))
 
         pygame.draw.line(screen, black, (int(0.1*X), int(0.1*Y)), (int(0.65*X), int(0.1*Y)))  # top edge
         pygame.draw.line(screen, black, (int(0.1*X), int(0.9*Y)), (int(0.65*X), int(0.9*Y)))  # bottom edge
@@ -1970,12 +1970,12 @@ def Mine(role, setting):
     for item in MinedItems:
         role.numInv[item]["Number"] += MinedItems[item]
 
-    pygame_print("The player average is {:.2f} seconds".format(playeravg / playeravglen), loc=int(0.28*Y))
-    pygame_print("The {} average is {:.2f} seconds".format(Opponent.role, botavg / botavglen), loc=int(0.3333*Y))
-    pygame_print("You got {} resources in total!".format(points), loc=int(0.3867*Y))
-    pygame_print("You won {} games!".format(wins), loc=int(0.44*Y))
-    pygame_print("You lost {} games!".format(losses), loc=int(0.4933*Y))
-    pygame_print("{} is the number of games that drawed!".format(draws), loc=int(0.5467*Y))
+    pygame_print("The player average is {:.2f} seconds".format(playeravg / playeravglen), loc_y=int(0.28*Y))
+    pygame_print("The {} average is {:.2f} seconds".format(Opponent.role, botavg / botavglen), loc_y=int(0.3333*Y))
+    pygame_print("You got {} resources in total!".format(points), loc_y=int(0.3867*Y))
+    pygame_print("You won {} games!".format(wins), loc_y=int(0.44*Y))
+    pygame_print("You lost {} games!".format(losses), loc_y=int(0.4933*Y))
+    pygame_print("{} is the number of games that drawed!".format(draws), loc_y=int(0.5467*Y))
 
     pygame.display.update()
     while True:
@@ -1996,17 +1996,17 @@ def printItem(role, item_name):
     pygame.draw.rect(screen, white, square_rect)
     screen.blit(image, square_rect.topleft)
 
-    pygame_print(f"Name: {item_name}", offset=-int(0.25*X), loc=int(0.5067*Y))
-    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset=-int(0.25*X), loc=int(0.5867*Y))
-    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset=-int(0.25*X),
+    pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y))
+    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25*X), loc_y=int(0.5867*Y))
+    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25*X),
                       line_break=23, start_height=int(0.7334*Y))
 
-    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=int(0.25*X), loc=int(0.2667*Y))
-    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset=int(0.25*X), loc=int(0.3467*Y))
-    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset=int(0.25*X), loc=int(0.4267*Y))
-    pygame_print(f"Quest Level: {role.numInv[item_name]['QuestLevel']}", offset=int(0.25*X), loc=int(0.5067*Y))
+    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25*X), loc_y=int(0.2667*Y))
+    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25*X), loc_y=int(0.3467*Y))
+    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25*X), loc_y=int(0.4267*Y))
+    pygame_print(f"Quest Level: {role.numInv[item_name]['QuestLevel']}", offset_x=int(0.25*X), loc_y=int(0.5067*Y))
 
-    rect = AddButton(text="Use", offset=int(0.25*X), loc=int(0.7334*Y), background_color=orange)
+    rect = AddButton(text="Use", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=orange)
 
     pygame.display.update()
 
@@ -2021,7 +2021,7 @@ def printItem(role, item_name):
                 if rect.collidepoint(mouse_pos):
                     print("Using the item.")
                     role.useInv[item_name]["Use"]()
-                    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=int(0.25*X), loc=int(0.2667*Y))
+                    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25*X), loc_y=int(0.2667*Y))
                     pygame.display.update()
 
 def sellItem(role, item_name):
@@ -2032,28 +2032,28 @@ def sellItem(role, item_name):
 
     image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
     
-    image = pygame.transform.scale(image, (320, 235))
+    image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
+    
+    num_item = 0 #Count the amount of item_name that the user wants to buy
+    max_amount = int(role.numInv[item_name]['Number'])
 
     pygame.draw.rect(screen, white, square_rect)
     screen.blit(image, square_rect.topleft)
+    pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y))
+    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25*X), loc_y=int(0.5867*Y))
+    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25*X), start_height=int(0.6667*Y))
+    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y))
+    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y))
+    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y))
+    pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y))
+    font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
+    pygame_print(f"{role.money:.2f}", offset_x=int(0.25*Y), loc_y=int(0.5867*Y))
+    font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
+    pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y))
 
-    pygame_print(f"Name: {item_name}", offset=-int(0.25*X), loc=int(0.5067*Y))
-    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset=-int(0.25*X), loc=int(0.5867*Y))
-    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset=-int(0.25*X), loc=int(0.6667*Y))
 
-    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=int(0.25 * X), loc=int(0.2667 * Y))
-    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset=int(0.25 * X), loc=int(0.3467 * Y))
-    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset=int(0.25 * X), loc=int(0.4267 * Y))
-    pygame_print(f"Your Money:", offset=int(0.25 * X), loc=int(0.5067 * Y))
-    font = pygame.font.Font('freesansbold.ttf', 25)
-    pygame_print(f"{role.money:.2f}", offset=int(0.25*X), loc=int(0.5867*Y))
-    font = pygame.font.Font('freesansbold.ttf', 32)
-
-    num_item = 0 #Count the amount of item_name that the user wants to buy
-    max_amount = int(role.numInv[item_name]['Number'])
-    pygame_print(f"How many?: {num_item}", offset=int(0.25*X), loc=int(0.6667*Y))
-
-    rect = AddButton(text="Sell", offset=int(0.25*X), loc=int(0.7334*Y), background_color=green)
+    rect = AddButton(text="Sell", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
+#    on_sell_rect = False
 
     pygame.display.update()
 
@@ -2062,20 +2062,17 @@ def sellItem(role, item_name):
         screen.fill(white)  # clear the screen
         pygame.draw.rect(screen, white, square_rect)
         screen.blit(image, square_rect.topleft)
-
-        pygame_print(f"Name: {item_name}", offset=-200, loc=380)
-        pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset=-200, loc=440)
-        long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset=-200,
-                  line_break=23, start_height=550)
-
-        pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=200, loc=200)
-        pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset=200, loc=260)
-        pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset=200, loc=320)
-        pygame_print(f"Your Money:", offset=200, loc=380)
-        font = pygame.font.Font('freesansbold.ttf', 25)
-        pygame_print(f"{role.money:.2f}", offset=200, loc=440)
-        font = pygame.font.Font('freesansbold.ttf', 32)
-        pygame_print(f"How many?: {num_item}", offset=200, loc=550)
+        pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y))
+        pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25*X), loc_y=int(0.5867*Y))
+        long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25*X), start_height=int(0.6667*Y))
+        pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y))
+        pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y))
+        pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y))
+        pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y))
+        font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
+        pygame_print(f"{role.money:.2f}", offset_x=int(0.25*Y), loc_y=int(0.5867*Y))
+        font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
+        pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y))
         
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -2093,11 +2090,14 @@ def sellItem(role, item_name):
                     role.money += num_item * role.numInv[item_name]['SellValue']
                     max_amount = int(role.numInv[item_name]['Number'])
                     num_item = 0
-            elif rect.collidepoint(pygame.mouse.get_pos()):
-                rect = AddButton(text="Sell", offset=200, loc=630, background_color=orange)
+                    pygame.display.update()
+            elif rect.collidepoint(pygame.mouse.get_pos()):# and not on_sell_rect:
+                rect = AddButton(text="Sell", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=orange)
+#                on_sell_rect = True
                 pygame.display.update()
-            elif not rect.collidepoint(pygame.mouse.get_pos()):
-                rect = AddButton(text="Sell", offset=200, loc=630, background_color=green)
+            elif not rect.collidepoint(pygame.mouse.get_pos()):# and on_sell_rect:
+                rect = AddButton(text="Sell", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
+#                on_sell_rect = False
                 pygame.display.update()
 
 def buyItem(role, item_name):
@@ -2105,54 +2105,46 @@ def buyItem(role, item_name):
     screen.fill(white)  # clear the screen
 
     square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
-
     image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
+    image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
     
-    image = pygame.transform.scale(image, (320, 235))
+    num_item = 0 #Count the amount of item_name that the user wants to buy
+    max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
 
     pygame.draw.rect(screen, white, square_rect)
     screen.blit(image, square_rect.topleft)
-
-    pygame_print(f"Name: {item_name}", offset=-int(0.25 * X), loc=int(0.5067 * Y))
-    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset=-int(0.25 * X),
-                 loc=int(0.5867 * Y))
-    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}",
-                      offset=-int(0.25 * X), loc=int(0.6667 * Y))
-
-    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=int(0.25 * X), loc=int(0.2667 * Y))
-    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset=int(0.25 * X), loc=int(0.3467 * Y))
-    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset=int(0.25 * X), loc=int(0.4267 * Y))
-    pygame_print(f"Your Money:", offset=int(0.25 * X), loc=int(0.5067 * Y))
-    font = pygame.font.Font('freesansbold.ttf', 25)
-    pygame_print(f"{role.money:.2f}", offset=int(0.25*X), loc=int(0.5867*Y))
-    font = pygame.font.Font('freesansbold.ttf', 32)
-
-    num_item = 0 #Count the amount of item_name that the user wants to buy
-    max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
-    pygame_print(f"How many?: {num_item}", offset=int(0.25*X), loc=int(0.6667*Y))
+    pygame_print(f"Name: {item_name}", offset_x=-int(0.25 * X), loc_y=int(0.5067 * Y))
+    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25 * X), loc_y=int(0.5867 * Y))
+    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25 * X), start_height=int(0.6667 * Y))
+    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y))
+    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y))
+    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y))
+    pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y))
+    font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
+    pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y))
+    font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
+    pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y))
 
     pygame.display.update()
-    rect = AddButton(text="Buy", offset=int(0.25*X), loc=int(0.7334*Y), background_color=green)
+    rect = AddButton(text="Buy", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
     
     while True:
         
         screen.fill(white)  # clear the screen
+        
         pygame.draw.rect(screen, white, square_rect)
         screen.blit(image, square_rect.topleft)
-
-        pygame_print(f"Name: {item_name}", offset=-200, loc=380)
-        pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset=-200, loc=440)
-        long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset=-200,
-                  line_break=23, start_height=550)
-
-        pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset=200, loc=200)
-        pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset=200, loc=260)
-        pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset=200, loc=320)
-        pygame_print(f"Your Money:", offset=200, loc=380)
-        font = pygame.font.Font('freesansbold.ttf', 25)
-        pygame_print(f"{role.money:.2f}", offset=200, loc=440)
-        font = pygame.font.Font('freesansbold.ttf', 32)
-        pygame_print(f"How many?: {num_item}", offset=200, loc=550)
+        pygame_print(f"Name: {item_name}", offset_x=-int(0.25 * X), loc_y=int(0.5067 * Y))
+        pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25 * X), loc_y=int(0.5867 * Y))
+        long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25 * X), start_height=int(0.6667 * Y))
+        pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y))
+        pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y))
+        pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y))
+        pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y))
+        font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
+        pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y))
+        font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
+        pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y))
 
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -2171,41 +2163,42 @@ def buyItem(role, item_name):
                     max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
                     num_item = 0
             elif rect.collidepoint(pygame.mouse.get_pos()):
-                rect = AddButton(text="Buy", offset=200, loc=630, background_color=orange)
+                rect = AddButton(text="Buy", offset_x=int(0.25 * X), loc_y=int(0.84*Y), background_color=orange)
                 pygame.display.update()
             elif not rect.collidepoint(pygame.mouse.get_pos()):
-                rect = AddButton(text="Buy", offset=200, loc=630, background_color=green)
+                rect = AddButton(text="Buy", offset_x=int(0.25 * X), loc_y=int(0.84*Y), background_color=green)
                 pygame.display.update()
 
 
 def getItemCounts(role):
-    line_count = 80
+    line_count = int(0.1067*Y)
+    temp = line_count
+    temp_2 = line_count//2
     currentInventory = {}
     for item in role.numInv:
         for attr in item.second:
             if cppStringConvert(attr.first) == "Number" and attr.second > 0:
                 item_name = cppStringConvert(item.first)
-                pygame_print(f"{item_name}: {attr.second}", loc=line_count, color=orange if line_count == 80 else black)
+                pygame_print(f"{item_name}: {attr.second}", loc_y=line_count, color=orange if line_count == temp else black)
                 currentInventory[item_name] = attr.second
-                line_count += 40
+                line_count += temp_2
 
-    return currentInventory, (line_count - 80) // 40
+    return currentInventory, (line_count - temp) // temp_2
 
+def print_no_items():
+    pygame_print("You don't have any items.", )
+    pygame.display.update()
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    return
 
 def printInventory(role):
     global font, white, black, orange
 
-    def print_no_items():
-        pygame_print("You don't have any items.", )
-        pygame.display.update()
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        return
-
+    print_no_items()
     screen.fill(white)
-
     currentInventory, num_items = getItemCounts(role)
 
     # If the user doesn't have any items, then we need to handle this differently.
@@ -2214,25 +2207,26 @@ def printInventory(role):
         return
 
     currentInventoryList = list(currentInventory.keys())
-    line_count = 80
-    stop_rect = AddButton(text="EXIT", offset=0)
+    temp = int(0.1067*Y)
+    temp_2 = temp//2
+    stop_rect = AddButton(text="EXIT", offset_x=0)
     optionNumber = 0
     pygame.display.update()
 
     while True:
         screen.fill(white)
-        line_count = 80
+        line_count = temp
         currentInventory, num_items = getItemCounts(role)
         if num_items == 0:
             print_no_items()
             return
         currentInventoryList = list(currentInventory.keys())
         for idx, item in enumerate(currentInventory):
-            pygame_print(f"{item}: {currentInventory[item]}", loc=line_count,
+            pygame_print(f"{item}: {currentInventory[item]}", loc_y=line_count,
                          color=orange if idx == optionNumber else black)
-            line_count += 40
+            line_count += temp_2
 
-        stop_rect = AddButton(text="EXIT", offset=0)
+        stop_rect = AddButton(text="EXIT", offset_x=0)
         pygame.display.update()
 
         for event in pygame.event.get():  # update the option number if necessary
@@ -2265,15 +2259,15 @@ Rolling a dice:
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red
     role.health = role.base_health  # TODO: delete!
-#    role.attackpower = 1000  # TODO: delete!
+    role.attackpower = 1000  # TODO: delete!
     money = 0
     role_image_name = role.name.lower().replace(" jackson", "") + "-start.png"
     role_image_name_flipped = role_image_name.replace(".png", "flip.png")
     enemy_image_names = {"NINJA": "ninja.png", "OGRE": "ogre.png", "DEMON": "demon.png"}
     enemy_image_names_flipped = {"NINJA": "ninjaflip.png", "OGRE": "ogreflip.png", "DEMON": "demonflip.png"}
 
-    buffer_width = 40
-    beam_height = buffer_width / 4
+    buffer_width, buffer_height = int(.05*X), int(0.05334*Y)
+    beam_height = buffer_height / 4
     beam_width = buffer_width / 2
 
     '''
@@ -2288,8 +2282,8 @@ def QuestGames(Setting, role):
     
     '''
 
-    start_x, start_y, curr_y, enemy_x, enemy_y, curr_enemy_y = 100, 600, 600, 700 - buffer_width, 600, 600
-    ground_y = 600
+    start_x, start_y, curr_y, enemy_x, enemy_y, curr_enemy_y = int(0.125*X), int(0.8*Y), int(0.8*Y), int(0.875*X) - buffer_width, int(0.8*Y), int(0.8*Y)
+    ground_y = int(0.8*Y)
 
     role_jump_t, enemy_jump_t = -1, -1
 
@@ -2416,23 +2410,23 @@ def QuestGames(Setting, role):
             displayImage("StartBeach.png", p=1, update=False)
         elif Setting == "HOUSE":
             displayImage("StartHouse.png", p=1, update=False)
-        pygame_print(f"Quest #{role.questLevel + 1}", loc=60)
+        pygame_print(f"Quest #{role.questLevel + 1}", loc_y=int(0.08*Y))
        
         # Role Health Bar Health Bar
         #min(Y) = 150, min(X) = 165, max(Y) = 252, max(X) = 335
-        pygame.draw.rect(screen, white, (150, 137, 200, 120))
-        font = pygame.font.Font('freesansbold.ttf', 22)
-        pygame_print(cppStringConvert(role.name), loc = 150, offset=-150)
-        font = pygame.font.Font('freesansbold.ttf', 20)
-        pygame_print("Lv. = "+ str(role.currLevel), loc=175, offset=-115)
-        font = pygame.font.Font('freesansbold.ttf', 22)
-        pygame.draw.rect(screen, black, (165, 195, 150, 20)) #165 -> 165/800*X, 195 -> 195/750*Y
-        pygame.draw.rect(screen, green, (165, 195, int(150*role.health/role.base_health), 20)) #Health bar
-        font = pygame.font.Font('freesansbold.ttf', 20)
-        pygame_print(f"{role.health:.0f} / {role.base_health:.0f}", loc=230, offset=-125)
-        font = pygame.font.Font('freesansbold.ttf', 22)
-        pygame.draw.rect(screen, black, (165, 242, 170, 10))
-        pygame.draw.rect(screen, cyan, (165, 242, int(170*role.currExp/role.LevelExp), 10)) #Exp bar
+        pygame.draw.rect(screen, white, (int(0.1875*X), int(0.18267*Y), int(0.25*X), int(0.16*Y)))
+        font = pygame.font.Font('freesansbold.ttf', int(0.0293*Y))
+        pygame_print(cppStringConvert(role.name), loc_y = int(0.2*Y), offset_x=-int(0.2*Y))
+        font = pygame.font.Font('freesansbold.ttf', int(0.0267*Y))
+        pygame_print("Lv. = "+ str(role.currLevel), loc_y=int(0.2333*Y), offset_x=-int(0.14375*X))
+        font = pygame.font.Font('freesansbold.ttf', int(0.0293*Y))
+        pygame.draw.rect(screen, black, (int(0.20625*X), int(0.26*Y), int(0.1875*X), int(0.02667))) #165 -> 165/800*X, 195 -> 195/750*Y
+        pygame.draw.rect(screen, green, (int(0.20625*X), int(0.26*Y), int(int(0.1875*X)*role.health/role.base_health), int(0.02667))) #Health bar
+        font = pygame.font.Font('freesansbold.ttf', int(0.0267*Y))
+        pygame_print(f"{role.health:.0f} / {role.base_health:.0f}", loc_y=int(0.30667), offset_x=-int(0.15625*X))
+        font = pygame.font.Font('freesansbold.ttf', int(0.0293*Y))
+        pygame.draw.rect(screen, black, (int(0.20625*X), int(0.322667*Y), int(0.2125*X), int(0.0133*Y)))
+        pygame.draw.rect(screen, cyan, (int(0.20625*X), int(0.322667*Y), int(int(0.2125*X)*role.currExp/role.LevelExp), int(0.0133*Y))) #Exp bar
         
         role_image = pygame.image.load(
             f"Assets/{role_image_name}" if not role.flipped else f"Assets/{role_image_name_flipped}")
@@ -2441,20 +2435,20 @@ def QuestGames(Setting, role):
         
         # Enemy Health Bar
         #min(Y) = 170, min(X) = 485, max(Y) = 230, max(X) = 635
-        pygame.draw.rect(screen, white, (465, 140, 190, 120))
+        pygame.draw.rect(screen, white, (int(0.58125*X), int(0.1866*Y), int(0.2375*X), int(0.16*Y))
 
-        pygame_print(cppStringConvert(enemy.name), loc = 170, offset=+150)
-        pygame.draw.rect(screen, black, (485, 195, 150, 20))
-        pygame.draw.rect(screen, red, (485, 195, int(150*enemy.health/enemy.base_health), 20)) #Health bar
-        font = pygame.font.Font('freesansbold.ttf', 20)
-        pygame_print(f"{enemy.health:.0f} / {enemy.base_health:.0f}", loc=230, offset=+187)
-        font = pygame.font.Font('freesansbold.ttf', 22)
+        pygame_print(cppStringConvert(enemy.name), loc_y = int(0.22667*Y), offset_x=int(0.1875*X))
+        pygame.draw.rect(screen, black, (int(0.60625*X), int(0.26*Y), int(0.1875*X), int(0.02667)))
+        pygame.draw.rect(screen, red, (int(0.60625*X), int(0.26*Y), int(int(0.1875*X)*enemy.health/enemy.base_health), int(0.02667))) #Health bar
+        font = pygame.font.Font('freesansbold.ttf', int(0.0267*Y))
+        pygame_print(f"{enemy.health:.0f} / {enemy.base_health:.0f}", loc_y=int(0.30667*Y), offset_x=int(0.23375*X))
+        font = pygame.font.Font('freesansbold.ttf', int(0.0293*Y))
         
         enemy_image = pygame.image.load(
             f"Assets/{enemy_image_names[enemy.name]}" if not enemy.flipped else f"Assets/{enemy_image_names_flipped[enemy.name]}")
         enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
         screen.blit(enemy_image, enemy_rect.topleft)
-        font = pygame.font.Font('freesansbold.ttf', 32)
+        font = pygame.font.Font('freesansbold.ttf', int(0.04266*Y))
 
     role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
     enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
@@ -2600,7 +2594,7 @@ def QuestGames(Setting, role):
                         else:
                             role.numInv[role.InputMapDict[event.key]]["Number"] += 1
 
-        if enemy_options[enemyMove] == "jump" and enemy_y + 200 >= ground_y:  # Holding down jump makes it bigger
+        if enemy_options[enemyMove] == "jump" and enemy_y + int(0.2666*Y) >= ground_y:  # Holding down jump makes it bigger
             curr_enemy_y -= 5
             enemy_y = curr_enemy_y
             enemy_jump_t = time()
@@ -2663,8 +2657,8 @@ def QuestGames(Setting, role):
                 start_x -= role.speed * 20
             role.flipped = True
         if keys[pygame.K_UP]:
-            if curr_y + 200 >= ground_y:  # Check if they can keep going higher, curr_y must >= 400 atm (less than 200 elevation)
-                curr_y -= 5
+            if curr_y + int(0.2666*Y) >= ground_y:  # Check if they can keep going higher, curr_y must >= 400 atm (less than 200 elevation)
+                curr_y -= int(0.00666*Y)
                 start_y = curr_y  # Set the start jumping position to the current position
                 role_jump_t = time()
 
@@ -2696,12 +2690,12 @@ def QuestGames(Setting, role):
                     renderRole(start_x, curr_y)
                     if NumberDefeated < 10:
                         enemy = enemies[NumberDefeated]  # spawnBadNPC()
-                        pygame_print(f"Spawning enemy #{NumberDefeated + 1}/10: {enemy.name}", loc=300)
+                        pygame_print(f"Spawning enemy #{NumberDefeated + 1}/10: {enemy.name}", loc_y=300)
                         start_msg_time = time()
                     else:
                         role.questLevel += 1
                         role.money += money
-                        pygame_print(f"You Won!!", loc=300)
+                        pygame_print(f"You Won!!", loc_y=300)
 
                 shot.hit_target = True
             if not shot.is_special_shot:
@@ -2728,9 +2722,9 @@ def QuestGames(Setting, role):
         shotsEnemyFired = [shot for shot in shotsEnemyFired if shot.beam_x >= 0 and shot.beam_x <= X]
 
         if role.health <= 0:
-            pygame_print("You died!", loc=300)
+            pygame_print("You died!", loc_y=300)
         elif time() - start_msg_time < start_msg_interval and NumberDefeated < 10:
-            pygame_print(f"Spawning enemy #{NumberDefeated + 1}/10: {enemy.name}", loc=300)
+            pygame_print(f"Spawning enemy #{NumberDefeated + 1}/10: {enemy.name}", loc_y=300)
 
         pygame.display.update()
 
@@ -2812,7 +2806,7 @@ def SellOption(Role):
 
         pygame_print(f"Your Money = {Role.money:0.2f}", text_y + 20, color=black, background_color=white)
 
-        stop_button = AddButton(text="EXIT", offset=0, loc=text_y + 80, background_color=red)
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 80, background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
@@ -2863,10 +2857,10 @@ def SellOption(Role):
                     endSellIdx = min(sellableItems.size(), maxItems)
                     screen.fill(white)
                 elif rect.collidepoint(pygame.mouse.get_pos()):
-                    rect = AddButton(text="Buy", offset=200, loc=630, background_color=orange)
+                    rect = AddButton(text="Buy", offset_x=200, loc_y=int(0.84*Y), background_color=orange)
                     pygame.display.update()
                 elif not rect.collidepoint(pygame.mouse.get_pos()):
-                    rect = AddButton(text="Buy", offset=200, loc=630, background_color=green)
+                    rect = AddButton(text="Buy", offset_x=200, loc_y=int(0.84*Y), background_color=green)
                     pygame.display.update()
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
                 pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
@@ -2906,7 +2900,7 @@ def BuyOption(Role):
 
         pygame_print(f"Your Money = {Role.money:0.2f}", text_y + 20, color=black, background_color=white)
 
-        stop_button = AddButton(text="EXIT", offset=0, loc=text_y + 80, background_color=red)
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 80, background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
@@ -2971,7 +2965,7 @@ def Shop(Role):
         pygame_print("Buy", 170, color=(orange if optionNumber == 0 else black), background_color=white)
         pygame_print("Sell", 210, color=(orange if optionNumber == 1 else black), background_color=white)
 
-        stop_button = AddButton(text="EXIT", offset=0, loc=310, background_color=red)
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=310, background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
@@ -3020,7 +3014,7 @@ def DeleteInputMapKey(role):
             pygame_print(f"{pygame.key.name(role.InputMapDictKeys[i])}: {role.InputMapDict[role.InputMapDictKeys[i]]}", text_y, color=(red if optionNumber == i else black), background_color=white)
             text_y += 40
 
-        stop_button = AddButton(text="EXIT", offset=0, loc=text_y + 80, background_color=red)
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 80, background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
@@ -3104,7 +3098,7 @@ def ViewInputMapKey(role):
                          text_y, color=(orange if optionNumber == i else black), background_color=white)
             text_y += 40
 
-        stop_button = AddButton(text="EXIT", offset=0, loc=text_y + 80, background_color=red)
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 80, background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
@@ -3147,7 +3141,7 @@ def AddInputMapKey(role):
     while True:
         pygame_print("Select the key you would like to remap", 90, color=black, background_color=white)
         pygame_print("================================", 130, color=black, background_color=white)
-#        stop_button = AddButton(text="EXIT", offset=0, loc=310, background_color=red)
+#        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=310, background_color=red)
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -3179,7 +3173,7 @@ def AddInputMapKey(role):
             pygame_print(questItems[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
             text_y += 40
 
-        stop_button = AddButton(text="EXIT", offset=0, loc=text_y + 80, background_color=red)
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 80, background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
@@ -3243,7 +3237,7 @@ def InputMap(role):
         pygame_print("Delete Key from Input Map", 210, color=(red if optionNumber == 1 else black), background_color=white)
         pygame_print("View Input Map", 250, color=(orange if optionNumber == 2 else black),
                      background_color=white)
-        stop_button = AddButton(text="EXIT", offset=0, loc=290, background_color=red)
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=290, background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessary
