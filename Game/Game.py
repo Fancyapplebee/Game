@@ -1,20 +1,14 @@
-from asyncio.events import BaseDefaultEventLoopPolicy
-from string import punctuation, ascii_letters
-from random import randint, choice, random
-from time import time, sleep
-from inputimeout import inputimeout, TimeoutOccurred
-from threading import Thread
-from tabulate import tabulate
-import cppyy
-import pygame
-from io import BytesIO
-import requests
-from PIL import Image
-import os
-import numpy as np
-from collections import deque, namedtuple
-from math import sqrt, log as ln
+from string import punctuation
 import json
+import os
+from math import sqrt, log as ln
+from random import random
+from string import punctuation
+
+import cppyy
+import numpy as np
+import pygame
+from PIL import Image
 
 Quests = False
 Shop = False
@@ -1299,7 +1293,7 @@ cppyy.cppdef(
     }
 
 ''')
-from cppyy.gbl import Role, BadNPC, badNPCs, HasSellableItems, Shot
+from cppyy.gbl import Role, BadNPC, HasSellableItems, Shot
 
 # Takes in a C++ string, and returns a correct python string
 def cppStringConvert(string):
@@ -2690,12 +2684,12 @@ def QuestGames(Setting, role):
                     renderRole(start_x, curr_y)
                     if NumberDefeated < 10:
                         enemy = enemies[NumberDefeated]  # spawnBadNPC()
-                        pygame_print(f"Spawning enemy #{NumberDefeated + 1}/10: {enemy.name}", loc_y=300)
+                        pygame_print(f"Spawning enemy #{NumberDefeated + 1}/10: {enemy.name}", loc_y=int(0.4*Y))
                         start_msg_time = time()
                     else:
                         role.questLevel += 1
                         role.money += money
-                        pygame_print(f"You Won!!", loc_y=300)
+                        pygame_print(f"You Won!!", loc_y=int(0.4*Y))
 
                 shot.hit_target = True
             if not shot.is_special_shot:
@@ -2722,9 +2716,9 @@ def QuestGames(Setting, role):
         shotsEnemyFired = [shot for shot in shotsEnemyFired if shot.beam_x >= 0 and shot.beam_x <= X]
 
         if role.health <= 0:
-            pygame_print("You died!", loc_y=300)
+            pygame_print("You died!", loc_y=int(0.4*Y))
         elif time() - start_msg_time < start_msg_interval and NumberDefeated < 10:
-            pygame_print(f"Spawning enemy #{NumberDefeated + 1}/10: {enemy.name}", loc_y=300)
+            pygame_print(f"Spawning enemy #{NumberDefeated + 1}/10: {enemy.name}", loc_y=int(0.4*Y))
 
         pygame.display.update()
 
@@ -2797,9 +2791,9 @@ def SellOption(Role):
     endSellIdx = min(sellableItems.size(), maxItems)
     while True:
         screen.fill(white)  # clear the screen
-        pygame_print(f"What would you like to sell today?", 60, color=black, background_color=white)
-        pygame_print("=================================", 100, color=black, background_color=white)
-        text_y = 140
+        pygame_print(f"What would you like to sell today?", (0.08*Y), color=black, background_color=white)
+        pygame_print("=================================", (0.134*Y), color=black, background_color=white)
+        text_y = (0.1867*Y)
         for i in range(startSellIdx, endSellIdx):
             pygame_print(sellableItems[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
             text_y += 40
@@ -2857,10 +2851,10 @@ def SellOption(Role):
                     endSellIdx = min(sellableItems.size(), maxItems)
                     screen.fill(white)
                 elif rect.collidepoint(pygame.mouse.get_pos()):
-                    rect = AddButton(text="Buy", offset_x=200, loc_y=int(0.84*Y), background_color=orange)
+                    rect = AddButton(text="Buy", offset_x=(0.25*X), loc_y=int(0.84*Y), background_color=orange)
                     pygame.display.update()
                 elif not rect.collidepoint(pygame.mouse.get_pos()):
-                    rect = AddButton(text="Buy", offset_x=200, loc_y=int(0.84*Y), background_color=green)
+                    rect = AddButton(text="Buy", offset_x=(0.25*X), loc_y=int(0.84*Y), background_color=green)
                     pygame.display.update()
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
                 pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
@@ -2869,7 +2863,7 @@ def SellOption(Role):
 
 def BuyOption(Role):
     if Role.money == 0:
-        pygame_print("You don't have any money!", 300, color=black, background_color=white)
+        pygame_print("You don't have any money!", (0.4*Y), color=black, background_color=white)
         pygame.display.update()
         pygame.time.delay(1000)
         pygame.event.clear(eventtype=pygame.KEYDOWN)
@@ -2877,8 +2871,8 @@ def BuyOption(Role):
 
     buyableItems = Role.printBuyItemsVec(False)
     if buyableItems.size() == 0:
-        pygame_print("You don't have enough money and/or", 300, color=black, background_color=white)
-        pygame_print("you haven't completed enough quests!", 340, color=black, background_color=white)
+        pygame_print("You don't have enough money and/or", (0.4*Y), color=black, background_color=white)
+        pygame_print("you haven't completed enough quests!", (0.4534*Y), color=black, background_color=white)
         pygame.display.update()
         pygame.time.delay(1000)
         pygame.event.clear(eventtype=pygame.KEYDOWN)
@@ -2891,9 +2885,9 @@ def BuyOption(Role):
     
     while True:
         screen.fill(white)  # clear the screen
-        pygame_print(f"What would you like to buy today?", 60, color=black, background_color=white)
-        pygame_print("=================================", 100, color=black, background_color=white)
-        text_y = 140
+        pygame_print(f"What would you like to buy today?", (0.08*Y), color=black, background_color=white)
+        pygame_print("=================================", (0.134*Y), color=black, background_color=white)
+        text_y = (0.1867*Y)
         for i in range(startBuyIdx, endBuyIdx):
             pygame_print(buyableItems[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
             text_y += 40
@@ -2960,12 +2954,12 @@ def Shop(Role):
     Role.money = 1e6 #TODO: delete
     while True:
         screen.fill(white)  # clear the screen
-        pygame_print("What would you like to do today?", 90, color=black, background_color=white)
-        pygame_print("================================", 130, color=black, background_color=white)
-        pygame_print("Buy", 170, color=(orange if optionNumber == 0 else black), background_color=white)
-        pygame_print("Sell", 210, color=(orange if optionNumber == 1 else black), background_color=white)
+        pygame_print("What would you like to do today?", (0.12*Y), color=black, background_color=white)
+        pygame_print("================================", (0.1734*Y), color=black, background_color=white)
+        pygame_print("Buy", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
+        pygame_print("Sell", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
 
-        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=310, background_color=red)
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=(0.4134*Y), background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
@@ -3007,9 +3001,9 @@ def DeleteInputMapKey(role):
     
     while True:
         screen.fill(white)  # clear the screen
-        pygame_print(f"Select Key-Value Pair to Delete", 60, color=black, background_color=white)
-        pygame_print("===============================", 100, color=black, background_color=white)
-        text_y = 140
+        pygame_print(f"Select Key-Value Pair to Delete", (0.08*Y), color=black, background_color=white)
+        pygame_print("===============================", (0.1334*Y), color=black, background_color=white)
+        text_y = (0.1867*Y)
         for i in range(startIdx, endIdx):
             pygame_print(f"{pygame.key.name(role.InputMapDictKeys[i])}: {role.InputMapDict[role.InputMapDictKeys[i]]}", text_y, color=(red if optionNumber == i else black), background_color=white)
             text_y += 40
@@ -3090,9 +3084,9 @@ def ViewInputMapKey(role):
 
     while True:
         screen.fill(white)  # clear the screen
-        pygame_print(f"View your mapped keys", 60, color=black, background_color=white)
-        pygame_print("===============================", 100, color=black, background_color=white)
-        text_y = 140
+        pygame_print(f"View your mapped keys", (0.08*Y), color=black, background_color=white)
+        pygame_print("===============================", (0.1334*Y), color=black, background_color=white)
+        text_y = (0.1867*Y)
         for i in range(startIdx, endIdx):
             pygame_print(f"{pygame.key.name(role.InputMapDictKeys[i])}: {role.InputMapDict[role.InputMapDictKeys[i]]}",
                          text_y, color=(orange if optionNumber == i else black), background_color=white)
@@ -3139,8 +3133,8 @@ def AddInputMapKey(role):
     invalidKeys = (pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_RETURN, pygame.K_SPACE)
     screen.fill(white)  # clear the screen
     while True:
-        pygame_print("Select the key you would like to remap", 90, color=black, background_color=white)
-        pygame_print("================================", 130, color=black, background_color=white)
+        pygame_print("Select the key you would like to remap", (0.12*Y), color=black, background_color=white)
+        pygame_print("================================", (0.1734*Y), color=black, background_color=white)
 #        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=310, background_color=red)
         pygame.display.update()
         for event in pygame.event.get():
@@ -3164,11 +3158,11 @@ def AddInputMapKey(role):
     
     while True:
         screen.fill(white)  # clear the screen
-        pygame_print("Which item would you like to map", 60, color=black, background_color=white)
-        pygame_print(f"the key \"{pygame.key.name(key)}\" to?", 100, color=black, background_color=white)
+        pygame_print("Which item would you like to map", (0.08*Y), color=black, background_color=white)
+        pygame_print(f"the key \"{pygame.key.name(key)}\" to?", (0.1334*Y), color=black, background_color=white)
 
-        pygame_print("=================================", 140, color=black, background_color=white)
-        text_y = 180
+        pygame_print("=================================", (0.1867*Y), color=black, background_color=white)
+        text_y = (0.24*Y)
         for i in range(startIdx, endIdx):
             pygame_print(questItems[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
             text_y += 40
@@ -3231,13 +3225,13 @@ def InputMap(role):
 
     while True:
         screen.fill(white)
-        pygame_print("Choose an option", 90, color=black, background_color=white)
-        pygame_print("================", 130, color=black, background_color=white)
-        pygame_print("Add Key to Input Map", 170, color=(orange if optionNumber == 0 else black), background_color=white)
-        pygame_print("Delete Key from Input Map", 210, color=(red if optionNumber == 1 else black), background_color=white)
-        pygame_print("View Input Map", 250, color=(orange if optionNumber == 2 else black),
+        pygame_print("Choose an option", (0.12*Y), color=black, background_color=white)
+        pygame_print("================", (0.1734*Y), color=black, background_color=white)
+        pygame_print("Add Key to Input Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
+        pygame_print("Delete Key from Input Map", (0.28*Y), color=(red if optionNumber == 1 else black), background_color=white)
+        pygame_print("View Input Map", (0.3334*Y), color=(orange if optionNumber == 2 else black),
                      background_color=white)
-        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=290, background_color=red)
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=(0.3867*Y), background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessary
@@ -3267,11 +3261,11 @@ def Menu(role, setting):
 
         while True:
             #            screen.fill(white)
-            pygame_print("Choose an option", 90, color=black, background_color=white)
-            pygame_print("================", 130, color=black, background_color=white)
-            pygame_print("Map", 170, color=(orange if optionNumber == 0 else black), background_color=white)
-            pygame_print("Search", 210, color=(orange if optionNumber == 1 else black), background_color=white)
-            pygame_print("Stats", 250, color=(orange if optionNumber == 2 else black), background_color=white)
+            pygame_print("Choose an option", (0.12*Y), color=black, background_color=white)
+            pygame_print("================", (0.1734*Y), color=black, background_color=white)
+            pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
+            pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
+            pygame_print("Stats", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
             pygame.display.update()
             for event in pygame.event.get():  # update the option number if necessary
                 if event.type == pygame.KEYDOWN:  # checking if any key was selected
@@ -3299,16 +3293,16 @@ def Menu(role, setting):
         pygame.display.update()
         while True:
             screen.fill(white)
-            pygame_print("Choose an option", 90, color=black, background_color=white)
-            pygame_print("================", 130, color=black, background_color=white)
-            pygame_print("Map", 170, color=(orange if optionNumber == 0 else black), background_color=white)
-            pygame_print("Search", 210, color=(orange if optionNumber == 1 else black), background_color=white)
-            pygame_print("Mine", 250, color=(orange if optionNumber == 2 else black), background_color=white)
-            pygame_print("Inv", 290, color=(orange if optionNumber == 3 else black), background_color=white)
-            pygame_print("Shop", 330, color=(orange if optionNumber == 4 else black), background_color=white)
-            pygame_print("Quests", 370, color=(orange if optionNumber == 5 else black), background_color=white)
-            pygame_print("Stats", 410, color=(orange if optionNumber == 6 else black), background_color=white)
-            pygame_print("InputMap", 450, color=(orange if optionNumber == 7 else black), background_color=white)
+            pygame_print("Choose an option", (0.12*Y), color=black, background_color=white)
+            pygame_print("================", (0.1734*Y), color=black, background_color=white)
+            pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
+            pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
+            pygame_print("Mine", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
+            pygame_print("Inv", (0.3867*Y), color=(orange if optionNumber == 3 else black), background_color=white)
+            pygame_print("Shop", (0.44*Y), color=(orange if optionNumber == 4 else black), background_color=white)
+            pygame_print("Quests", (0.4934*Y), color=(orange if optionNumber == 5 else black), background_color=white)
+            pygame_print("Stats", (0.5467*Y), color=(orange if optionNumber == 6 else black), background_color=white)
+            pygame_print("InputMap", (0.6*Y), color=(orange if optionNumber == 7 else black), background_color=white)
             pygame.display.update()
             for event in pygame.event.get():  # update the option number if necessary
                 if event.type == pygame.KEYDOWN:  # checking if any key was selected
