@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="inputmapdict&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
+    <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="text variable resizing">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Game/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Game.py" afterDir="false" />
     </list>
@@ -114,8 +114,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-7c0b70fcd90d-JavaScript-PY-242.21829.153" />
-        <option value="bundled-python-sdk-464836ebc622-b74155a9e76b-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-242.21829.153" />
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-PY-242.22855.92" />
+        <option value="bundled-python-sdk-b068d85d1acf-399fe30bd8c1-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-242.22855.92" />
       </set>
     </attachedChunks>
   </component>
@@ -293,7 +293,9 @@
       <workItem from="1725725663182" duration="2523000" />
       <workItem from="1725729862295" duration="1243000" />
       <workItem from="1726330277583" duration="148000" />
-      <workItem from="1726330496158" duration="1669000" />
+      <workItem from="1726330496158" duration="2674000" />
+      <workItem from="1726334554079" duration="1466000" />
+      <workItem from="1726933979740" duration="3809000" />
     </task>
     <task id="LOCAL-00001" summary="it works">
       <created>1657430290327</created>
@@ -406,14 +408,6 @@
       <option name="presentableId" value="LOCAL-00016" />
       <option name="project" value="LOCAL" />
       <updated>1687021377997</updated>
-    </task>
-    <task id="LOCAL-00032" summary="Flipped images for object(s) and starts&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
-      <option name="closed" value="true" />
-      <created>1700329371995</created>
-      <option name="number" value="00032" />
-      <option name="presentableId" value="LOCAL-00032" />
-      <option name="project" value="LOCAL" />
-      <updated>1700329371995</updated>
     </task>
     <task id="LOCAL-00033" summary="Flipped images for object(s) and starts&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
       <option name="closed" value="true" />
@@ -671,7 +665,15 @@
       <option name="project" value="LOCAL" />
       <updated>1725728138659</updated>
     </task>
-    <option name="localTasksCounter" value="65" />
+    <task id="LOCAL-00065" summary="text variable resizing">
+      <option name="closed" value="true" />
+      <created>1726333091654</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1726333091654</updated>
+    </task>
+    <option name="localTasksCounter" value="66" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -706,7 +708,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="Update 9/16 &#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <MESSAGE value="Update 9/23&#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <MESSAGE value="Update 10/6&#10;&#10;Added a up key to the quest&#10;&#10;&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <MESSAGE value="White backfround" />
@@ -731,11 +732,11 @@
     <MESSAGE value="JSON+bar stylezation&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <MESSAGE value="inputmap starting implementation&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <MESSAGE value="inputmapdict&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
-    <option name="LAST_COMMIT_MESSAGE" value="inputmapdict&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
-    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
+    <MESSAGE value="text variable resizing" />
+    <option name="LAST_COMMIT_MESSAGE" value="text variable resizing" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Game$Game.coverage" NAME="Game Coverage Results" MODIFIED="1724518785039" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
+    <SUITE FILE_PATH="coverage/Game$Game.coverage" NAME="Game Coverage Results" MODIFIED="1726937809306" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
     <SUITE FILE_PATH="coverage/Game$Game_.coverage" NAME="Game` Coverage Results" MODIFIED="1660411554438" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
   </component>
 </project>

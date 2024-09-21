@@ -1429,15 +1429,37 @@ light_pink = (255, 182, 193)
 orange = (255, 165, 0)
 X = 540
 Y = 300
-screen = pygame.display.set_mode((X, Y))
-font = pygame.font.Font('freesansbold.ttf', int(0.0427*Y))
+screen_height = Y
+def scale_font(size):
+    base_screen_height = 750
+    scale_factor = int(2*screen_height) / base_screen_height
+    return int(size * scale_factor)
 
+
+# Example of using this function to create fonts
+font_size = 24  # Base font size you designed for
+scaled_font_size = scale_font(font_size)
+font = pygame.font.Font('freesansbold.ttf', scaled_font_size)
+print(scaled_font_size)
 def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0):
+    scaled_font_size = scale_font(font_size)
+    font = pygame.font.Font('freesansbold.ttf', scaled_font_size)
     text = font.render(text, True, color, background_color)
     textRect = text.get_rect()
-    textRect.center = (X // 2 + offset_x, loc_y)
+    textRect.center = (X//2+offset_x, loc_y)
     screen.blit(text, textRect)
+    # Adjust fonts dynamically based on screen size
+
     return textRect
+screen = pygame.display.set_mode((X, Y))
+
+
+#def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0):
+#    text = font.render(text, True, color, background_color)
+#    textRect = text.get_rect()
+#    textRect.center = (X // 2 + offset_x, loc_y)
+#    screen.blit(text, textRect)
+#    return textRect
 
 #def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = int(0.053*Y), height: float = 4,
 #               new_screen=True) -> None:
