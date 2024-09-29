@@ -9,6 +9,7 @@ import cppyy
 import numpy as np
 import pygame
 from PIL import Image
+from copy import deepcopy
 
 Quests = False
 Shop = False
@@ -1427,14 +1428,13 @@ red = (255, 0, 0)
 yellow = (255, 255, 0)
 light_pink = (255, 182, 193)
 orange = (255, 165, 0)
-X = 540
-Y = 300
+X = 800
+Y = 750
 screen_height = Y
 def scale_font(size):
     base_screen_height = 750
-    scale_factor = int(2*screen_height) / base_screen_height
+    scale_factor = int(1*screen_height) / base_screen_height
     return int(size * scale_factor)
-
 
 # Example of using this function to create fonts
 font_size = 24  # Base font size you designed for
@@ -1449,10 +1449,26 @@ def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset
     textRect.center = (X//2+offset_x, loc_y)
     screen.blit(text, textRect)
     # Adjust fonts dynamically based on screen size
-
     return textRect
-screen = pygame.display.set_mode((X, Y))
+    
+screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+old_screen = screen
 
+def wait_til_enter():
+    while True:
+        for event in pygame.event.get():  # update the option number if necessary
+            if event.type == pygame.KEYDOWN:  # checking if any key was selected
+#                if event.key == pygame.K_RETURN:
+                pygame.event.clear(eventtype=pygame.KEYDOWN)
+                return
+            elif event.type == pygame.VIDEORESIZE:
+                print("hi")
+                #old_screen = screen
+#                screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+                X, Y = screen.get_width(), screen.get_height()
+                print(f"X, Y = {X}, {Y}")
+                #                    screen.blit(old_screen, (0,0))
+#                pygame.display.update()
 
 #def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0):
 #    text = font.render(text, True, color, background_color)
@@ -1465,14 +1481,16 @@ screen = pygame.display.set_mode((X, Y))
 #               new_screen=True) -> None:
 def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = int(0.1*Y), height: float = 4,
                new_screen=True) -> None:
+    global screen, old_screen
     count = 0
-    screen.fill(color) if new_screen else True
+    if new_screen:
+        screen.fill(color)
     for num, item in enumerate(items):
         pygame_print(item, Y // height + count, color=(yellow if num == selectNumber else black),
                      background_color=color)
         pygame.display.update()
         count += inc
-
+    #old_screen = screen
 
 # all images are in Game/Game/Assets
 def displayImage(rsp, height: bool = False, p: int = 0, update: bool = True):
@@ -1480,7 +1498,7 @@ def displayImage(rsp, height: bool = False, p: int = 0, update: bool = True):
     rsp = os.getcwd() + "/Assets/" + rsp
     pilimage = Image.open(rsp).convert("RGBA")
     if p == 0:
-        pilimage = pilimage.resize((int(0.4375*X), int(0.467*350)))
+        pilimage = pilimage.resize((int(0.4375*X), int(0.467*Y)))
     elif p == 1:
         pilimage = pilimage.resize((int(X), int(Y)))
     pgimg = pygame.image.fromstring(pilimage.tobytes(), pilimage.size, pilimage.mode)
@@ -1652,14 +1670,17 @@ def search(setting, role):
         pygame_print("You got SAND!", int(0.267*Y))
         displayImage("sand.png", p=0)
         pygame.display.update()
-        pygame.time.delay(1000)  # waiting one second
+        #pygame.time.delay(1000)  # waiting one second
+        wait_til_enter()
+
         if Chances == 1:
             role.numInv["Sand Pails"]["Number"] += 1
             screen.fill(white)  # clear the screen
             pygame_print("You got a Sand Pail!", int(0.267*Y))
             displayImage("sand-pail.png", p=0)
             pygame.display.update()
-            pygame.time.delay(1000)  # waiting one second
+            #pygame.time.delay(1000)  # waiting one second
+            wait_til_enter()
 
     elif setting.places[optionNumber] == "HILLSIDE":
         Chances = randint(1, 1000)
@@ -1667,14 +1688,16 @@ def search(setting, role):
         pygame_print("You got SAND!", int(0.267*Y))
         displayImage("hillside.png", p=0)
         pygame.display.update()
-        pygame.time.delay(1000)  # waiting one second
+        #pygame.time.delay(1000)  # waiting one second
+        wait_til_enter()
         if Chances == 1:
             role.numInv["Cactuses"]["Number"] += 1
             screen.fill(white)  # clear the screen
             pygame_print("You found a cactus!", int(0.267*Y))
             displayImage("cactus.png", p=0)
             pygame.display.update()
-            pygame.time.delay(1000)  # waiting one second
+            #pygame.time.delay(1000)  # waiting one second
+            wait_til_enter()
 
     elif setting.places[optionNumber] == "CASTLE":
         Chances = randint(1, 1e8)
@@ -1689,7 +1712,8 @@ def search(setting, role):
         else:
             pygame_print("Nothing found.", int(0.267*Y))
         pygame.display.update()
-        pygame.time.delay(1000)  # waiting one second
+        #pygame.time.delay(1000)  # waiting one second
+        wait_til_enter()
 
     elif setting.places[optionNumber] == "OCEAN":
         Chances = randint(1, 1e5)
@@ -1700,7 +1724,8 @@ def search(setting, role):
         else:
             pygame_print("Nothing found.", int(0.267*Y))
         pygame.display.update()
-        pygame.time.delay(1000)  # waiting one second
+        #pygame.time.delay(1000)  # waiting one second
+        wait_til_enter()
 
     elif setting.places[optionNumber] == "FRIDGE":
         Chances = randint(1, 1000)
@@ -1711,7 +1736,8 @@ def search(setting, role):
         else:
             pygame_print("Nothing found.", int(0.267*Y))
         pygame.display.update()
-        pygame.time.delay(1000)  # waiting one second
+        #pygame.time.delay(1000)  # waiting one second
+        wait_til_enter()
 
     elif setting.places[optionNumber] == "TREE":
         Chances = randint(1, 1000)
@@ -1722,7 +1748,8 @@ def search(setting, role):
         else:
             pygame_print("Nothing found.", int(0.267*Y))
         pygame.display.update()
-        pygame.time.delay(1000)  # waiting one second
+        #pygame.time.delay(1000)  # waiting one second
+        wait_til_enter()
 
     elif setting.places[optionNumber] == "CAVE":
         Chances = randint(1, 10000)
@@ -1737,7 +1764,8 @@ def search(setting, role):
         else:
             pygame_print("Nothing found.", int(0.267*Y))
         pygame.display.update()
-        pygame.time.delay(1000)  # waiting one second
+        #pygame.time.delay(1000)  # waiting one second
+        wait_til_enter()
 
     #    100000/10 = 10000 -> 1e5/10 = 1e4
     #   1/100 = 10/1000 = 100/10000 = 1000/100000
@@ -1759,7 +1787,8 @@ def search(setting, role):
         else:
             pygame_print("Nothing found.", int(0.267*Y))
         pygame.display.update()
-        pygame.time.delay(1000)  # waiting one second
+        #pygame.time.delay(1000)  # waiting one second
+        wait_til_enter()
 
 
     elif setting.places[optionNumber] == "LANDSCAPE":
@@ -1768,7 +1797,8 @@ def search(setting, role):
         displayImage("sand.png", p=0)
         pygame_print("You got SAND!", int(0.267*Y))
         pygame.display.update()
-        pygame.time.delay(1000)  # waiting one second
+        #pygame.time.delay(1000)  # waiting one second
+        wait_til_enter()
         if Chances == 1:
             role.numInv["Sand Pails"]["Number"] += 1
             displayImage("sand pail.png", p=0)
@@ -1780,7 +1810,8 @@ def search(setting, role):
         else:
             pygame_print("Nothing else found.", int(0.267*Y))
         pygame.display.update()
-        pygame.time.delay(1000)  # waiting one second
+        #pygame.time.delay(1000)  # waiting one second
+        wait_til_enter()
 
     role.searchTime = time()
     return setting.places[optionNumber]
@@ -1906,7 +1937,8 @@ def Mine(role, setting):
 
         pygame.display.update()
         #
-        #        pygame.time.delay(1000)  # waiting one second
+        #        #pygame.time.delay(1000)  # waiting one second
+        
 
         start = time()
         npcTime = 1 + (1 * random())
@@ -1949,7 +1981,7 @@ def Mine(role, setting):
             botavg.append(npcTime)
             playeravg.append(playerTime)
 
-    #        pygame.time.delay(1000)  # waiting one second
+    #        #pygame.time.delay(1000)  # waiting one second
 
     playeravglen = (len(playeravg)) if len(playeravg) != 0 else 1
     playeravg = sum(playeravg)
@@ -2744,7 +2776,8 @@ def QuestGames(Setting, role):
 
         if NumberDefeated == 10 or role.health <= 0:
             # Do stuff
-            pygame.time.delay(1000)
+            #pygame.time.delay(1000)
+            wait_til_enter()
             pygame.event.clear(eventtype=pygame.KEYDOWN)
             save_stats()
             return
@@ -2799,7 +2832,8 @@ def SellOption(Role):
     if not HasSellableItems(Role.numInv):
         pygame_print("You don't have any sellable items!", 0.4*Y, color=black, background_color=white)
         pygame.display.update()
-        pygame.time.delay(1000)
+        #pygame.time.delay(1000)
+        wait_til_enter()
         pygame.event.clear(eventtype=pygame.KEYDOWN)
         return
     
@@ -2885,7 +2919,8 @@ def BuyOption(Role):
     if Role.money == 0:
         pygame_print("You don't have any money!", (0.4*Y), color=black, background_color=white)
         pygame.display.update()
-        pygame.time.delay(1000)
+        #pygame.time.delay(1000)
+        wait_til_enter()
         pygame.event.clear(eventtype=pygame.KEYDOWN)
         return
 
@@ -2894,7 +2929,8 @@ def BuyOption(Role):
         pygame_print("You don't have enough money and/or", (0.4*Y), color=black, background_color=white)
         pygame_print("you haven't completed enough quests!", (0.4534*Y), color=black, background_color=white)
         pygame.display.update()
-        pygame.time.delay(1000)
+        #pygame.time.delay(1000)
+        wait_til_enter()
         pygame.event.clear(eventtype=pygame.KEYDOWN)
         return
 
@@ -3350,7 +3386,7 @@ def Menu(role, setting):
                         return
 
 def game():
-    global font, Quests
+    global font, Quests, screen, old_screen, X, Y
     try:
         pygame.display.set_caption('Game Window')
         font = pygame.font.Font('freesansbold.ttf', int(0.1027*Y))
@@ -3372,19 +3408,33 @@ def game():
 
         while True:
             pygame.display.update()
+            
             for event in pygame.event.get():  # Can only call pygame.event.get() once per iteration
+                if event.type == pygame.VIDEORESIZE:
+                    print("hi")
+                    #old_screen = screen
+                    screen = pygame.display.set_mode((event.w, event.h),
+                                              pygame.RESIZABLE)
+                    X, Y = screen.get_width(), screen.get_height()
+                    print(f"X, Y = {X}, {Y}")
+#                    screen.blit(old_screen, (0,0))
+                    pygame.display.update()
                 if not started:
                     screen.fill(light_pink)
                     screen.blit(text, textRect)
                     pygame.display.update()
                     started = True
+                    #old_screen = screen
                 elif event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
                 elif not displayedHeroes:
-                    pygame.time.delay(1000)
+                    #pygame.time.delay(1000)
+                    print("displayedHeroes")
+                    wait_til_enter()
                     updateList(heroes, optionNumber, inc = 0.1*Y)
                     displayedHeroes = True
+                    #old_screen = screen
                 elif displayedHeroes and not dispayedChest:
                     if event.type == pygame.KEYDOWN:  # checking if any key was selected
                         if event.key == pygame.K_DOWN:
@@ -3399,15 +3449,18 @@ def game():
                                 eventtype=pygame.KEYDOWN)  # https://www.pygame.org/docs/ref/event.html#pygame.event.get
                             if playerhero == "PERCY JACKSON":
                                 displayImage("percy-start.png", p=1)
-                                pygame.time.delay(2000)
+                                #pygame.time.delay(2000)
+                                wait_til_enter()
                                 RoleHero = PercyJackson(playerhero)
                             elif playerhero == "ELF":
                                 displayImage("elf-start.png", p=1)
-                                pygame.time.delay(2000)
+                                #pygame.time.delay(2000)
+                                wait_til_enter()
                                 RoleHero = Elf(playerhero)
                             elif playerhero == "ZELDA":
                                 displayImage("zelda-start.png", p=1)
-                                pygame.time.delay(2000)
+                                #pygame.time.delay(2000)
+                                wait_til_enter()
                                 RoleHero = Zelda(playerhero)
 
                             optionNumber = 0  # set the variable for the next option menu
@@ -3418,9 +3471,11 @@ def game():
                             textRect.center = (X // 2, Y // 1.5)
                             screen.blit(text, textRect)
                             pygame.display.update()
-                            pygame.time.delay(1000)
+                            #pygame.time.delay(1000)
+                            wait_til_enter()
                             displayImage("treasure_chest.png", p=1)
-                            pygame.time.delay(2000)
+                            #pygame.time.delay(2000)
+                            wait_til_enter()
 
                             text = font.render("You see a chest", True, black, white)
                             textRect = text.get_rect()
@@ -3428,7 +3483,8 @@ def game():
                             screen.blit(text, textRect)
                             pygame.display.update()
 
-                            pygame.time.delay(1000)  # Can change later
+                            #pygame.time.delay(1000)  # Can change later
+                            wait_til_enter()
 
                             text = font.render("Do you open the chest?", True, black, white)
                             textRect = text.get_rect()
@@ -3436,11 +3492,13 @@ def game():
                             screen.blit(text, textRect)
                             pygame.display.update()
 
-                            pygame.time.delay(250)
+                            #pygame.time.delay(250)
+                            wait_til_enter()
                             openChestOption(optionNumber)  # Displaying 'Yes' and 'No'
                             dispayedChest = True
                             pygame.event.clear(
                                 eventtype=pygame.KEYDOWN)  # We don't want the enter that they press to do anything until 'Yes' and 'No' are displayed
+                    #old_screen = screen
 
                 elif dispayedChest and not displayedPlaces:
 
@@ -3464,7 +3522,8 @@ def game():
                                 screen.blit(text, textRect)
                                 pygame.display.update()
 
-                                pygame.time.delay(1000)  # Can change later
+                                #pygame.time.delay(1000)  # Can change later
+                                wait_til_enter()
 
                             screen.fill(white)
                             pygame.display.update()
@@ -3473,6 +3532,7 @@ def game():
 
                         pygame.event.clear(
                             eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block
+                    #old_screen = screen
 
                 elif displayedPlaces and not Quests:
                     font = pygame.font.Font('freesansbold.ttf', int(0.03733*Y))
@@ -3498,27 +3558,32 @@ def game():
                             if optionNumber == 0:
                                 print("House")
                                 displayImage("StartHouse.png", p=1)
-                                pygame.time.delay(2000)
+                                #pygame.time.delay(2000)
+                                wait_til_enter()
                                 Place = House()
                             elif optionNumber == 1:
                                 print("Beach")
                                 displayImage("StartBeach.png", p=1)
-                                pygame.time.delay(2000)
+                                #pygame.time.delay(2000)
+                                wait_til_enter()
                                 Place = Beach()
                             elif optionNumber == 2:
                                 print("Forest")
                                 displayImage("StartForest.png", p=1)
-                                pygame.time.delay(2000)
+                                #pygame.time.delay(2000)
+                                wait_til_enter()
                                 Place = Forest()
                             elif optionNumber == 3:
                                 print("Mountain")
                                 displayImage("StartMountain.png", p=1)
-                                pygame.time.delay(2000)
+                                #pygame.time.delay(2000)
+                                wait_til_enter()
                                 Place = Mountain()
                             elif optionNumber == 4:
                                 print("Desert")
                                 displayImage("StartDesert.png", p=1)
-                                pygame.time.delay(2000)
+                                #pygame.time.delay(2000)
+                                wait_til_enter()
                                 Place = Desert()
                             pygame.event.clear(
                                 eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block before displaying the menu
@@ -3533,7 +3598,8 @@ def game():
                             textRect.center = (X // 2, 0.12*Y)
                             screen.blit(text, textRect)
                             pygame.display.update()
-                            pygame.time.delay(500)
+                            #pygame.time.delay(500)
+                            wait_til_enter()
 
                             screen.fill(white)
                             font = pygame.font.Font('freesansbold.ttf', int(0.03467*Y))
@@ -3542,7 +3608,8 @@ def game():
                             textRect.center = (X // 2, 0.12*Y)
                             screen.blit(text, textRect)
                             pygame.display.update()
-                            pygame.time.delay(500)
+                            #pygame.time.delay(500)
+                            wait_til_enter()
 
                             screen.fill(white)
                             text = font.render("To open quests", True, black, white)
@@ -3550,7 +3617,8 @@ def game():
                             textRect.center = (X // 2, 0.0933*Y)
                             screen.blit(text, textRect)
                             pygame.display.update()
-                            pygame.time.delay(500)
+                            #pygame.time.delay(500)
+                            wait_til_enter()
                             font = pygame.font.Font('freesansbold.ttf', int(0.03733*Y))
                             text = font.render("Select 'Quests' in the menu", True, black, white)
                             textRect = text.get_rect()
@@ -3558,10 +3626,12 @@ def game():
                             font = pygame.font.Font('freesansbold.ttf', int(0.0426*Y))
                             screen.blit(text, textRect)
                             pygame.display.update()
-                            pygame.time.delay(1000)
+                            #pygame.time.delay(1000)
+                            wait_til_enter()
 
                             pygame.event.clear(
                                 eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block
+                    #old_screen = screen
                 elif Quests:
                     while True:
                         Menu(RoleHero, Place)
