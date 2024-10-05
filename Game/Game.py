@@ -1454,7 +1454,17 @@ def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset
     
 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
 old_screen = screen
-
+while True:
+    pygame.event.pump()
+    event = pygame.event.wait()
+    if event.type == pygame.QUIT: pygame.display.quit()
+    elif event.type == pygame.VIDEORESIZE:
+        width, height = event.size
+        if width < 400:
+            width = 400
+        if height < 300:
+            height = 300
+        screen = pygame.display.set_mode((width,height), pygame.RESIZABLE)
 def wait_til_enter():
     global X, Y
     while True:
