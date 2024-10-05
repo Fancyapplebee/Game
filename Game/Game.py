@@ -1442,6 +1442,7 @@ scaled_font_size = scale_font(font_size)
 font = pygame.font.Font('freesansbold.ttf', scaled_font_size)
 print(scaled_font_size)
 def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0):
+    X = globals()['X']
     scaled_font_size = scale_font(font_size)
     font = pygame.font.Font('freesansbold.ttf', scaled_font_size)
     text = font.render(text, True, color, background_color)
@@ -1455,11 +1456,12 @@ screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
 old_screen = screen
 
 def wait_til_enter():
+    global X, Y
     while True:
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
 #                if event.key == pygame.K_RETURN:
-                pygame.event.clear(eventtype=pygame.KEYDOWN)
+#                pygame.event.clear(eventtype=pygame.KEYDOWN)
                 return
             elif event.type == pygame.VIDEORESIZE:
                 print("hi")
@@ -1467,6 +1469,7 @@ def wait_til_enter():
 #                screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
                 X, Y = screen.get_width(), screen.get_height()
                 print(f"X, Y = {X}, {Y}")
+                return
                 #                    screen.blit(old_screen, (0,0))
 #                pygame.display.update()
 
@@ -1481,7 +1484,7 @@ def wait_til_enter():
 #               new_screen=True) -> None:
 def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = int(0.1*Y), height: float = 4,
                new_screen=True) -> None:
-    global screen, old_screen
+    global screen, old_screen, X
     count = 0
     if new_screen:
         screen.fill(color)
@@ -1599,7 +1602,7 @@ def search(setting, role):
             for event in pygame.event.get():  # update the option number if necessary
                 if event.type == pygame.KEYDOWN:  # checking if any key was selected
                     if event.key == pygame.K_RETURN:
-                        pygame.event.clear(eventtype=pygame.KEYDOWN)
+#                        pygame.event.clear(eventtype=pygame.KEYDOWN)
                         return
 
     optionNumber = 0
@@ -2778,7 +2781,7 @@ def QuestGames(Setting, role):
             # Do stuff
             #pygame.time.delay(1000)
             wait_til_enter()
-            pygame.event.clear(eventtype=pygame.KEYDOWN)
+#            pygame.event.clear(eventtype=pygame.KEYDOWN)
             save_stats()
             return
 
@@ -2834,7 +2837,7 @@ def SellOption(Role):
         pygame.display.update()
         #pygame.time.delay(1000)
         wait_til_enter()
-        pygame.event.clear(eventtype=pygame.KEYDOWN)
+#        pygame.event.clear(eventtype=pygame.KEYDOWN)
         return
     
     sellableItems = Role.printSellItemsVec(False, False)
@@ -2921,7 +2924,7 @@ def BuyOption(Role):
         pygame.display.update()
         #pygame.time.delay(1000)
         wait_til_enter()
-        pygame.event.clear(eventtype=pygame.KEYDOWN)
+#        pygame.event.clear(eventtype=pygame.KEYDOWN)
         return
 
     buyableItems = Role.printBuyItemsVec(False)
@@ -2931,7 +2934,7 @@ def BuyOption(Role):
         pygame.display.update()
         #pygame.time.delay(1000)
         wait_til_enter()
-        pygame.event.clear(eventtype=pygame.KEYDOWN)
+#        pygame.event.clear(eventtype=pygame.KEYDOWN)
         return
 
     optionNumber = 0
@@ -3031,7 +3034,7 @@ def Shop(Role):
                     elif optionNumber == 1:  # Sell
                         SellOption(Role)
                     pygame.display.update()
-                    pygame.event.clear(eventtype=pygame.KEYDOWN)
+#                    pygame.event.clear(eventtype=pygame.KEYDOWN)
 
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
                 pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
@@ -3405,6 +3408,7 @@ def game():
         YesNo = ("Yes", "No")
         RoleHero = None
         Place = None
+        resized = False
 
         while True:
             pygame.display.update()
@@ -3412,23 +3416,27 @@ def game():
             for event in pygame.event.get():  # Can only call pygame.event.get() once per iteration
                 if event.type == pygame.VIDEORESIZE:
                     print("hi")
-                    #old_screen = screen
-                    screen = pygame.display.set_mode((event.w, event.h),
-                                              pygame.RESIZABLE)
                     X, Y = screen.get_width(), screen.get_height()
-                    print(f"X, Y = {X}, {Y}")
-#                    screen.blit(old_screen, (0,0))
-                    pygame.display.update()
+                    print(f"X, Y = {globals()['X']}, {globals()['Y']}")
+                    
+                    if displayedHeroes and not dispayedChest:
+                        updateList(heroes, optionNumber)
+                    elif dispayedChest and not displayedPlaces:
+                        displayImage("treasure_chest.png", p=1)
+                        pygame_print(text = "Do you open the chest?", loc_y = Y // 1.5, color=black, background_color = white, offset_x=0)
+                        openChestOption(optionNumber)  # Displaying 'Yes' and 'No'
+
+                        
                 if not started:
                     screen.fill(light_pink)
                     screen.blit(text, textRect)
                     pygame.display.update()
                     started = True
                     #old_screen = screen
-                elif event.type == pygame.QUIT:
+                if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
-                elif not displayedHeroes:
+                if not displayedHeroes:
                     #pygame.time.delay(1000)
                     print("displayedHeroes")
                     wait_til_enter()
@@ -3445,8 +3453,7 @@ def game():
                             updateList(heroes, optionNumber)  # update screen
                         elif event.key == pygame.K_RETURN:
                             playerhero = heroes[optionNumber]
-                            pygame.event.clear(
-                                eventtype=pygame.KEYDOWN)  # https://www.pygame.org/docs/ref/event.html#pygame.event.get
+#                            pygame.event.clear(eventtype=pygame.KEYDOWN)  # https://www.pygame.org/docs/ref/event.html#pygame.event.get
                             if playerhero == "PERCY JACKSON":
                                 displayImage("percy-start.png", p=1)
                                 #pygame.time.delay(2000)
@@ -3466,39 +3473,21 @@ def game():
                             optionNumber = 0  # set the variable for the next option menu
 
                             screen.fill(white)
-                            text = font.render("Where am I?", True, black, white)
-                            textRect = text.get_rect()
-                            textRect.center = (X // 2, Y // 1.5)
-                            screen.blit(text, textRect)
+                            pygame_print(text = "Where am I?", loc_y = Y // 1.5, color=black, background_color = white, offset_x=0)
                             pygame.display.update()
-                            #pygame.time.delay(1000)
                             wait_til_enter()
                             displayImage("treasure_chest.png", p=1)
-                            #pygame.time.delay(2000)
-                            wait_til_enter()
-
-                            text = font.render("You see a chest", True, black, white)
-                            textRect = text.get_rect()
-                            textRect.center = (X // 2, Y // 1.5)
-                            screen.blit(text, textRect)
+                            pygame_print(text = "You see a chest.", loc_y = Y // 1.5, color=black, background_color = white, offset_x=0)
                             pygame.display.update()
-
-                            #pygame.time.delay(1000)  # Can change later
                             wait_til_enter()
-
-                            text = font.render("Do you open the chest?", True, black, white)
-                            textRect = text.get_rect()
-                            textRect.center = (X // 2, Y // 1.5)
-                            screen.blit(text, textRect)
+                            displayImage("treasure_chest.png", p=1)
+                            pygame_print(text = "Do you open the chest?", loc_y = Y // 1.5, color=black, background_color = white, offset_x=0)
                             pygame.display.update()
-
-                            #pygame.time.delay(250)
                             wait_til_enter()
+                            displayImage("treasure_chest.png", p=1)
                             openChestOption(optionNumber)  # Displaying 'Yes' and 'No'
                             dispayedChest = True
-                            pygame.event.clear(
-                                eventtype=pygame.KEYDOWN)  # We don't want the enter that they press to do anything until 'Yes' and 'No' are displayed
-                    #old_screen = screen
+#                            pygame.event.clear(eventtype=pygame.KEYDOWN)  # We don't want the enter that they press to do anything until 'Yes' and 'No' are displayed
 
                 elif dispayedChest and not displayedPlaces:
 
@@ -3530,9 +3519,7 @@ def game():
                             displayedPlaces = True
                             optionNumber = 0
 
-                        pygame.event.clear(
-                            eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block
-                    #old_screen = screen
+#                        pygame.event.clear(eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block
 
                 elif displayedPlaces and not Quests:
                     font = pygame.font.Font('freesansbold.ttf', int(0.03733*Y))
@@ -3585,8 +3572,7 @@ def game():
                                 #pygame.time.delay(2000)
                                 wait_til_enter()
                                 Place = Desert()
-                            pygame.event.clear(
-                                eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block before displaying the menu
+#                            pygame.event.clear(eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block before displaying the menu
                             Menu(RoleHero, Place)
                             Quests = True
                             pygame.display.update()
@@ -3629,8 +3615,7 @@ def game():
                             #pygame.time.delay(1000)
                             wait_til_enter()
 
-                            pygame.event.clear(
-                                eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block
+#                            pygame.event.clear(eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block
                     #old_screen = screen
                 elif Quests:
                     while True:
