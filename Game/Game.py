@@ -37,7 +37,8 @@ def Defense(Def):
 # modify search option so that it can only occur once per people day ✅
 # Axes that can increase drop-chances for mine function
 # Find out where we can increase money besides selling ✅
-
+# Figure out if holding the up/down arrow keys can make it continue going up/down in the menu parts of the game.
+# if event.type -> elif event.type in `for event in pygame.event.get()`
 
 '''
 cS is NOT an input function!!!
@@ -1430,16 +1431,16 @@ light_pink = (255, 182, 193)
 orange = (255, 165, 0)
 X = 800
 Y = 750
-screen_height = Y
+base_screen_height = Y
 def scale_font(size):
-    base_screen_height = 750
-    scale_factor = int(1*screen_height) / base_screen_height
+    global base_screen_height
+    scale_factor = Y / base_screen_height
     return int(size * scale_factor)
 
 # Example of using this function to create fonts
-font_size = 24  # Base font size you designed for
+font_size = 32  # Base font size you designed for
 scaled_font_size = scale_font(font_size)
-font = pygame.font.Font('freesansbold.ttf', scaled_font_size)
+font = pygame.font.Font('freesansbold.ttf', scale_font(font_size))
 print(scaled_font_size)
 def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0):
     X = globals()['X']
@@ -1453,20 +1454,20 @@ def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset
     return textRect
     
 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
-old_screen = screen
-while True:
-    pygame.event.pump()
-    event = pygame.event.wait()
-    if event.type == pygame.QUIT: pygame.display.quit()
-    elif event.type == pygame.VIDEORESIZE:
-        width, height = event.size
-        if width < 400:
-            width = 400
-        if height < 300:
-            height = 300
-        screen = pygame.display.set_mode((width,height), pygame.RESIZABLE)
+#old_screen = screen
+#while True:
+#    pygame.event.pump()
+#    event = pygame.event.wait()
+#    if event.type == pygame.QUIT: pygame.display.quit()
+#    elif event.type == pygame.VIDEORESIZE:
+#        width, height = event.size
+#        if width < 400:
+#            width = 400
+#        if height < 300:
+#            height = 300
+#        screen = pygame.display.set_mode((width,height), pygame.RESIZABLE)
 def wait_til_enter():
-    global X, Y
+    global X, Y, screen
     while True:
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
@@ -1478,6 +1479,8 @@ def wait_til_enter():
                 #old_screen = screen
 #                screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
                 X, Y = screen.get_width(), screen.get_height()
+                X = 410 if X < 410 else X
+                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 print(f"X, Y = {X}, {Y}")
                 return
                 #                    screen.blit(old_screen, (0,0))
@@ -1494,7 +1497,7 @@ def wait_til_enter():
 #               new_screen=True) -> None:
 def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = int(0.1*Y), height: float = 4,
                new_screen=True) -> None:
-    global screen, old_screen, X
+    global screen, old_screen, X, Y
     count = 0
     if new_screen:
         screen.fill(color)
@@ -1542,7 +1545,7 @@ def PlaceOption(optionNumber=None):
 # Setting Types
 class Setting:
     def map(self):
-        global font, white, black
+        global font, white, black, X, Y, screen
 
         screen.fill(white)
         pygame_print("--------", int(0.12*Y))
@@ -1558,6 +1561,23 @@ class Setting:
         pygame.display.update()
         while True:
             for event in pygame.event.get():  # update the option number if necessary
+                if event.type == pygame.VIDEORESIZE:
+                    X, Y = screen.get_width(), screen.get_height()
+                    X = 410 if X < 410 else X
+                    print(f"X, Y = {X}, {Y}")
+                    screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                    screen.fill(white)
+                    pygame_print("--------", int(0.12*Y))
+                    pygame_print("Places", int(0.1734*Y))
+                    pygame_print("--------", int(0.2267*Y))
+
+                    currHeight = int(0.28*Y)
+                    font = pygame.font.Font('freesansbold.ttf', int(0.03734*Y))
+                    for place in self.places:
+                        pygame_print(place.title(), currHeight)
+                        currHeight += int(0.0534*Y)
+                    font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
+                    pygame.display.update()
                 if event.type == pygame.KEYDOWN:  # checking if any key was selected
                     if event.key == pygame.K_RETURN:
                         print("exiting menu")
@@ -1595,6 +1615,7 @@ class Desert(Setting):
 
 
 def search(setting, role):
+    global screen, X, Y
     currentTime = time()
     if currentTime - role.searchTime < 86400:
         while True:
@@ -1610,6 +1631,11 @@ def search(setting, role):
             pygame.display.update()
             
             for event in pygame.event.get():  # update the option number if necessary
+                if event.type == pygame.VIDEORESIZE:
+                    X, Y = screen.get_width(), screen.get_height()
+                    X = 410 if X < 410 else X
+                    print(f"X, Y = {X}, {Y}")
+                    screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 if event.type == pygame.KEYDOWN:  # checking if any key was selected
                     if event.key == pygame.K_RETURN:
 #                        pygame.event.clear(eventtype=pygame.KEYDOWN)
@@ -1644,6 +1670,11 @@ def search(setting, role):
         pygame.display.update()
 
         for event in pygame.event.get():  # update the option number if necessary
+            if event.type == pygame.VIDEORESIZE:
+                X, Y = screen.get_width(), screen.get_height()
+                X = 410 if X < 410 else X
+                print(f"X, Y = {X}, {Y}")
+                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_DOWN:
                     optionNumber = optionNumber + 1 if optionNumber != numOptions - 1 else 0
@@ -2246,16 +2277,25 @@ def getItemCounts(role):
     return currentInventory, (line_count - temp) // temp_2
 
 def print_no_items():
-    pygame_print("You don't have any items.", )
+    global screen, X, Y
+    pygame_print("You don't have any items.", loc_y=Y // 2)
     pygame.display.update()
     while True:
         for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.VIDEORESIZE:
+                X, Y = screen.get_width(), screen.get_height()
+                X = 410 if X < 410 else X
+                print(f"X, Y = {X}, {Y}")
+                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                screen.fill(white)
+                pygame_print("You don't have any items.", loc_y=Y // 2)
+                pygame.display.update()
+            elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     return
 
 def printInventory(role):
-    global font, white, black, orange
+    global font, white, black, orange, screen, X, Y
 
     screen.fill(white)
     currentInventory, num_items = getItemCounts(role)
@@ -2289,7 +2329,12 @@ def printInventory(role):
         pygame.display.update()
 
         for event in pygame.event.get():  # update the option number if necessary
-            if event.type == pygame.KEYDOWN:  # checking if any key was selected
+            if event.type == pygame.VIDEORESIZE:
+                X, Y = screen.get_width(), screen.get_height()
+                X = 410 if X < 410 else X
+                print(f"X, Y = {X}, {Y}")
+                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+            elif event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_DOWN:
                     optionNumber = optionNumber + 1 if optionNumber != num_items - 1 else 0
                 elif event.key == pygame.K_UP:
@@ -3323,13 +3368,13 @@ def InputMap(role):
 
 def Menu(role, setting):
     # Only going to execute once
-    global Quests, orange, black, white, X
+    global Quests, orange, black, white, X, Y, screen
     if Quests == False:
         optionNumber = 0
         pygame.display.update()
 
         while True:
-            #            screen.fill(white)
+            screen.fill(white)
             pygame_print("Choose an option", (0.12*Y), color=black, background_color=white)
             pygame_print("================", (0.1734*Y), color=black, background_color=white)
             pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
@@ -3337,6 +3382,11 @@ def Menu(role, setting):
             pygame_print("Stats", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
             pygame.display.update()
             for event in pygame.event.get():  # update the option number if necessary
+                if event.type == pygame.VIDEORESIZE:
+                    X, Y = screen.get_width(), screen.get_height()
+                    X = 410 if X < 410 else X
+                    print(f"X, Y = {X}, {Y}")
+                    screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 if event.type == pygame.KEYDOWN:  # checking if any key was selected
                     if event.key == pygame.K_DOWN:
                         optionNumber = optionNumber + 1 if optionNumber != 2 else 0
@@ -3374,6 +3424,11 @@ def Menu(role, setting):
             pygame_print("InputMap", (0.6*Y), color=(orange if optionNumber == 7 else black), background_color=white)
             pygame.display.update()
             for event in pygame.event.get():  # update the option number if necessary
+                if event.type == pygame.VIDEORESIZE:
+                    X, Y = screen.get_width(), screen.get_height()
+                    X = 410 if X < 410 else X
+                    print(f"X, Y = {X}, {Y}")
+                    screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 if event.type == pygame.KEYDOWN:  # checking if any key was selected
                     if event.key == pygame.K_DOWN:
                         optionNumber = optionNumber + 1 if optionNumber != 7 else 0
@@ -3402,7 +3457,6 @@ def game():
     global font, Quests, screen, old_screen, X, Y
     try:
         pygame.display.set_caption('Game Window')
-        font = pygame.font.Font('freesansbold.ttf', int(0.1027*Y))
         text = font.render('Welcome to the Game!', True, black, light_pink)
         textRect = text.get_rect()
         textRect.center = (X // 2, Y // 2)
@@ -3425,17 +3479,16 @@ def game():
             
             for event in pygame.event.get():  # Can only call pygame.event.get() once per iteration
                 if event.type == pygame.VIDEORESIZE:
-                    print("hi")
                     X, Y = screen.get_width(), screen.get_height()
-                    print(f"X, Y = {globals()['X']}, {globals()['Y']}")
-                    
+                    X = 410 if X < 410 else X
+                    print(f"X, Y = {X}, {Y}")
+                    screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                     if displayedHeroes and not dispayedChest:
-                        updateList(heroes, optionNumber)
+                        updateList(heroes, optionNumber, inc = 0.1*Y)
                     elif dispayedChest and not displayedPlaces:
                         displayImage("treasure_chest.png", p=1)
                         pygame_print(text = "Do you open the chest?", loc_y = Y // 1.5, color=black, background_color = white, offset_x=0)
                         openChestOption(optionNumber)  # Displaying 'Yes' and 'No'
-
                         
                 if not started:
                     screen.fill(light_pink)
@@ -3457,10 +3510,10 @@ def game():
                     if event.type == pygame.KEYDOWN:  # checking if any key was selected
                         if event.key == pygame.K_DOWN:
                             optionNumber = optionNumber + 1 if optionNumber != 5 else 3
-                            updateList(heroes, optionNumber)  # update screen
+                            updateList(heroes, optionNumber, inc = 0.1*Y) # update screen
                         elif event.key == pygame.K_UP:
                             optionNumber = optionNumber - 1 if optionNumber != 3 else 5
-                            updateList(heroes, optionNumber)  # update screen
+                            updateList(heroes, optionNumber, inc = 0.1*Y)  # update screen
                         elif event.key == pygame.K_RETURN:
                             playerhero = heroes[optionNumber]
 #                            pygame.event.clear(eventtype=pygame.KEYDOWN)  # https://www.pygame.org/docs/ref/event.html#pygame.event.get
@@ -3495,6 +3548,7 @@ def game():
                             pygame.display.update()
                             wait_til_enter()
                             displayImage("treasure_chest.png", p=1)
+                            pygame_print(text = "Do you open the chest?", loc_y = Y // 1.5, color=black, background_color = white, offset_x=0)
                             openChestOption(optionNumber)  # Displaying 'Yes' and 'No'
                             dispayedChest = True
 #                            pygame.event.clear(eventtype=pygame.KEYDOWN)  # We don't want the enter that they press to do anything until 'Yes' and 'No' are displayed
@@ -3532,6 +3586,7 @@ def game():
 #                        pygame.event.clear(eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block
 
                 elif displayedPlaces and not Quests:
+                    screen.fill(white)
                     font = pygame.font.Font('freesansbold.ttf', int(0.03733*Y))
                     text = font.render("Where do you want to go?", True, black, white)
                     textRect = text.get_rect()
@@ -3543,7 +3598,7 @@ def game():
                     screen.blit(text, textRect)
                     font = pygame.font.Font('freesansbold.ttf', int(0.0426*Y))
                     PlaceOption(optionNumber)
-                    pygame.display.update()
+#                    pygame.display.update()
                     if event.type == pygame.KEYDOWN:  # checking if any key was selected
                         if event.key == pygame.K_DOWN:
                             optionNumber = optionNumber + 1 if optionNumber != 4 else 0
@@ -3629,6 +3684,7 @@ def game():
                     #old_screen = screen
                 elif Quests:
                     while True:
+                        print("hello menu")
                         Menu(RoleHero, Place)
 
         # Animation
