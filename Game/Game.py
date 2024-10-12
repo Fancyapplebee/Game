@@ -1314,6 +1314,7 @@ class PercyJackson(Role, IPBase):
         Role.__init__(self, name)
         IPBase.__init__(self)
         self.picture = "⚡️"
+        self.image_name = "percy-start.png"
         self.shot_speed = 15
         self.attackpower = 20
         self.base_health = 200
@@ -1338,6 +1339,7 @@ class Elf(Role, IPBase):
         Role.__init__(self, name)
         IPBase.__init__(self)
         self.picture = "🧝"
+        self.image_name = "elf-start.png"
         self.shot_speed = 10
         self.attackpower = 10
         self.base_health = 50
@@ -1357,6 +1359,7 @@ class Zelda(Role, IPBase):
         Role.__init__(self, name)
         IPBase.__init__(self)
         self.picture = "🗡"
+        self.image_name = "zelda-start.png"
         # TODO: Change back to 20 for actual game
         self.attackpower = 2000
         self.shot_speed = 15
@@ -1475,7 +1478,6 @@ def wait_til_enter():
 #                pygame.event.clear(eventtype=pygame.KEYDOWN)
                 return
             elif event.type == pygame.VIDEORESIZE:
-                print("hi")
                 #old_screen = screen
 #                screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
                 X, Y = screen.get_width(), screen.get_height()
@@ -1526,6 +1528,13 @@ def displayImage(rsp, height: bool = False, p: int = 0, update: bool = True):
     if update:
         pygame.display.update()
 
+def displayImageCustom(rsp, width, height, loc_x, loc_y):
+    global screen
+    rsp = os.getcwd() + "/Assets/" + rsp
+    pilimage = Image.open(rsp).convert("RGBA")
+    pilimage = pilimage.resize(((width), (height)))
+    pgimg = pygame.image.fromstring(pilimage.tobytes(), pilimage.size, pilimage.mode)
+    screen.blit(pgimg, (loc_x, loc_y))
 
 def openChestOption(optionNumber=None):
     pygame_print("Yes", Y // 1.5 + int(0.11*Y), color=(orange if optionNumber == 0 else black))
@@ -1578,7 +1587,7 @@ class Setting:
                         currHeight += int(0.0534*Y)
                     font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
                     pygame.display.update()
-                if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                elif event.type == pygame.KEYDOWN:  # checking if any key was selected
                     if event.key == pygame.K_RETURN:
                         print("exiting menu")
                         return
@@ -1613,6 +1622,9 @@ class Desert(Setting):
         self.name = "Desert"
         self.places = ("LANDSCAPE", "HILLSIDE")  # Fill this up
 
+#5 seconds * 1 hour  = (5 / 3600) * 1 hour = 5/3600 hours
+#            ======
+#            3600 seconds
 
 def search(setting, role):
     global screen, X, Y
@@ -1621,8 +1633,12 @@ def search(setting, role):
         while True:
             screen.fill(white)
             currentTime = time()
-            time_til_search = (86400 - (currentTime - role.searchTime)) / 60
-            messages = ("Sorry, you cannot", "search at this point!", "Time until you can", "search again = ", f"{time_til_search:.2f} minutes.")
+            time_til_search = (86400 - (currentTime - role.searchTime))
+            hours = time_til_search // 3600
+            remainder = time_til_search % 3600
+            minutes = remainder // 60
+            seconds = remainder % 60
+            messages = ("Sorry, you cannot", "search at this point!", "Time until you can", "search again = ", f"{hours:.0f}:{minutes:.0f}:{seconds:.0f}")
             count = int(0.12*Y)
             for message in messages:
                 pygame_print(message, count)
@@ -1636,7 +1652,7 @@ def search(setting, role):
                     X = 410 if X < 410 else X
                     print(f"X, Y = {X}, {Y}")
                     screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
-                if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                elif event.type == pygame.KEYDOWN:  # checking if any key was selected
                     if event.key == pygame.K_RETURN:
 #                        pygame.event.clear(eventtype=pygame.KEYDOWN)
                         return
@@ -1914,15 +1930,25 @@ def Mine(role, setting):
     '''
 
     screen.fill(white)
-    global time, font
+    global time, font, X, Y
     TheSetting = setting.name.upper()
-    message = "The objective of this game is to click on the item in time (To stop, type stop)!"
+    pygame_print("The objective of this game is to click on the item in time", loc_y = 0.12*Y)
+    pygame_print("(To stop, type stop)!", loc_y = 0.20*Y)
+    pygame.display.update()
     Opponent = NeutralNPC()
-    message += " Get ready, you are about to face"
+    wait_til_enter()
+    screen.fill(white)
+    pygame_print("Get ready, you are about to face:", loc_y = 0.12*Y)
+    pygame_print(f"The {Opponent.role}", loc_y = int(0.20*Y))
+    pygame.display.update()
+    wait_til_enter()
+    screen.fill(white)
+    displayImageCustom(role.image_name, width = X//2, height = Y, loc_x = 0, loc_y = 0)
+    #TODO: Get Images for Neutral NPCs and display the neural NPC below
 
-    count = long_pygame_print(message)
-
-    pygame_print(f"The {Opponent.role}", int(0.12*Y) + count)
+    pygame.display.update()
+    wait_til_enter()
+    screen.fill(white)
 
     wins = 0
     losses = 0
@@ -3387,7 +3413,7 @@ def Menu(role, setting):
                     X = 410 if X < 410 else X
                     print(f"X, Y = {X}, {Y}")
                     screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
-                if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                elif event.type == pygame.KEYDOWN:  # checking if any key was selected
                     if event.key == pygame.K_DOWN:
                         optionNumber = optionNumber + 1 if optionNumber != 2 else 0
                     elif event.key == pygame.K_UP:
@@ -3518,21 +3544,14 @@ def game():
                             playerhero = heroes[optionNumber]
 #                            pygame.event.clear(eventtype=pygame.KEYDOWN)  # https://www.pygame.org/docs/ref/event.html#pygame.event.get
                             if playerhero == "PERCY JACKSON":
-                                displayImage("percy-start.png", p=1)
-                                #pygame.time.delay(2000)
-                                wait_til_enter()
                                 RoleHero = PercyJackson(playerhero)
                             elif playerhero == "ELF":
-                                displayImage("elf-start.png", p=1)
-                                #pygame.time.delay(2000)
-                                wait_til_enter()
                                 RoleHero = Elf(playerhero)
                             elif playerhero == "ZELDA":
-                                displayImage("zelda-start.png", p=1)
-                                #pygame.time.delay(2000)
-                                wait_til_enter()
                                 RoleHero = Zelda(playerhero)
-
+                            
+                            displayImage(RoleHero.image_name, p=1)
+                            wait_til_enter()
                             optionNumber = 0  # set the variable for the next option menu
 
                             screen.fill(white)
@@ -3598,7 +3617,6 @@ def game():
                     screen.blit(text, textRect)
                     font = pygame.font.Font('freesansbold.ttf', int(0.0426*Y))
                     PlaceOption(optionNumber)
-#                    pygame.display.update()
                     if event.type == pygame.KEYDOWN:  # checking if any key was selected
                         if event.key == pygame.K_DOWN:
                             optionNumber = optionNumber + 1 if optionNumber != 4 else 0
@@ -3643,45 +3661,27 @@ def game():
                             pygame.display.update()
 
                             screen.fill(white)
-                            font = pygame.font.Font('freesansbold.ttf', int(0.0426*Y))
-                            text = font.render("New things unlocked!", True, black, white)
-                            textRect = text.get_rect()
-                            textRect.center = (X // 2, 0.12*Y)
-                            screen.blit(text, textRect)
+                            font_sz = int(0.0426*Y)
+                            font = pygame.font.Font('freesansbold.ttf', font_sz)
+                            pygame_print("New things unlocked!", loc_y = 0.12*Y)
                             pygame.display.update()
-                            #pygame.time.delay(500)
                             wait_til_enter()
-
                             screen.fill(white)
-                            font = pygame.font.Font('freesansbold.ttf', int(0.03467*Y))
-                            text = font.render("Quests have been unlocked.", True, black, white)
-                            textRect = text.get_rect()
-                            textRect.center = (X // 2, 0.12*Y)
-                            screen.blit(text, textRect)
+                            font = pygame.font.Font('freesansbold.ttf', font_sz)
+                            pygame_print("Quests have been unlocked.", loc_y = 0.12*Y)
                             pygame.display.update()
-                            #pygame.time.delay(500)
                             wait_til_enter()
-
                             screen.fill(white)
-                            text = font.render("To open quests", True, black, white)
-                            textRect = text.get_rect()
-                            textRect.center = (X // 2, 0.0933*Y)
-                            screen.blit(text, textRect)
+                            font = pygame.font.Font('freesansbold.ttf', font_sz)
+                            pygame_print("To open quests", loc_y = 0.0933*Y)
                             pygame.display.update()
-                            #pygame.time.delay(500)
                             wait_til_enter()
-                            font = pygame.font.Font('freesansbold.ttf', int(0.03733*Y))
-                            text = font.render("Select 'Quests' in the menu", True, black, white)
-                            textRect = text.get_rect()
-                            textRect.center = (X // 2, 0.16*Y)
-                            font = pygame.font.Font('freesansbold.ttf', int(0.0426*Y))
-                            screen.blit(text, textRect)
+                            screen.fill(white)
+                            font = pygame.font.Font('freesansbold.ttf', font_sz)
+                            pygame_print("Select 'Quests' in the menu", loc_y = 0.0933*Y)
                             pygame.display.update()
-                            #pygame.time.delay(1000)
                             wait_til_enter()
-
 #                            pygame.event.clear(eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block
-                    #old_screen = screen
                 elif Quests:
                     while True:
                         print("hello menu")
