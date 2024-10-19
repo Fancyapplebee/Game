@@ -1380,13 +1380,15 @@ class Zelda(Role, IPBase):
 class NeutralNPC:
     def __init__(self):
         global neutralNPCs, randint
-        self.role = neutralNPCs[randint(0, len(neutralNPCs) - 1)]
-        if self.role == "MINER":
+        self.role = neutralNPCs[randint(0, len(neutralNPCs) - 1)].title()
+        if self.role == "Miner":
             self.picture = "⛏"
             self.expYield = 0.1 + random() / 20  # random number from 0.1 - 0.15
-        elif self.role == "WOODCHUCKER":
+            self.image_name = "miner.png"
+        elif self.role == "Woodchucker":
             self.picture = "🪓"
             self.expYield = 0.12 + random() / 50  # random number from 0.12 - 0.14
+            self.image_name = "woodchucker.png"
 
 
 def increaseStats(role):
@@ -1445,10 +1447,12 @@ font_size = 32  # Base font size you designed for
 scaled_font_size = scale_font(font_size)
 font = pygame.font.Font('freesansbold.ttf', scale_font(font_size))
 print(scaled_font_size)
-def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0):
-    X = globals()['X']
-    scaled_font_size = scale_font(font_size)
-    font = pygame.font.Font('freesansbold.ttf', scaled_font_size)
+def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0, scale = True):
+    global X, font, font_size, scaled_font_size
+    if scale:
+        scaled_font_size = scale_font(font_size)
+        font = pygame.font.Font('freesansbold.ttf', scaled_font_size)
+    
     text = font.render(text, True, color, background_color)
     textRect = text.get_rect()
     textRect.center = (X//2+offset_x, loc_y)
@@ -1915,9 +1919,9 @@ def long_pygame_print(message, count=0, line_break=24, color=black, background_c
     return count
 
 
-def AddButton(text="STOP", offset_x=0, loc_y=int(0.048*Y), background_color=red):
+def AddButton(text="STOP", offset_x=0, loc_y=int(0.048*Y), background_color=red, font_size=int(0.03467*Y)):
     global font
-    font = pygame.font.Font('freesansbold.ttf', int(0.03467*Y))
+    font = pygame.font.Font('freesansbold.ttf', font_size)
     stop_rect = pygame_print(text, loc_y=loc_y, background_color=background_color, offset_x=offset_x)
     font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
 
@@ -1929,11 +1933,12 @@ def Mine(role, setting):
     the NPC snatches the item (before npcTime elapses)
     '''
 
+    global time, font, X, Y, screen
     screen.fill(white)
-    global time, font, X, Y
     TheSetting = setting.name.upper()
-    pygame_print("The objective of this game is to click on the item in time", loc_y = 0.12*Y)
-    pygame_print("(To stop, type stop)!", loc_y = 0.20*Y)
+    pygame_print("The objective of this game", loc_y = 0.12*Y)
+    pygame_print("is to click on the item in time", loc_y = 0.20*Y)
+    pygame_print("(To stop, click 'stop')!", loc_y = 0.28*Y)
     pygame.display.update()
     Opponent = NeutralNPC()
     wait_til_enter()
@@ -1945,6 +1950,7 @@ def Mine(role, setting):
     screen.fill(white)
     displayImageCustom(role.image_name, width = X//2, height = Y, loc_x = 0, loc_y = 0)
     #TODO: Get Images for Neutral NPCs and display the neural NPC below
+    displayImageCustom(Opponent.image_name, width = X//2, height = Y, loc_x = X//2, loc_y = 0)
 
     pygame.display.update()
     wait_til_enter()
@@ -1977,24 +1983,23 @@ def Mine(role, setting):
     while True:
         screen.fill(white)
 
-        font = pygame.font.Font('freesansbold.ttf', int(0.0267*Y))
-        pygame_print(f"Player Wins = {wins}", loc_y=int(0.1334*Y), offset_x=int(0.33125*X))
-        pygame_print(f"{Opponent.role} Wins = {losses}", loc_y=int(0.1867*Y), offset_x=int(0.33125*X))
-        pygame_print(f"Draws = {draws}", loc_y=int(0.24*Y), offset_x=int(0.33125*X))
+        font_sz = int(0.0267*Y)
+        font = pygame.font.Font('freesansbold.ttf', font_sz)
+        pygame_print(f"Player Wins = {wins}", loc_y=int(0.1334*Y))
+        pygame_print(f"{Opponent.role} Wins = {losses}", loc_y=int(0.1867*Y))
+        pygame_print(f"Draws = {draws}", loc_y=int(0.24*Y))
 
-        stop_rect = AddButton(offset_x=-int(0.125*X))
+        stop_rect = AddButton(loc_y = int(0.048*Y), font_size = font_sz)
 
-        pygame.draw.line(screen, black, (int(0.1*X), int(0.1*Y)), (int(0.65*X), int(0.1*Y)))  # top edge
-        pygame.draw.line(screen, black, (int(0.1*X), int(0.9*Y)), (int(0.65*X), int(0.9*Y)))  # bottom edge
-        pygame.draw.line(screen, black, (int(0.1*X), int(0.1*Y)), (int(0.1*X), int(0.9*Y)))  # left edge
-        pygame.draw.line(screen, black, (int(0.65*X), int(0.1*Y)), (int(0.65*X), int(0.9*Y)))  # right edge
+        pygame.draw.line(screen, black, (int(0.1*X), int(0.35*Y)), (int(0.9*X), int(0.35*Y)))  # top edge
+        pygame.draw.line(screen, black, (int(0.1*X), int(0.9*Y)), (int(0.9*X), int(0.9*Y)))  # bottom edge
+        pygame.draw.line(screen, black, (int(0.1*X), int(0.35*Y)), (int(0.1*X), int(0.9*Y)))  # left edge
+        pygame.draw.line(screen, black, (int(0.9*X), int(0.35*Y)), (int(0.9*X), int(0.9*Y)))  # right edge
 
-        pygame.display.update()
         # Determine coordinates where object will appear on the screen
-
         buffer_width_x, buffer_width_y = int(0.05*X), int(0.0534*Y)
 
-        rand_X, rand_Y = randint(int(0.1*X) + buffer_width_x, int(0.65*X) - buffer_width_x), randint(int(0.1*Y) + buffer_width_y, int(0.9*Y) - buffer_width_y)
+        rand_X, rand_Y = randint(int(0.1*X) + buffer_width_x, int(0.9*X) - buffer_width_x), randint(int(0.35*Y) + buffer_width_y, int(0.9*Y) - buffer_width_y)
 
         square_rect = pygame.Rect(rand_X, rand_Y, buffer_width_x, buffer_width_y)
 
@@ -2019,7 +2024,37 @@ def Mine(role, setting):
 
         while True:
             for event in pygame.event.get():
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.type == pygame.VIDEORESIZE:
+                    temp_X, temp_Y = X, Y
+                    X, Y = screen.get_width(), screen.get_height()
+                    X = 410 if X < 410 else X
+                    print(f"X, Y = {X}, {Y}")
+                    screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                    screen.fill(white)
+                    font_sz = int(0.0267*Y)
+                    font = pygame.font.Font('freesansbold.ttf', font_sz)
+                    pygame_print(f"Player Wins = {wins}", loc_y=int(0.1334*Y))
+                    pygame_print(f"{Opponent.role} Wins = {losses}", loc_y=int(0.1867*Y))
+                    pygame_print(f"Draws = {draws}", loc_y=int(0.24*Y))
+                    stop_rect = AddButton(loc_y = int(0.048*Y), font_size = font_sz)
+                    pygame.draw.line(screen, black, (int(0.1*X), int(0.35*Y)), (int(0.9*X), int(0.35*Y)))  # top edge
+                    pygame.draw.line(screen, black, (int(0.1*X), int(0.9*Y)), (int(0.9*X), int(0.9*Y)))  # bottom edge
+                    pygame.draw.line(screen, black, (int(0.1*X), int(0.35*Y)), (int(0.1*X), int(0.9*Y)))  # left edge
+                    pygame.draw.line(screen, black, (int(0.9*X), int(0.35*Y)), (int(0.9*X), int(0.9*Y)))  # right edge
+                    # Determine coordinates where object will appear on the screen
+                    buffer_width_x, buffer_width_y = int(0.05*X), int(0.0534*Y)
+                    rand_X, rand_Y = (X/temp_X)*rand_X, (Y/temp_Y)*rand_Y
+                    
+                    square_rect = pygame.Rect(rand_X, rand_Y, buffer_width_x, buffer_width_y)
+                    image = pygame.image.load(MineImagesDict[item])
+                    image = pygame.transform.scale(image, (buffer_width_x, buffer_width_y))
+
+                    pygame.draw.rect(screen, white, square_rect)
+                    screen.blit(image, square_rect.topleft)
+
+                    pygame.display.update()
+                    
+                elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
                     playerTime = time() - start
                     breakFlag = True
@@ -2063,7 +2098,9 @@ def Mine(role, setting):
 
     increaseExp(role, netExp)
     screen.fill(white)
-
+    font_sz = int(0.0267*X)
+    font = pygame.font.Font('freesansbold.ttf', font_sz)
+    
     if playeravg / playeravglen < botavg / botavglen:
         pygame_print("You get 5 extra resources", int(0.12*Y))
         pygame_print("because your avg was better", int(0.1734*Y))
@@ -2097,6 +2134,26 @@ def Mine(role, setting):
     pygame.display.update()
     while True:
         for event in pygame.event.get():  # update the option number if necessary
+            if event.type == pygame.VIDEORESIZE:
+                X, Y = screen.get_width(), screen.get_height()
+                X = 410 if X < 410 else X
+                print(f"X, Y = {X}, {Y}")
+                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                screen.fill(white)
+                font_sz = int(0.0267*X)
+                font = pygame.font.Font('freesansbold.ttf', font_sz)
+                if playeravg / playeravglen < botavg / botavglen:
+                    pygame_print("You get 5 extra resources", int(0.12*Y))
+                    pygame_print("because your avg was better", int(0.1734*Y))
+                    pygame_print(f"than the {Opponent.role}", int(0.2267*Y))
+                pygame_print("The player average is {:.2f} seconds".format(playeravg / playeravglen), loc_y=int(0.28*Y))
+                pygame_print("The {} average is {:.2f} seconds".format(Opponent.role, botavg / botavglen), loc_y=int(0.3333*Y))
+                pygame_print("You got {} resources in total!".format(points), loc_y=int(0.3867*Y))
+                pygame_print("You won {} games!".format(wins), loc_y=int(0.44*Y))
+                pygame_print("You lost {} games!".format(losses), loc_y=int(0.4933*Y))
+                pygame_print("{} is the number of games that drawed!".format(draws), loc_y=int(0.5467*Y))
+                pygame.display.update()
+                
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_RETURN:
                     return points
@@ -2322,23 +2379,11 @@ def print_no_items():
 
 def printInventory(role):
     global font, white, black, orange, screen, X, Y
-
-    screen.fill(white)
-    currentInventory, num_items = getItemCounts(role)
-
-    # If the user doesn't have any items, then we need to handle this differently.
-    if num_items == 0:
-        print_no_items()
-        return
-
-    currentInventoryList = list(currentInventory.keys())
-    temp = int(0.1067*Y)
-    temp_2 = temp//2
-    stop_rect = AddButton(text="EXIT", offset_x=0)
     optionNumber = 0
-    pygame.display.update()
 
     while True:
+        temp = int(0.1067*Y)
+        temp_2 = temp//2
         screen.fill(white)
         line_count = temp
         currentInventory, num_items = getItemCounts(role)
@@ -2351,7 +2396,7 @@ def printInventory(role):
                          color=orange if idx == optionNumber else black)
             line_count += temp_2
 
-        stop_rect = AddButton(text="EXIT", offset_x=0)
+        stop_rect = AddButton(text="EXIT", offset_x=0, loc_y = int(0.048*Y))
         pygame.display.update()
 
         for event in pygame.event.get():  # update the option number if necessary
