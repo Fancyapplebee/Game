@@ -1443,26 +1443,37 @@ def scale_font(size):
     return int(size * scale_factor)
 
 # Example of using this function to create fonts
-font_size = 32  # Base font size you designed for
-scaled_font_size = scale_font(font_size)
+base_font_size = 32  # Base font size you designed for
+font_size = base_font_size
+#scaled_font_size = scale_font(font_size)
 font = pygame.font.Font('freesansbold.ttf', scale_font(font_size))
-print(scaled_font_size)
+#print(scaled_font_size)
+base_font_height = font.size("hi")[1]
+
 def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0, scale = True):
-    global X, font, font_size, scaled_font_size
-#    if scale:
-#        scaled_font_size = scale_font(font_size)
-#        font = pygame.font.Font('freesansbold.ttf', scaled_font_size)
-    
+    global X, Y, font, font_size, base_screen_height, base_font_height, base_font_size
+    font_size = base_font_size
     font = pygame.font.Font('freesansbold.ttf', font_size)
+    #Rescaling the font size so it does not trail off the screen
     threshold = 0.9*X
-    while font.size(text)[0] > threshold:
+    scaled_font_height = (Y*base_font_height)/base_screen_height
+    
+    font_sz = font.size(text)
+    while font_size > 1 and (font_sz[0] > threshold or font_sz[1] > scaled_font_height):
         font_size -= 1
         font = pygame.font.Font('freesansbold.ttf', font_size)
+        font_sz = font.size(text)
+        
+    
+    
+    font = pygame.font.Font('freesansbold.ttf', font_size)
+    
     
     text = font.render(text, True, color, background_color)
     textRect = text.get_rect()
     textRect.center = (X//2+offset_x, loc_y)
     screen.blit(text, textRect)
+    
     # Adjust fonts dynamically based on screen size
     return textRect
     
@@ -1486,7 +1497,7 @@ def wait_til_enter():
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
 #                if event.key == pygame.K_RETURN:
 #                pygame.event.clear(eventtype=pygame.KEYDOWN)
-                return
+                return False #Not resized
             elif event.type == pygame.VIDEORESIZE:
                 #old_screen = screen
 #                screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
@@ -1494,7 +1505,7 @@ def wait_til_enter():
                 X = 410 if X < 410 else X
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 print(f"X, Y = {X}, {Y}")
-                return
+                return True #Resized
                 #                    screen.blit(old_screen, (0,0))
 #                pygame.display.update()
 
@@ -1516,8 +1527,9 @@ def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: i
     for num, item in enumerate(items):
         pygame_print(item, Y // height + count, color=(yellow if num == selectNumber else black),
                      background_color=color)
-        pygame.display.update()
         count += inc
+    print("called updateList")
+    pygame.display.update()
     #old_screen = screen
 
 # all images are in Game/Game/Assets
@@ -1737,17 +1749,17 @@ def search(setting, role):
     if setting.places[optionNumber] == "SANDBAR":
         Chances = randint(1, 100000)
         role.numInv["Sands"]["Number"] += 1
-        pygame_print("You got SAND!", int(0.267*Y))
         displayImage("sand.png", p=0)
+        pygame_print("You got SAND!", int(0.267*Y))
         pygame.display.update()
         #pygame.time.delay(1000)  # waiting one second
         wait_til_enter()
-
+        screen.fill(white)
         if Chances == 1:
             role.numInv["Sand Pails"]["Number"] += 1
             screen.fill(white)  # clear the screen
-            pygame_print("You got a Sand Pail!", int(0.267*Y))
             displayImage("sand-pail.png", p=0)
+            pygame_print("You got a Sand Pail!", int(0.267*Y))
             pygame.display.update()
             #pygame.time.delay(1000)  # waiting one second
             wait_til_enter()
@@ -1755,16 +1767,17 @@ def search(setting, role):
     elif setting.places[optionNumber] == "HILLSIDE":
         Chances = randint(1, 1000)
         role.numInv["Sands"]["Number"] += 1
-        pygame_print("You got SAND!", int(0.267*Y))
         displayImage("hillside.png", p=0)
+        pygame_print("You got SAND!", int(0.267*Y))
         pygame.display.update()
         #pygame.time.delay(1000)  # waiting one second
         wait_til_enter()
+        screen.fill(white)
         if Chances == 1:
             role.numInv["Cactuses"]["Number"] += 1
             screen.fill(white)  # clear the screen
-            pygame_print("You found a cactus!", int(0.267*Y))
             displayImage("cactus.png", p=0)
+            pygame_print("You found a cactus!", int(0.267*Y))
             pygame.display.update()
             #pygame.time.delay(1000)  # waiting one second
             wait_til_enter()
@@ -1773,8 +1786,8 @@ def search(setting, role):
         Chances = randint(1, 1e8)
         if Chances == 1:
             role.numInv["Golden Logs"] += 1
-            pygame_print("SUPER RARE DROP: Golden Log!", int(0.267*Y))
             displayImage("Golden log.png", p=0)
+            pygame_print("SUPER RARE DROP: Golden Log!", int(0.267*Y))
         elif 2 <= Chances <= 11:
             role.numInv["Emeralds"]["Number"] += 1
             displayImage("emerald.png", p=0)
@@ -1869,6 +1882,7 @@ def search(setting, role):
         pygame.display.update()
         #pygame.time.delay(1000)  # waiting one second
         wait_til_enter()
+        screen.fill(white)
         if Chances == 1:
             role.numInv["Sand Pails"]["Number"] += 1
             displayImage("sand pail.png", p=0)
@@ -3070,6 +3084,7 @@ def SellOption(Role):
 
 
 def BuyOption(Role):
+    global screen, X, Y
     if Role.money == 0:
         pygame_print("You don't have any money!", (0.4*Y), color=black, background_color=white)
         pygame.display.update()
@@ -3108,7 +3123,12 @@ def BuyOption(Role):
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
-            if event.type == pygame.KEYDOWN:  # checking if any key was selected
+            if event.type == pygame.VIDEORESIZE:
+                X, Y = screen.get_width(), screen.get_height()
+                X = 410 if X < 410 else X
+                print(f"X, Y = {X}, {Y}")
+                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+            elif event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_DOWN:
                     optionNumber = optionNumber + 1 if optionNumber != buyableItems.size() - 1 else 0
                     if optionNumber == 0:
@@ -3160,6 +3180,7 @@ def BuyOption(Role):
 
 
 def Shop(Role):
+    global screen, X, Y
     optionNumber = 0
     Role.money = 1e6 #TODO: delete
     while True:
@@ -3172,7 +3193,12 @@ def Shop(Role):
         stop_button = AddButton(text="EXIT", offset_x=0, loc_y=(0.4134*Y), background_color=red)
 
         pygame.display.update()
-        for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
+        for event in pygame.event.get():  # update the option number if necessary for event in pygame.event.get():  # update the option number if necessary
+            if event.type == pygame.VIDEORESIZE:
+                X, Y = screen.get_width(), screen.get_height()
+                X = 410 if X < 410 else X
+                print(f"X, Y = {X}, {Y}")
+                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_DOWN:
                     optionNumber = optionNumber + 1 if optionNumber != 1 else 0
