@@ -1449,9 +1449,15 @@ font = pygame.font.Font('freesansbold.ttf', scale_font(font_size))
 print(scaled_font_size)
 def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0, scale = True):
     global X, font, font_size, scaled_font_size
-    if scale:
-        scaled_font_size = scale_font(font_size)
-        font = pygame.font.Font('freesansbold.ttf', scaled_font_size)
+#    if scale:
+#        scaled_font_size = scale_font(font_size)
+#        font = pygame.font.Font('freesansbold.ttf', scaled_font_size)
+    
+    font = pygame.font.Font('freesansbold.ttf', font_size)
+    threshold = 0.9*X
+    while font.size(text)[0] > threshold:
+        font_size -= 1
+        font = pygame.font.Font('freesansbold.ttf', font_size)
     
     text = font.render(text, True, color, background_color)
     textRect = text.get_rect()
@@ -1882,6 +1888,7 @@ def search(setting, role):
 
 
 def Stats(RoleHero):
+    global X, Y, screen
     screen.fill(white)
     pygame_print(f"Attack Power = {RoleHero.attackpower:.0f}", int(0.12*Y))
     pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", int(0.1734*Y))
@@ -1896,6 +1903,23 @@ def Stats(RoleHero):
     pygame.display.update()
     while True:
         for event in pygame.event.get():  # update the option number if necessary
+            if event.type == pygame.VIDEORESIZE:
+                X, Y = screen.get_width(), screen.get_height()
+                X = 410 if X < 410 else X
+                print(f"X, Y = {X}, {Y}")
+                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                screen.fill(white)
+                pygame_print(f"Attack Power = {RoleHero.attackpower:.0f}", int(0.12*Y))
+                pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", int(0.1734*Y))
+                pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", int(0.2267*Y))
+                pygame_print(f"Speed = {RoleHero.speed:.2f}", int(0.28*Y))
+                pygame_print(f"Attack Stamina = {RoleHero.attackStamina:.2f}", int(0.3333*Y))
+                pygame_print(f"Defense Stamina = {RoleHero.defenseStamina:.2f}", int(0.3867*Y))
+                pygame_print(f"Money = {RoleHero.money}", int(0.44*Y))
+                pygame_print(f"Quest Level = {RoleHero.questLevel}", int(0.4933*Y))
+                pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", int(0.5467*Y))
+                pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.6*Y))
+                pygame.display.update()
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_RETURN:
                     print("exiting menu")
@@ -1985,6 +2009,7 @@ def Mine(role, setting):
 
         font_sz = int(0.0267*Y)
         font = pygame.font.Font('freesansbold.ttf', font_sz)
+        txt = f"Player Wins = {wins}\n{Opponent.role} Wins = {losses}\nDraws = {draws}"
         pygame_print(f"Player Wins = {wins}", loc_y=int(0.1334*Y))
         pygame_print(f"{Opponent.role} Wins = {losses}", loc_y=int(0.1867*Y))
         pygame_print(f"Draws = {draws}", loc_y=int(0.24*Y))
@@ -3408,7 +3433,7 @@ def InputMap(role):
 
     optionNumber = 0
 
-    while True:
+    while True: #TODO: Inefficient, should only blit when necessary
         screen.fill(white)
         pygame_print("Choose an option", (0.12*Y), color=black, background_color=white)
         pygame_print("================", (0.1734*Y), color=black, background_color=white)
@@ -3436,33 +3461,54 @@ def InputMap(role):
                 pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
                 return
 
-
 def Menu(role, setting):
     # Only going to execute once
     global Quests, orange, black, white, X, Y, screen
     if Quests == False:
         optionNumber = 0
+        screen.fill(white)
+        pygame_print("Choose an option", (0.12*Y), color=black, background_color=white)
+        pygame_print("================", (0.1734*Y), color=black, background_color=white)
+        pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
+        pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
+        pygame_print("Stats", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
         pygame.display.update()
 
         while True:
-            screen.fill(white)
-            pygame_print("Choose an option", (0.12*Y), color=black, background_color=white)
-            pygame_print("================", (0.1734*Y), color=black, background_color=white)
-            pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
-            pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
-            pygame_print("Stats", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
-            pygame.display.update()
             for event in pygame.event.get():  # update the option number if necessary
                 if event.type == pygame.VIDEORESIZE:
                     X, Y = screen.get_width(), screen.get_height()
                     X = 410 if X < 410 else X
                     print(f"X, Y = {X}, {Y}")
                     screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                    screen.fill(white)
+                    pygame_print("Choose an option", (0.12*Y), color=black, background_color=white)
+                    pygame_print("================", (0.1734*Y), color=black, background_color=white)
+                    pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
+                    pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
+                    pygame_print("Stats", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
+                    pygame.display.update()
                 elif event.type == pygame.KEYDOWN:  # checking if any key was selected
                     if event.key == pygame.K_DOWN:
                         optionNumber = optionNumber + 1 if optionNumber != 2 else 0
+                        
+                        screen.fill(white)
+                        pygame_print("Choose an option", (0.12*Y), color=black, background_color=white)
+                        pygame_print("================", (0.1734*Y), color=black, background_color=white)
+                        pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
+                        pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
+                        pygame_print("Stats", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
+                        pygame.display.update()
                     elif event.key == pygame.K_UP:
                         optionNumber = optionNumber - 1 if optionNumber != 0 else 2
+                        
+                        screen.fill(white)
+                        pygame_print("Choose an option", (0.12*Y), color=black, background_color=white)
+                        pygame_print("================", (0.1734*Y), color=black, background_color=white)
+                        pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
+                        pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
+                        pygame_print("Stats", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
+                        pygame.display.update()
                     elif event.key == pygame.K_RETURN:
                         if optionNumber == 0:  # Map
                             setting.map()
@@ -3471,6 +3517,7 @@ def Menu(role, setting):
                         elif optionNumber == 2:  # Stats
                             Stats(role)
                         return
+                    
 
     # Will go on until user enters "Quests"
     elif Quests == True or Shop == True:
@@ -3480,31 +3527,66 @@ def Menu(role, setting):
 
         '''
         optionNumber = 0
+        screen.fill(white)
+        pygame_print("Choose an option", (0.12*Y), color=black, background_color=white)
+        pygame_print("================", (0.1734*Y), color=black, background_color=white)
+        pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
+        pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
+        pygame_print("Mine", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
+        pygame_print("Inv", (0.3867*Y), color=(orange if optionNumber == 3 else black), background_color=white)
+        pygame_print("Shop", (0.44*Y), color=(orange if optionNumber == 4 else black), background_color=white)
+        pygame_print("Quests", (0.4934*Y), color=(orange if optionNumber == 5 else black), background_color=white)
+        pygame_print("Stats", (0.5467*Y), color=(orange if optionNumber == 6 else black), background_color=white)
+        pygame_print("InputMap", (0.6*Y), color=(orange if optionNumber == 7 else black), background_color=white)
         pygame.display.update()
-        while True:
-            screen.fill(white)
-            pygame_print("Choose an option", (0.12*Y), color=black, background_color=white)
-            pygame_print("================", (0.1734*Y), color=black, background_color=white)
-            pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
-            pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
-            pygame_print("Mine", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
-            pygame_print("Inv", (0.3867*Y), color=(orange if optionNumber == 3 else black), background_color=white)
-            pygame_print("Shop", (0.44*Y), color=(orange if optionNumber == 4 else black), background_color=white)
-            pygame_print("Quests", (0.4934*Y), color=(orange if optionNumber == 5 else black), background_color=white)
-            pygame_print("Stats", (0.5467*Y), color=(orange if optionNumber == 6 else black), background_color=white)
-            pygame_print("InputMap", (0.6*Y), color=(orange if optionNumber == 7 else black), background_color=white)
-            pygame.display.update()
+        while True: #TODO: Inefficient, should only blit when necessary
             for event in pygame.event.get():  # update the option number if necessary
                 if event.type == pygame.VIDEORESIZE:
                     X, Y = screen.get_width(), screen.get_height()
                     X = 410 if X < 410 else X
                     print(f"X, Y = {X}, {Y}")
                     screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                    screen.fill(white)
+                    pygame_print("Choose an option", (0.12*Y), color=black, background_color=white)
+                    pygame_print("================", (0.1734*Y), color=black, background_color=white)
+                    pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
+                    pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
+                    pygame_print("Mine", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
+                    pygame_print("Inv", (0.3867*Y), color=(orange if optionNumber == 3 else black), background_color=white)
+                    pygame_print("Shop", (0.44*Y), color=(orange if optionNumber == 4 else black), background_color=white)
+                    pygame_print("Quests", (0.4934*Y), color=(orange if optionNumber == 5 else black), background_color=white)
+                    pygame_print("Stats", (0.5467*Y), color=(orange if optionNumber == 6 else black), background_color=white)
+                    pygame_print("InputMap", (0.6*Y), color=(orange if optionNumber == 7 else black), background_color=white)
+                    pygame.display.update()
                 if event.type == pygame.KEYDOWN:  # checking if any key was selected
                     if event.key == pygame.K_DOWN:
                         optionNumber = optionNumber + 1 if optionNumber != 7 else 0
+                        screen.fill(white)
+                        pygame_print("Choose an option", (0.12*Y), color=black, background_color=white)
+                        pygame_print("================", (0.1734*Y), color=black, background_color=white)
+                        pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
+                        pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
+                        pygame_print("Mine", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
+                        pygame_print("Inv", (0.3867*Y), color=(orange if optionNumber == 3 else black), background_color=white)
+                        pygame_print("Shop", (0.44*Y), color=(orange if optionNumber == 4 else black), background_color=white)
+                        pygame_print("Quests", (0.4934*Y), color=(orange if optionNumber == 5 else black), background_color=white)
+                        pygame_print("Stats", (0.5467*Y), color=(orange if optionNumber == 6 else black), background_color=white)
+                        pygame_print("InputMap", (0.6*Y), color=(orange if optionNumber == 7 else black), background_color=white)
+                        pygame.display.update()
                     elif event.key == pygame.K_UP:
                         optionNumber = optionNumber - 1 if optionNumber != 0 else 7
+                        screen.fill(white)
+                        pygame_print("Choose an option", (0.12*Y), color=black, background_color=white)
+                        pygame_print("================", (0.1734*Y), color=black, background_color=white)
+                        pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
+                        pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
+                        pygame_print("Mine", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
+                        pygame_print("Inv", (0.3867*Y), color=(orange if optionNumber == 3 else black), background_color=white)
+                        pygame_print("Shop", (0.44*Y), color=(orange if optionNumber == 4 else black), background_color=white)
+                        pygame_print("Quests", (0.4934*Y), color=(orange if optionNumber == 5 else black), background_color=white)
+                        pygame_print("Stats", (0.5467*Y), color=(orange if optionNumber == 6 else black), background_color=white)
+                        pygame_print("InputMap", (0.6*Y), color=(orange if optionNumber == 7 else black), background_color=white)
+                        pygame.display.update()
                     elif event.key == pygame.K_RETURN:
                         if optionNumber == 0:  # Map
                             setting.map()
