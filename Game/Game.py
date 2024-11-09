@@ -1942,16 +1942,29 @@ def Stats(RoleHero):
 
 # prints a long pygame message
 def long_pygame_print(message, count=0, line_break=24, color=black, background_color=white, offset_x=0, start_height=int(0.12*Y)):
+    global X, Y, font, font_size, base_screen_height, base_font_height, base_font_size
+    font_size = base_font_size
+    font = pygame.font.Font('freesansbold.ttf', font_size)
+    threshold = 0.9 * X
+    scaled_font_height = (Y * base_font_height) / base_screen_height
+
+    font_sz = font.size(message)
+    while font_size > 1 and (font_sz[0] > threshold or font_sz[1] > scaled_font_height):
+        font_size -= 1
+        font = pygame.font.Font('freesansbold.ttf', font_size)
+        font_sz = font.size(message)
+
+    font = pygame.font.Font('freesansbold.ttf', font_size)
+
     temp = ""
-    # i is for indexing the string message
     message = message.split()
     for token in message:
-        if len(temp + token) + 1 >= line_break:
+        if len(temp) + len(token) + 1 > line_break:
             pygame_print(temp, loc_y=start_height + count, color=color, background_color=background_color, offset_x=offset_x)
-            temp = token + " "
-            count += int(0.0534*Y)
+            count += int(0.0534 * Y)
+            temp = token
         else:
-            temp += token + " "
+            temp += " " + token
 
     pygame_print(temp, loc_y=start_height + count, color=color, background_color=background_color, offset_x=offset_x)
     return count
@@ -1989,7 +2002,7 @@ def Mine(role, setting):
     displayImageCustom(role.image_name, width = X//2, height = Y, loc_x = 0, loc_y = 0)
     #TODO: Get Images for Neutral NPCs and display the neural NPC below
     displayImageCustom(Opponent.image_name, width = X//2, height = Y, loc_x = X//2, loc_y = 0)
-
+    
     pygame.display.update()
     wait_til_enter()
     screen.fill(white)
