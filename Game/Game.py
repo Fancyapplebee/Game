@@ -2239,6 +2239,7 @@ def printItem(role, item_name):
     while True:
 
         for event in pygame.event.get():
+            mouse_pos = pygame.mouse.get_pos()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     return 0
@@ -2249,6 +2250,12 @@ def printItem(role, item_name):
                     role.useInv[item_name]["Use"]()
                     pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25*X), loc_y=int(0.2667*Y))
                     pygame.display.update()
+            elif rect.collidepoint(mouse_pos):
+                mouse_pos = pygame.mouse.get_pos()
+                rect = AddButton(text="USE", offset_x=0, loc_y=int(0.5 * Y), background_color=orange)
+            else:
+                mouse_pos = pygame.mouse.get_pos()
+                rect = AddButton(text="USE", offset_x=0, loc_y=int(0.5 * Y), background_color=green)
 
 def sellItem(role, item_name):
     global font, white, black, orange
