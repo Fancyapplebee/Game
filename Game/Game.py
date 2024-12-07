@@ -2250,6 +2250,12 @@ def printItem(role, item_name):
                     pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25*X), loc_y=int(0.2667*Y))
                     pygame.display.update()
             #TODO: Change color of "Use" button while hovering over
+            elif rect.collidepoint(pygame.mouse.get_pos()):
+                rect = AddButton(text="Use", offset_x=int(0.25 * X), loc_y=int(0.7334*Y), background_color=orange)
+                pygame.display.update()
+            elif not rect.collidepoint(pygame.mouse.get_pos()):
+                rect = AddButton(text="Use", offset_x=int(0.25 * X), loc_y=int(0.7334*Y), background_color=green)
+                pygame.display.update()
 
 def sellItem(role, item_name):
     global font, white, black, orange, screen, X, Y
@@ -2363,7 +2369,7 @@ def sellItem(role, item_name):
                     pygame.display.update()
                     
                     
-            if rect.collidepoint(pygame.mouse.get_pos()):# and not on_sell_rect:
+            elif rect.collidepoint(pygame.mouse.get_pos()):# and not on_sell_rect:
                 screen.fill(white)  # clear the screen
                 pygame.draw.rect(screen, white, square_rect)
                 screen.blit(image, square_rect.topleft)
@@ -2381,7 +2387,7 @@ def sellItem(role, item_name):
                 rect = AddButton(text="Sell", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=orange)
 #                on_sell_rect = True
                 pygame.display.update()
-            if not rect.collidepoint(pygame.mouse.get_pos()):# and on_sell_rect:
+            elif not rect.collidepoint(pygame.mouse.get_pos()):# and on_sell_rect:
                 screen.fill(white)  # clear the screen
                 pygame.draw.rect(screen, white, square_rect)
                 screen.blit(image, square_rect.topleft)
@@ -3179,12 +3185,6 @@ def SellOption(Role):
                     startSellIdx = 0
                     endSellIdx = min(sellableItems.size(), maxItems)
                     screen.fill(white)
-                elif rect.collidepoint(pygame.mouse.get_pos()):
-                    rect = AddButton(text="Buy", offset_x=(0.25*X), loc_y=int(0.84*Y), background_color=orange)
-                    pygame.display.update()
-                elif not rect.collidepoint(pygame.mouse.get_pos()):
-                    rect = AddButton(text="Buy", offset_x=(0.25*X), loc_y=int(0.84*Y), background_color=green)
-                    pygame.display.update()
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
                 pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
                 return
