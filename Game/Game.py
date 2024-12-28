@@ -2431,7 +2431,6 @@ def buyItem(role, item_name):
     pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
     font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
     pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-
     pygame.display.update()
     rect = AddButton(text="Buy", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
     clock = pygame.time.Clock()
@@ -3139,19 +3138,21 @@ def SellOption(Role):
     if not HasSellableItems(Role.numInv):
         pygame_print("You don't have any sellable items!", 0.4*Y, color=black, background_color=white)
         pygame.display.update()
-        #pygame.time.delay(1000)
         wait_til_enter()
-#        pygame.event.clear(eventtype=pygame.KEYDOWN)
         return
-    
+
     sellableItems = Role.printSellItemsVec(False, False)
     print(Role.numInv)
-    
+
     optionNumber = 0
     maxItems = 3
     startSellIdx = 0
     endSellIdx = min(sellableItems.size(), maxItems)
-    while True: #TODO: Inefficient,
+    clock = pygame.time.Clock()
+    move_delay = 200  # milliseconds
+    last_move_time = pygame.time.get_ticks()
+
+    while True:
         screen.fill(white)  # clear the screen
         pygame_print(f"What would you like to sell today?", (0.08*Y), color=black, background_color=white)
         pygame_print("=================================", (0.134*Y), color=black, background_color=white)
@@ -3165,61 +3166,39 @@ def SellOption(Role):
         stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 0.10667*Y, background_color=red)
 
         pygame.display.update()
-        for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
+        keys = pygame.key.get_pressed()
+        current_time = pygame.time.get_ticks()
+
+        if keys[pygame.K_DOWN] and current_time - last_move_time > move_delay:
+            optionNumber = optionNumber + 1 if optionNumber != sellableItems.size() - 1 else 0
+            if optionNumber == 0:
+                startSellIdx = 0
+            elif startSellIdx + 1 + maxItems <= sellableItems.size() and optionNumber > startSellIdx - 1 + maxItems:
+                startSellIdx += 1
+            endSellIdx = startSellIdx + min(sellableItems.size(), maxItems)
+            last_move_time = current_time
+
+        elif keys[pygame.K_UP] and current_time - last_move_time > move_delay:
+            optionNumber = optionNumber - 1 if optionNumber != 0 else sellableItems.size() - 1
+            if optionNumber == sellableItems.size() - 1:
+                startSellIdx = max(0, sellableItems.size() - maxItems)
+            elif startSellIdx > 0 and optionNumber < startSellIdx:
+                startSellIdx -= 1
+            endSellIdx = startSellIdx + min(sellableItems.size(), maxItems)
+            last_move_time = current_time
+
+        for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
                 X = 410 if X < 410 else X
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
-            elif event.type == pygame.KEYDOWN:  # checking if any key was selected
-                if event.key == pygame.K_DOWN:
-                    optionNumber = optionNumber + 1 if optionNumber != sellableItems.size() - 1 else 0
-                    if optionNumber == 0:
-                        startSellIdx = 0
-                    elif startSellIdx + 1 + maxItems <= sellableItems.size() and optionNumber > startSellIdx - 1 + maxItems:
-                        startSellIdx += 1
-                    
-                    endSellIdx = startSellIdx + min(sellableItems.size(), maxItems)
-                                       
-                    '''
-                e.g. maxItems = 3,
-                start: startSellIdx = 0, startSellIdx = 3
-                    
-                0.    Water
-                1.    Apple
-                2.    Tomato
-                3.    Melon
-                4.    Orange
-                5.    Pinapple
-                6.    Grapefruit
-                7.    Blueberry
-                8.    Strawberry
-                9.    Tootsie Roll
-                    '''
-                    
-                elif event.key == pygame.K_UP:
-                    optionNumber = optionNumber - 1 if optionNumber != 0 else sellableItems.size() - 1
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    # Handle the selection of the item
+                    pass
 
-                    if optionNumber < startSellIdx:
-                        startSellIdx = startSellIdx - 1 if startSellIdx - 1 >= 0 else 0
-                    elif optionNumber > startSellIdx + maxItems - 1:
-                        startSellIdx = optionNumber - maxItems + 1
-                    
-                    endSellIdx = startSellIdx + min(sellableItems.size(), maxItems)
-                    
-                elif event.key == pygame.K_RETURN:
-                    sellItem(Role, sellableItems[optionNumber].title())
-                    sellableItems = Role.printSellItemsVec(False, False)
-                    if sellableItems.size() == 0:
-                        return
-                    
-                    optionNumber = 0
-                    startSellIdx = 0
-                    endSellIdx = min(sellableItems.size(), maxItems)
-                    screen.fill(white)
-            elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
-                pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
-                return
+        clock.tick(30)  # Limit the frame rate to 30 FPS
 
 
 def BuyOption(Role):
@@ -3243,10 +3222,15 @@ def BuyOption(Role):
 #        pygame.event.clear(eventtype=pygame.KEYDOWN)
         return
 
+
     optionNumber = 0
     maxItems = 3
     startBuyIdx = 0
-    endBuyIdx = min(buyableItems.size(), maxItems)
+    endBuyIdx = min(len(buyableItems), maxItems)
+    clock = pygame.time.Clock()
+    base_delay = 200  # milliseconds
+    move_delay = base_delay
+    last_move_time = pygame.time.get_ticks()
     
     while True:
         screen.fill(white)  # clear the screen
@@ -3258,26 +3242,45 @@ def BuyOption(Role):
             text_y += 0.05334*Y
 
         pygame_print(f"Your Money = {Role.money:0.2f}", text_y + 0.02667*Y, color=black, background_color=white)
-
+        pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
         stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 0.10667*Y, background_color=red)
 
         pygame.display.update()
-        for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
+        keys = pygame.key.get_pressed()
+        current_time = pygame.time.get_ticks()
+
+        if keys[pygame.K_DOWN] and current_time - last_move_time > move_delay:
+            optionNumber = optionNumber + 1 if optionNumber != len(buyableItems) - 1 else 0
+            if optionNumber == 0:
+                startBuyIdx = 0
+            elif startBuyIdx + 1 + maxItems <= len(buyableItems) and optionNumber > startBuyIdx - 1 + maxItems:
+                startBuyIdx += 1
+            endBuyIdx = startBuyIdx + min(len(buyableItems), maxItems)
+            last_move_time = current_time
+            num_item = 0  # Reset the item count when changing options
+
+        elif keys[pygame.K_UP] and current_time - last_move_time > move_delay:
+            optionNumber = optionNumber - 1 if optionNumber != 0 else len(buyableItems) - 1
+            if optionNumber == len(buyableItems) - 1:
+                startBuyIdx = max(0, len(buyableItems) - maxItems)
+            elif startBuyIdx > 0 and optionNumber < startBuyIdx:
+                startBuyIdx -= 1
+            endBuyIdx = startBuyIdx + min(len(buyableItems), maxItems)
+            last_move_time = current_time
+            num_item = 0  # Reset the item count when changing options
+
+        for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
                 X = 410 if X < 410 else X
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
-            elif event.type == pygame.KEYDOWN:  # checking if any key was selected
-                if event.key == pygame.K_DOWN:
-                    optionNumber = optionNumber + 1 if optionNumber != buyableItems.size() - 1 else 0
-                    if optionNumber == 0:
-                        startBuyIdx = 0
-                    elif startBuyIdx + 1 + maxItems <= buyableItems.size() and optionNumber > startBuyIdx - 1 + maxItems:
-                        startBuyIdx += 1
-                    
-                    endBuyIdx = startBuyIdx + min(buyableItems.size(), maxItems)
-                                       
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    # Handle the selection of the item
+                    pass
+
+        clock.tick(30)  # Limit the frame rate to 30 FPS
                     '''
                 e.g. maxItems = 3,
                 start: startBuyIdx = 0, endBuyIdx = 3
@@ -3293,30 +3296,7 @@ def BuyOption(Role):
                 8.    Strawberry
                 9.    Tootsie Roll
                     '''
-                    
-                elif event.key == pygame.K_UP:
-                    optionNumber = optionNumber - 1 if optionNumber != 0 else buyableItems.size() - 1
 
-                    if optionNumber < startBuyIdx:
-                        startBuyIdx = startBuyIdx - 1 if startBuyIdx - 1 >= 0 else 0
-                    elif optionNumber > startBuyIdx + maxItems - 1:
-                        startBuyIdx = optionNumber - maxItems + 1
-                    
-                    endBuyIdx = startBuyIdx + min(buyableItems.size(), maxItems)
-                    
-                elif event.key == pygame.K_RETURN:
-                    buyItem(Role, buyableItems[optionNumber].title())
-                    buyableItems = Role.printBuyItemsVec(False)
-                    if buyableItems.size() == 0:
-                        return
-                    
-                    optionNumber = 0
-                    startBuyIdx = 0
-                    endBuyIdx = min(buyableItems.size(), maxItems)
-                    screen.fill(white)
-            elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
-                pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
-                return
 
 
 def Shop(Role):
