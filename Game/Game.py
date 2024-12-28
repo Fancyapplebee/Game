@@ -2212,7 +2212,7 @@ def Mine(role, setting):
 
 
 def printItem(role, item_name):
-    global font, white, black, orange
+    global font, white, black, orange, screen, X, Y
     screen.fill(white)  # clear the screen
 
     square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
@@ -2221,16 +2221,15 @@ def printItem(role, item_name):
 
     pygame.draw.rect(screen, white, square_rect)
     screen.blit(image, square_rect.topleft)
-
-    pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y))
-    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25*X), loc_y=int(0.5867*Y))
+    pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
+    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
     long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25*X),
-                      line_break=23, start_height=int(0.7334*Y))
-
-    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25*X), loc_y=int(0.2667*Y))
-    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25*X), loc_y=int(0.3467*Y))
-    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25*X), loc_y=int(0.4267*Y))
-    pygame_print(f"Quest Level: {role.numInv[item_name]['QuestLevel']}", offset_x=int(0.25*X), loc_y=int(0.5067*Y))
+                      line_break=23, start_height=int(0.7334*Y), thresh=0.45)
+    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25*X), loc_y=int(0.2667*Y), thresh=0.45)
+    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25*X), loc_y=int(0.3467*Y), thresh=0.45)
+    if 'SellValue' in role.numInv[item_name]:
+        pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
+    pygame_print(f"Quest Level: {role.numInv[item_name]['QuestLevel']}", offset_x=int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
 
     rect = AddButton(text="Use", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=orange)
 
@@ -2239,7 +2238,34 @@ def printItem(role, item_name):
     while True:
 
         for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.VIDEORESIZE:
+                X, Y = screen.get_width(), screen.get_height()
+                X = 410 if X < 410 else X
+                print(f"X, Y = {X}, {Y}")
+                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                screen.fill(white)  # clear the screen
+
+                square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
+                image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
+                image = pygame.transform.scale(image, (int(0.4*X), int(0.31334*Y)))
+
+                pygame.draw.rect(screen, white, square_rect)
+                screen.blit(image, square_rect.topleft)
+
+                pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
+                pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
+                long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25*X),
+                line_break=23, start_height=int(0.7334*Y), thresh=0.45)
+                pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25*X), loc_y=int(0.2667*Y), thresh=0.45)
+                pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25*X), loc_y=int(0.3467*Y), thresh=0.45)
+                if 'SellValue' in role.numInv[item_name]:
+                    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
+                pygame_print(f"Quest Level: {role.numInv[item_name]['QuestLevel']}", offset_x=int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
+
+                rect = AddButton(text="Use", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=orange)
+
+                pygame.display.update()
+            elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     return 0
             elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
@@ -2249,7 +2275,6 @@ def printItem(role, item_name):
                     role.useInv[item_name]["Use"]()
                     pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25*X), loc_y=int(0.2667*Y))
                     pygame.display.update()
-            #TODO: Change color of "Use" button while hovering over
             elif rect.collidepoint(pygame.mouse.get_pos()):
                 rect = AddButton(text="Use", offset_x=int(0.25 * X), loc_y=int(0.7334*Y), background_color=orange)
                 pygame.display.update()
@@ -2433,7 +2458,6 @@ def buyItem(role, item_name):
     pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
     pygame.display.update()
     rect = AddButton(text="Buy", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
-    clock = pygame.time.Clock()
     base_delay = 200  # milliseconds
     move_delay = base_delay
     last_move_time = pygame.time.get_ticks()
@@ -2517,8 +2541,6 @@ def buyItem(role, item_name):
         if current_time - last_move_time > base_delay:
             move_delay = base_delay
         
-        clock.tick(30)  # Limit the frame rate to 30 FPS
-
 def getItemCounts(role):
     line_count = int(0.1067*Y)
     temp = line_count
@@ -2607,7 +2629,7 @@ Rolling a dice:
 '''
 
 def QuestGames(Setting, role):
-    global font, white, black, orange, X, Y, red
+    global font, white, black, orange, X, Y, red, screen
     role.health = role.base_health  # TODO: delete!
     role.attackpower = 1000  # TODO: delete!
     money = 0
@@ -2748,7 +2770,7 @@ def QuestGames(Setting, role):
     getEnemyBaseHealth = lambda: sum(i.base_health for i in enemies)
     TotalEnemyBaseHealth = getEnemyBaseHealth()
     
-    def renderRole(start_x, start_y):
+    def renderRole():
         global font
         if Setting == "DESERT":
             displayImage("StartDesert.png", p=1, update=False)
@@ -2802,7 +2824,7 @@ def QuestGames(Setting, role):
 
     role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
     enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
-    renderRole(start_x, start_y)
+    renderRole()
 
     shotsFired = []
     shotsEnemyFired = []
@@ -2915,7 +2937,17 @@ def QuestGames(Setting, role):
             
         enemyMove = generateMove(temp_state)
         for event in pygame.event.get():  # update the option number if necessary
-            if event.type == pygame.KEYDOWN:  # checking if any key was selected
+            if event.type == pygame.VIDEORESIZE:
+                old_X, old_Y = X, Y
+                X, Y = screen.get_width(), screen.get_height()
+                X = 410 if X < 410 else X
+                buffer_width, buffer_height = int(.05*X), int(0.05334*Y)
+                beam_height = buffer_height / 4
+                beam_width = buffer_width / 2
+                print(f"X, Y = {X}, {Y}")
+                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                #TODO: update the current coordinates of the player, enemy, and beams to match the new coordinates X, Y
+            elif event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_RETURN:
                     save_stats()
                     return
@@ -3023,7 +3055,7 @@ def QuestGames(Setting, role):
 
         role_rect = pygame.Rect(start_x, curr_y, buffer_width, buffer_width)
         enemy_rect = pygame.Rect(enemy_x, curr_enemy_y, buffer_width, buffer_width)
-        renderRole(start_x, curr_y)
+        renderRole()
 
         for shot in shotsFired:
             shot.beam_x = shot.beam_x + role.shot_speed if not shot.is_flipped else shot.beam_x - role.shot_speed
@@ -3037,7 +3069,7 @@ def QuestGames(Setting, role):
                     money += enemy.expYield*10
                     increaseExp(role, enemy.expYield)
                     NumberDefeated += 1
-                    renderRole(start_x, curr_y)
+                    renderRole()
                     if NumberDefeated < 10:
                         enemy = enemies[NumberDefeated]  # spawnBadNPC()
                         pygame_print(f"Spawning enemy #{NumberDefeated + 1}/10: {enemy.name}", loc_y=int(0.4*Y))
@@ -3196,7 +3228,17 @@ def SellOption(Role):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     # Handle the selection of the item
-                    pass
+                    sellItem(Role, sellableItems[optionNumber].title())
+                    sellableItems = Role.printSellItemsVec(False, False)
+                    if sellableItems.size() == 0:
+                        return
+                    optionNumber = 0
+                    startSellIdx = 0
+                    endSellIdx = min(sellableItems.size(), maxItems)
+                    screen.fill(white)
+            elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
+                pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
+                return
 
         clock.tick(30)  # Limit the frame rate to 30 FPS
 
@@ -3227,7 +3269,6 @@ def BuyOption(Role):
     maxItems = 3
     startBuyIdx = 0
     endBuyIdx = min(len(buyableItems), maxItems)
-    clock = pygame.time.Clock()
     base_delay = 200  # milliseconds
     move_delay = base_delay
     last_move_time = pygame.time.get_ticks()
@@ -3242,7 +3283,7 @@ def BuyOption(Role):
             text_y += 0.05334*Y
 
         pygame_print(f"Your Money = {Role.money:0.2f}", text_y + 0.02667*Y, color=black, background_color=white)
-        pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
+#        pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
         stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 0.10667*Y, background_color=red)
 
         pygame.display.update()
@@ -3257,7 +3298,7 @@ def BuyOption(Role):
                 startBuyIdx += 1
             endBuyIdx = startBuyIdx + min(len(buyableItems), maxItems)
             last_move_time = current_time
-            num_item = 0  # Reset the item count when changing options
+#            num_item = 0  # Reset the item count when changing options
 
         elif keys[pygame.K_UP] and current_time - last_move_time > move_delay:
             optionNumber = optionNumber - 1 if optionNumber != 0 else len(buyableItems) - 1
@@ -3267,7 +3308,7 @@ def BuyOption(Role):
                 startBuyIdx -= 1
             endBuyIdx = startBuyIdx + min(len(buyableItems), maxItems)
             last_move_time = current_time
-            num_item = 0  # Reset the item count when changing options
+#            num_item = 0  # Reset the item count when changing options
 
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
@@ -3277,27 +3318,33 @@ def BuyOption(Role):
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    # Handle the selection of the item
-                    pass
+                    buyItem(Role, buyableItems[optionNumber].title())
+                    buyableItems = Role.printBuyItemsVec(False)
+                    if buyableItems.size() == 0:
+                        return
+                    optionNumber = 0
+                    startBuyIdx = 0
+                    endBuyIdx = min(buyableItems.size(), maxItems)
+                    screen.fill(white)
+            elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
+                pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
+                return
 
-        clock.tick(30)  # Limit the frame rate to 30 FPS
-                    '''
-                e.g. maxItems = 3,
-                start: startBuyIdx = 0, endBuyIdx = 3
-                    
-                0.    Water
-                1.    Apple
-                2.    Tomato
-                3.    Melon
-                4.    Orange
-                5.    Pinapple
-                6.    Grapefruit
-                7.    Blueberry
-                8.    Strawberry
-                9.    Tootsie Roll
-                    '''
-
-
+        '''
+        e.g. maxItems = 3,
+        start: startBuyIdx = 0, endBuyIdx = 3
+            
+        0.    Water
+        1.    Apple
+        2.    Tomato
+        3.    Melon
+        4.    Orange
+        5.    Pinapple
+        6.    Grapefruit
+        7.    Blueberry
+        8.    Strawberry
+        9.    Tootsie Roll
+        '''
 
 def Shop(Role):
     global screen, X, Y
@@ -3448,11 +3495,19 @@ def ViewInputMapKey(role):
     global X, Y, screen
     screen.fill(white)  # clear the screen
     if not role.InputMapDict:
-        pygame_print("No keys have been mapped!")
+        pygame_print("No keys have been mapped!", loc_y=Y // 2)
         pygame.display.update()
         while True:
             for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                if event.type == pygame.VIDEORESIZE:
+                    X, Y = screen.get_width(), screen.get_height()
+                    X = 410 if X < 410 else X
+                    print(f"X, Y = {X}, {Y}")
+                    screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                    screen.fill(white)  # clear the screen
+                    pygame_print("No keys have been mapped!", loc_y=Y // 2)
+                    pygame.display.update()
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     return
 
     optionNumber = 0
