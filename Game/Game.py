@@ -29,16 +29,24 @@ def Defense(Def):
 # Implement buy function of def shop -> possibly add some items ✅
 # Add use function for each of the items ✅
 # Boost stats of hero after a quest, and maybe also after mining? ✅
-# quest2 -> In C programming
+# quest2 -> In C programming ✅
 # Work on menu option function where you can use some of your items to build weapons that can boost your stats 👨‍💻
+    # -> Can be either deterministic (i.e., need X number of Y item to get Z weapon) or stochastic (the weapon you can make from a given set of items is not set in stone but is governed by a probability distribution function)
 # figure out use case of items not attainable through mining
 # implement a save function
 # saving => writes information to a file (e.g. time, stats, items, time that the RoleHero last searched etc.)
 # modify search option so that it can only occur once per people day ✅
 # Axes that can increase drop-chances for mine function
 # Find out where we can increase money besides selling ✅
-# Figure out if holding the up/down arrow keys can make it continue going up/down in the menu parts of the game.
-# if event.type -> elif event.type in `for event in pygame.event.get()`
+# Figure out if holding the up/down arrow keys can make it continue going up/down in the menu parts of the game. ✅
+# if event.type -> elif event.type in `for event in pygame.event.get()` ✅
+# Consider multiple enemies on the screen simultaneously
+'''
+    - In this case, the health-bars of the enemies would hover over the top of the enemies
+    - Could devise a function to determine how many enemies spawn at a given instance
+        - Assuming e.g. 10 instances per quest
+'''
+# Add a much more detailed README.md
 
 '''
 cS is NOT an input function!!!
@@ -2944,9 +2952,33 @@ def QuestGames(Setting, role):
                 buffer_width, buffer_height = int(.05*X), int(0.05334*Y)
                 beam_height = buffer_height / 4
                 beam_width = buffer_width / 2
-                print(f"X, Y = {X}, {Y}")
+#                print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
-                #TODO: update the current coordinates of the player, enemy, and beams to match the new coordinates X, Y
+                screen.fill(white);
+                '''
+                old_X          start_x
+                -----   =    -----------    ->  new_start_x * old_X = start_x * X   ->  new_start_x  =  (start_x * X) / old_X
+                  X          new_start_x
+                
+                '''
+                X_ratio = X / old_X
+                Y_ratio = Y / old_Y
+                
+                start_x = (start_x * X_ratio)
+                start_y = (start_y * Y_ratio)
+                curr_y = (curr_y * Y_ratio)
+                enemy_x = (enemy_x * X_ratio)
+                enemy_y = (enemy_y * Y_ratio)
+                curr_enemy_y = (curr_enemy_y * Y_ratio)
+                ground_y = (ground_y * Y_ratio)
+                shotsFired = [Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in shotsFired]
+                shotsEnemyFired = [Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in shotsEnemyFired]
+#                print(f"X = {old_X} -> X = {X}, Y = {old_Y} -> Y = {Y}, start_x = {start_x / X_ratio} -> start_x = {start_x}, curr_y = {curr_y / Y_ratio} -> curr_y = {curr_y}")
+                
+                role_rect = pygame.Rect(start_x, curr_y, buffer_width, buffer_width)
+                enemy_rect = pygame.Rect(enemy_x, curr_enemy_y, buffer_width, buffer_width)
+                renderRole()
+
             elif event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_RETURN:
                     save_stats()
@@ -3059,8 +3091,7 @@ def QuestGames(Setting, role):
 
         for shot in shotsFired:
             shot.beam_x = shot.beam_x + role.shot_speed if not shot.is_flipped else shot.beam_x - role.shot_speed
-            beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width,
-                                    beam_height)  # beam object
+            beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width, beam_height)  # beam object
             if beam_rect.colliderect(
                     enemy_rect) and not shot.hit_target:  # Enemy was hit and this is not a repeat of the same shot
                 role.attack(enemy, multiplier = 1 if not shot.is_special_shot else role.specialShotMultipliers[role.specialShotImage])
@@ -3077,6 +3108,7 @@ def QuestGames(Setting, role):
                     else:
                         role.questLevel += 1
                         role.money += money
+                        beam_rect = pygame.Rect(shot.beam_x + role.shot_speed if not shot.is_flipped else shot.beam_x - role.shot_speed, shot.beam_y, beam_width, beam_height)
                         pygame_print(f"You Won!!", loc_y=int(0.4*Y))
 
                 shot.hit_target = True
@@ -3113,6 +3145,7 @@ def QuestGames(Setting, role):
         if NumberDefeated == 10 or role.health <= 0:
             # Do stuff
             #pygame.time.delay(1000)
+            
             wait_til_enter()
 #            pygame.event.clear(eventtype=pygame.KEYDOWN)
             save_stats()
