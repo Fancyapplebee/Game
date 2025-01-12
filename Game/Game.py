@@ -33,11 +33,22 @@ def Defense(Def):
 # Work on menu option function where you can use some of your items to build weapons that can boost your stats 👨‍💻
     # -> Can be either deterministic (i.e., need X number of Y item to get Z weapon) or stochastic (the weapon you can make from a given set of items is not set in stone but is governed by a probability distribution function)
     # Stats to be boosted cannot affect rest of the game
+        # Can equip/un-equip weapons
+            # equip -> boost in addition to base stats
+            # unequip -> revert to base stats or stats - boost in the case of multiple equips
     # Figure out how to keep game balanced while adding objects
+        # Derive a suitable scaling to the player's base-stats to balance significant improvement in player's stats with game-difficulty
     # Possibly add a stat that removes defense from enemy while held
     # Try to make breakage probabilites to encourage progression
+        # Introduce a non-zero probability of losing an equip
     # When fighting, make unique and not like other weapons
+        # e.g. some equips boost more defense, other attack, etc.
     # Maybe add some kind of ranged modifier
+        # items do more/less damage depending on distance traveled.
+    # Make some equips boost stats depending on how much/little health the player has
+        # e.g. more boost for health below some threshold
+
+
 
 # figure out use case of items not attainable through mining
 # implement a save function
@@ -195,6 +206,10 @@ cppyy.cppdef(
         std::unordered_map<std::string, std::unordered_map<std::string,std::string>> stringInv;
         std::unordered_map<std::string, std::unordered_map<std::string,double>> numInv;
         std::unordered_map<std::string,std::unordered_map<std::string,std::function<void()>>> useInv;
+        
+        std::unordered_map<std::string, std::unordered_map<std::string, int>> tradeDict;
+        std::vector<std::string> tradeDictKeys;
+        
         std::unordered_map<std::string, double> specialShotMultipliers;
 
         double health;
@@ -1288,6 +1303,49 @@ cppyy.cppdef(
             }
         };
         
+        tradeDict = 
+        { 
+            {
+                "Base Armor", 
+                { 
+                    {"Rocks", 10}, {"Sands", 30} 
+                }
+            }, 
+            
+            {
+                "Green Base Armor", 
+                { 
+                    {"Cactuses", 10}, {"Sands", 30} 
+                }
+            }, 
+            
+            {
+                "Pointy Sword", 
+                { 
+                    {"Knife", 5}, {"Rocks", 50}, {"Sands", 100}
+                }
+            }, 
+            
+            {
+                "Pointy Base Armor", 
+                { 
+                    {"Knife", 5}, {"Cactuses", 10}, {"Sands", 20}, {"Rocks", 15}
+                }
+            }, 
+        
+            {
+                "Armor 1.0", 
+                { 
+                    {"Silvers", 3}, {"Knives", 10}, {"Sands", 125}, {"Rocks", 150}
+                }
+            }, 
+        };
+        
+        for (const auto& i: tradeDict)
+        {
+            tradeDictKeys.push_back(i.first);
+        }
+        
         this->specialShotMultipliers = {{"Assets/parrot.png", 2.36024}, {"Assets/knife.png", 2.46055}, {"Assets/sapling.png", 2.22583}, {"Assets/cactus.png", 2.38649}, {"Assets/diamond.png", 2.23146}, {"Assets/gold.png", 2.06248}, {"Assets/water gun.png", 2.2429}, {"Assets/Sand Pail.png", 2.43646}, {"Assets/rock.png", 2.41957}, {"Assets/Golden Log.png", 2.17529}, {"Assets/emerald.png", 2.18229}, {"Assets/sand.png", 2.30797}, {"Assets/silver.png", 2.47529}, {"Assets/log.png", 2.37766}, {"Assets/ring.png", 2.12051}};
     }
 
@@ -1915,7 +1973,7 @@ def search(setting, role):
     role.searchTime = time()
     return setting.places[optionNumber]
 
-
+#TODO: Add health and exp bars for health and exp!
 def Stats(RoleHero):
     global X, Y, screen
     screen.fill(white)
@@ -3204,9 +3262,90 @@ def QuestGames(Setting, role):
 
         '''
 
+def TradeOption(Role):
+    global X, Y, screen
+#    Role.tradeDict
+    if not HasSellableItems(Role.numInv):
+        pygame_print("You don't have any items to trade with!", 0.4*Y, color=black, background_color=white)
+        pygame.display.update()
+        wait_til_enter()
+        return
+    return
+    #TODO: finish
+    #Role.tradeDictKeys
+
+    optionNumber = 0
+    maxItems = 3
+    startTradeIdx = 0
+    endTradeIdx = min(Role.tradeDictKeys.size(), maxItems)
+    clock = pygame.time.Clock()
+    move_delay = 200  # milliseconds
+    last_move_time = pygame.time.get_ticks()
+
+    while True:
+        screen.fill(white)  # clear the screen
+        pygame_print(f"What would you like to sell today?", (0.08*Y), color=black, background_color=white)
+        pygame_print("=================================", (0.134*Y), color=black, background_color=white)
+        text_y = (0.1867*Y)
+        for i in range(startSellIdx, endSellIdx):
+            pygame_print(sellableItems[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
+            text_y += 0.05334*Y
+
+        pygame_print(f"Your Money = {Role.money:0.2f}", text_y + 0.02667*Y, color=black, background_color=white)
+
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 0.10667*Y, background_color=red)
+
+        pygame.display.update()
+        keys = pygame.key.get_pressed()
+        current_time = pygame.time.get_ticks()
+
+        if keys[pygame.K_DOWN] and current_time - last_move_time > move_delay:
+            optionNumber = optionNumber + 1 if optionNumber != sellableItems.size() - 1 else 0
+            if optionNumber == 0:
+                startSellIdx = 0
+            elif startSellIdx + 1 + maxItems <= sellableItems.size() and optionNumber > startSellIdx - 1 + maxItems:
+                startSellIdx += 1
+            endSellIdx = startSellIdx + min(sellableItems.size(), maxItems)
+            last_move_time = current_time
+
+        elif keys[pygame.K_UP] and current_time - last_move_time > move_delay:
+            optionNumber = optionNumber - 1 if optionNumber != 0 else sellableItems.size() - 1
+            if optionNumber == sellableItems.size() - 1:
+                startSellIdx = max(0, sellableItems.size() - maxItems)
+            elif startSellIdx > 0 and optionNumber < startSellIdx:
+                startSellIdx -= 1
+            endSellIdx = startSellIdx + min(sellableItems.size(), maxItems)
+            last_move_time = current_time
+
+        for event in pygame.event.get():
+            if event.type == pygame.VIDEORESIZE:
+                X, Y = screen.get_width(), screen.get_height()
+                X = 410 if X < 410 else X
+                print(f"X, Y = {X}, {Y}")
+                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    # Handle the selection of the item
+                    sellItem(Role, sellableItems[optionNumber].title())
+                    sellableItems = Role.printSellItemsVec(False, False)
+                    if sellableItems.size() == 0:
+                        return
+                    optionNumber = 0
+                    startSellIdx = 0
+                    endSellIdx = min(sellableItems.size(), maxItems)
+                    screen.fill(white)
+            elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
+                pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
+                return
+
+        clock.tick(30)  # Limit the frame rate to 30 FPS
+
+
+
+#    trade_dict = {item_we_may_want_to_trade_for: {first_item_we_need_for_it: number_of_first_item_we_need_for_it, second_item_we_need_for_it, number_of_first_item_we_need_for_it}, aother_item_we_may_want_to_trade_for: {first_item_we_need_for_it: number_of_first_item_we_need_for_it, second_item_we_need_for_it, number_of_first_item_we_need_for_it}, ...}
+
 def SellOption(Role):
     global X, Y, screen
-    print(Role.numInv)
     if not HasSellableItems(Role.numInv):
         pygame_print("You don't have any sellable items!", 0.4*Y, color=black, background_color=white)
         pygame.display.update()
@@ -3214,7 +3353,6 @@ def SellOption(Role):
         return
 
     sellableItems = Role.printSellItemsVec(False, False)
-    print(Role.numInv)
 
     optionNumber = 0
     maxItems = 3
@@ -3294,7 +3432,6 @@ def BuyOption(Role):
         return
 
     buyableItems = Role.printBuyItemsVec(False)
-    print(Role.numInv)
     if buyableItems.size() == 0:
         pygame_print("You don't have enough money and/or", (0.4*Y), color=black, background_color=white)
         pygame_print("you haven't completed enough quests!", (0.4534*Y), color=black, background_color=white)
@@ -3303,7 +3440,6 @@ def BuyOption(Role):
         wait_til_enter()
 #        pygame.event.clear(eventtype=pygame.KEYDOWN)
         return
-
 
     optionNumber = 0
     maxItems = 3
@@ -3396,8 +3532,9 @@ def Shop(Role):
         pygame_print("================================", (0.1734*Y), color=black, background_color=white)
         pygame_print("Buy", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
         pygame_print("Sell", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
+        pygame_print("Trade", (0.3333*Y), color=(orange if optionNumber == 2 else black), background_color=white)
 
-        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=(0.4134*Y), background_color=red)
+        stop_button = AddButton(text="EXIT", offset_x=0, loc_y=(0.4667*Y), background_color=red)
 
         pygame.display.update()
         for event in pygame.event.get():  # update the option number if necessary for event in pygame.event.get():  # update the option number if necessary
@@ -3408,15 +3545,17 @@ def Shop(Role):
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_DOWN:
-                    optionNumber = optionNumber + 1 if optionNumber != 1 else 0
+                    optionNumber = optionNumber + 1 if optionNumber != 2 else 0
                 elif event.key == pygame.K_UP:
-                    optionNumber = optionNumber - 1 if optionNumber != 0 else 1
+                    optionNumber = optionNumber - 1 if optionNumber != 0 else 2
                 elif event.key == pygame.K_RETURN:
                     screen.fill(white)
                     if optionNumber == 0:  # Buy
                         BuyOption(Role)
                     elif optionNumber == 1:  # Sell
                         SellOption(Role)
+                    elif optionNumber == 2: # Trade
+                        TradeOption(Role)
                     pygame.display.update()
 #                    pygame.event.clear(eventtype=pygame.KEYDOWN)
 
