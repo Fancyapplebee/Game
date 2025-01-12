@@ -32,6 +32,13 @@ def Defense(Def):
 # quest2 -> In C programming ✅
 # Work on menu option function where you can use some of your items to build weapons that can boost your stats 👨‍💻
     # -> Can be either deterministic (i.e., need X number of Y item to get Z weapon) or stochastic (the weapon you can make from a given set of items is not set in stone but is governed by a probability distribution function)
+    # Stats to be boosted cannot affect rest of the game
+    # Figure out how to keep game balanced while adding objects
+    # Possibly add a stat that removes defense from enemy while held
+    # Try to make breakage probabilites to encourage progression
+    # When fighting, make unique and not like other weapons
+    # Maybe add some kind of ranged modifier
+
 # figure out use case of items not attainable through mining
 # implement a save function
 # saving => writes information to a file (e.g. time, stats, items, time that the RoleHero last searched etc.)
