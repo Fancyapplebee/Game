@@ -1359,17 +1359,46 @@ cppyy.cppdef(
         
         tradeDict["Pointy Base Armor"].itemsAndQuantityNeeded = 
         { 
-            {"Knife", 5}, {"Cactuses", 10}, {"Sands", 20}, {"Rocks", 15}
+            {"Knife", 5}, {"Cactuses", 10}, {"Sands", 20}, {"Rocks", 15}, {"Base Armor", 1}
         };
         tradeDict["Pointy Base Armor"].description = "Raises Stats by ...";
         tradeDict["Pointy Base Armor"].number = 0;
         
         tradeDict["Armor 1.0"].itemsAndQuantityNeeded = 
         { 
-            {"Silvers", 3}, {"Knives", 10}, {"Sands", 125}, {"Rocks", 150}
+            {"Silvers", 3}, {"Knives", 10}, {"Sands", 125}, {"Rocks", 150}, {"Base Armor", 1}
         };
         tradeDict["Armor 1.0"].description = "Raises Stats by ...";
         tradeDict["Armor 1.0"].number = 0;
+        
+        tradeDict["Armor 2.0"].itemsAndQuantityNeeded =
+        {
+            {"Golds", 9}, {"Knives", 30}, {"Sands", 375}, {"Rocks", 200}, {"Armor 1.0", 1}
+        }
+        tradedict["Armor 2.0"].description = "Raises Stats by ...";
+        tradeDict["Armor 2.0"].number = 0;
+        
+        tradeDict["Boots of Swiftness"].itemsAndQuantityNeeded = 
+        {
+        {"Logs", 10}, {"Sands", 50}, {"Emeralds", 1}
+        }
+        tradeDict["Boots of Swiftness"].description = "Enhances speed and allows for quicker movement.";
+        tradeDict["Boots of Swiftness"].number = 0;
+        
+        tradeDict["Sword of Strength"].itemsAndQuantityNeeded = 
+        {
+        {"Golds", 5}, {"Logs", 10}, {"Diamonds", 2}
+        }
+        tradeDict["Sword of Strength"].description = "Significantly boosts attack power and increases critical hit chance.";
+        tradeDict["Sword of Strength"].number = 0;
+        
+        tradeDict["Ring of Vitality"].itemsAndQuantityNeeded = 
+        {
+        {"Emeralds", 2}, {"Golds", 1}, {"Diamonds", 1}
+        }
+        tradeDict["Ring of Vitality"].description = "Boosts health regeneration and increases overall stamina.";
+        tradeDict["Ring of Vitality"].number = 0;
+        
         
         for (const auto& i: tradeDict)
         {
