@@ -2469,6 +2469,15 @@ def printItem(role, item_name):
             elif not rect.collidepoint(pygame.mouse.get_pos()):
                 rect = AddButton(text="Use", offset_x=int(0.25 * X), loc_y=int(0.7334*Y), background_color=green)
                 pygame.display.update()
+def print_trade_requirements(role, item_name):
+    pygame_print(f"Requirements to trade for '{item_name}':",offset_x=-int(0.25*X), loc_y=int(0.4267*Y), thresh=0.45)
+    for item, quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded.items():
+        pygame_print(f"  - {item}: {quantity_needed}", offset_x=-int(0.25*X), loc_y=int(0.3767*Y), thresh=0.45)
+
+    pygame_print(f"\nItems and quantities the user has for '{item_name}':", offset_x=-int(0.25*X), loc_y=int(0.3267*Y), thresh=0.45)
+    for item, quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded.items():
+        quantity_have = role.numInv.get(item, {}).get("Number", 0)
+        pygame_print(f"  - {item}: {quantity_have}", offset_x=-int(0.25*X), loc_y=int(0.2767*Y), thresh=0.45)
 
 def tradeItem(role, item_name):
     global font, white, black, orange, screen, X, Y
