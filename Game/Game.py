@@ -234,6 +234,7 @@ cppyy.cppdef(
         double currExp;
         double LevelExp;
         double speed;
+        const std::string placeholder_image = "Assets/armour.png";
         bool can_attack();
         void update_wait_time();
         void defend();
@@ -759,11 +760,12 @@ cppyy.cppdef(
         return std::make_pair(tradeInfo,sellInfo);
     }
     
-    std::vector<std::string> GetItemsUserCanTrade()
+    std::vector<std::string> Role::GetItemsUserCanTrade()
     {
         std::vector<std::string> items_user_can_trade;
         items_user_can_trade.reserve(this->tradeDict.size());
-        int total
+        int total;
+        bool found;
         for (const auto& entry: this->tradeDict) //each of the trade items
         {
             found = true;
@@ -793,7 +795,7 @@ cppyy.cppdef(
         return items_user_can_trade;
     }
     
-    int GetMaxItemAmount(const std::string& item_name)
+    int Role::GetMaxItemAmount(const std::string& item_name)
     {
         /*
             Example
@@ -826,7 +828,7 @@ cppyy.cppdef(
         return max_amount;
     }
     
-    void updateTradeDictInventory(int num_item, const std::string& item_name)
+    void Role::updateTradeDictInventory(int num_item, const std::string& item_name)
     {
         for (const auto& entry: this->tradeDict[item_name].itemsAndQuantityNeeded)
         {   
@@ -1432,28 +1434,28 @@ cppyy.cppdef(
         tradeDict["Armor 2.0"].itemsAndQuantityNeeded =
         {
             {"Golds", 9}, {"Knives", 30}, {"Sands", 375}, {"Rocks", 200}, {"Armor 1.0", 1}
-        }
-        tradedict["Armor 2.0"].description = "Raises Stats by ...";
+        };
+        tradeDict["Armor 2.0"].description = "Raises Stats by ...";
         tradeDict["Armor 2.0"].number = 0;
         
         tradeDict["Boots of Swiftness"].itemsAndQuantityNeeded = 
         {
             {"Logs", 10}, {"Sands", 50}, {"Emeralds", 1}
-        }
+        };
         tradeDict["Boots of Swiftness"].description = "Enhances speed and allows for quicker movement.";
         tradeDict["Boots of Swiftness"].number = 0;
         
         tradeDict["Sword of Strength"].itemsAndQuantityNeeded = 
         {
             {"Golds", 5}, {"Logs", 10}, {"Diamonds", 2}
-        }
+        };
         tradeDict["Sword of Strength"].description = "Significantly boosts attack power and increases critical hit chance.";
         tradeDict["Sword of Strength"].number = 0;
         
         tradeDict["Ring of Vitality"].itemsAndQuantityNeeded = 
         {
             {"Emeralds", 2}, {"Golds", 1}, {"Diamonds", 1}
-        }
+        };
         tradeDict["Ring of Vitality"].description = "Boosts health regeneration and increases overall stamina.";
         tradeDict["Ring of Vitality"].number = 0;
         
@@ -2469,15 +2471,20 @@ def printItem(role, item_name):
             elif not rect.collidepoint(pygame.mouse.get_pos()):
                 rect = AddButton(text="Use", offset_x=int(0.25 * X), loc_y=int(0.7334*Y), background_color=green)
                 pygame.display.update()
+                
 def print_trade_requirements(role, item_name):
+    global X, Y
     pygame_print(f"Requirements to trade for '{item_name}':",offset_x=-int(0.25*X), loc_y=int(0.4267*Y), thresh=0.45)
-    for item, quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded.items():
-        pygame_print(f"  - {item}: {quantity_needed}", offset_x=-int(0.25*X), loc_y=int(0.3767*Y), thresh=0.45)
+    i = 0
+    for item_and_quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded:
+        pygame_print(f"  - {item_and_quantity_needed.first}: {item_and_quantity_needed.second}", offset_x=-int(0.25*X), loc_y=int(0.3767*Y), thresh=0.45)
 
     pygame_print(f"\nItems and quantities the user has for '{item_name}':", offset_x=-int(0.25*X), loc_y=int(0.3267*Y), thresh=0.45)
     for item, quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded.items():
         quantity_have = role.numInv.get(item, {}).get("Number", 0)
         pygame_print(f"  - {item}: {quantity_have}", offset_x=-int(0.25*X), loc_y=int(0.2767*Y), thresh=0.45)
+    
+    
 
 def tradeItem(role, item_name):
     global font, white, black, orange, screen, X, Y
@@ -2485,7 +2492,10 @@ def tradeItem(role, item_name):
 
     square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
 
-    image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
+    image_name = cppStringConvert(role.stringInv[item_name]["Picture"])
+    image_name = image_name if len(image_name) else cppStringConvert(role.placeholder_image)
+    
+    image = pygame.image.load(image_name)
     
     image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
     
@@ -2499,6 +2509,7 @@ def tradeItem(role, item_name):
     long_pygame_print(f"Description: {cppStringConvert(role.tradeDict[item_name].description)}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
     pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
     #TODO: Print out (1.) Items and corresponding quantities the user needs in order to trade for 1 `item_name` (2.) Items and corresponding quantities the user has for `item_name`
+    
     pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
 
 
@@ -2516,7 +2527,7 @@ def tradeItem(role, item_name):
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
-                image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
+                image = pygame.image.load(image_name)
                 image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
                 pygame.draw.rect(screen, white, square_rect)
                 screen.blit(image, square_rect.topleft)
@@ -3456,7 +3467,7 @@ def QuestGames(Setting, role):
 
         pygame.display.update()
 
-        if NumberDefeated == 10 or role.health <= 0:
+        if NumberDefeated >= 10 or role.health <= 0:
             # Do stuff
             #pygame.time.delay(1000)
             
@@ -3519,24 +3530,22 @@ def TradeOption(Role):
         pygame.display.update()
         wait_til_enter()
         return
-    return
     #TODO: finish
     #Role.tradeDictKeys
 
     optionNumber = 0
     maxItems = 3
     startTradeIdx = 0
-    endTradeIdx = min(Role.tradeItems.size(), maxItems)
+    endTradeIdx = min(tradeItems.size(), maxItems)
     clock = pygame.time.Clock()
     move_delay = 200  # milliseconds
     last_move_time = pygame.time.get_ticks()
-
     while True:
         screen.fill(white)  # clear the screen
         pygame_print(f"What would you like to trade for today?", (0.08*Y), color=black, background_color=white)
         pygame_print("=================================", (0.134*Y), color=black, background_color=white)
         text_y = (0.1867*Y)
-        for i in range(startTradeIdx, startTradeIdx):
+        for i in range(startTradeIdx, endTradeIdx):
             pygame_print(tradeItems[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
             text_y += 0.05334*Y
 
@@ -4568,3 +4577,33 @@ def game():
 
 
 game()
+
+
+#import pygame_menu
+#import pygame
+#pygame.init()
+#X,Y=800,750
+#screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+## Variable to keep our game loop running
+#running = True
+#menu = pygame_menu.Menu(width=300,height=300,title="menu")
+#table = menu.add.table(font_size=20,width=300,height=300)
+#table.default_cell_padding = 5
+#table.default_cell_align = pygame_menu.locals.ALIGN_CENTER
+#table.default_row_background_color = 'white'
+#table.add_row(['A', 'B', 'C'], cell_font=pygame_menu.font.FONT_OPEN_SANS_BOLD)
+#pygame.display.update()
+## game loop
+#while running:
+#    
+## for loop through the event queue
+#    events = pygame.event.get()
+#    for event in events:
+#      
+#        # Check for QUIT event
+#        if event.type == pygame.QUIT:
+#            running = False
+#    if menu.is_enabled():
+#        menu.update(events)
+#        menu.draw(screen)
+#    pygame.display.update()
