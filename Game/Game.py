@@ -1527,7 +1527,7 @@ class PercyJackson(Role, IPBase):
         self.ExpLevelFunc = lambda x: x ** 2.5
         self.LevelExp = self.ExpLevelFunc(self.currLevel + 1)
         self.money = 50  # because the economy in italy is so bad :)
-
+        self.equippedItems = []
 
 #    Naming variables convention
 #        mac_and_cheese : snake case
@@ -1552,7 +1552,7 @@ class Elf(Role, IPBase):
         self.ExpLevelFunc = lambda x: x ** 1.5
         self.LevelExp = self.ExpLevelFunc(self.currLevel + 1)
         self.money = 200
-
+        self.equippedItems = []
 
 class Zelda(Role, IPBase):
     def __init__(self, name):
@@ -1575,7 +1575,7 @@ class Zelda(Role, IPBase):
         #        self.AttackLevelFunc = lambda x: 20*(1-0.05)**x
         self.LevelExp = self.ExpLevelFunc(self.currLevel + 1)
         self.money = 100
-
+        self.equippedItems = []
 
 class NeutralNPC:
     def __init__(self):
@@ -2640,6 +2640,40 @@ def tradeItem(role, item_name):
                 rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
 #                on_sell_rect = False
                 pygame.display.update()
+
+def EquipItem(role, item_name):
+    if item_name not in role.stringInv:
+        print(f"Item '{item_name}' not found in inventory.")
+        return
+
+    elif role.numInv[item_name]["Number"] <= 0:
+        print(f"No '{item_name}' available to equip.")
+        return
+
+    else:
+        role.equippedItems.append(item_name)
+        pygame_print(f"Equipped '{item_name}' to {role.name}.")
+        print(f"Equipped '{item_name}' to {role.name}.")
+
+def TradeItemInventory(role):
+    global X, Y, screen, white, black
+    screen.fill(white)  # clear the screen
+
+    loc_y = int(0.1 * Y)
+    pygame_print("Trade Item Inventory", offset_x=0, loc_y=loc_y, color=black, background_color=white)
+    loc_y += int(0.05 * Y)
+
+    tradable_items = role.GetItemsUserCanTrade()
+    if not tradable_items:
+        pygame_print("No items available for trade.", offset_x=0, loc_y=loc_y, color=black, background_color=white)
+        pygame.display.update()
+        return
+
+    for item in tradable_items:
+        pygame_print(f"{item}: {role.tradeDict[item].number}", offset_x=0, loc_y=loc_y, color=black, background_color=white)
+        loc_y += int(0.05 * Y)
+
+    pygame.display.update()
 
 def sellItem(role, item_name):
     global font, white, black, orange, screen, X, Y
