@@ -196,6 +196,7 @@ cppyy.cppdef(
         std::unordered_map<std::string, int> itemsAndQuantityNeeded;
         std::string description;
         int number;
+        std::string image_path;
     };
 
     struct Role : public SpecialShot
@@ -1402,6 +1403,7 @@ cppyy.cppdef(
         };
         tradeDict["Base Armor"].description = "Raises Stats by ...";
         tradeDict["Base Armor"].number = 0;
+        tradeDict["Base Armor"].image_path = "Assets/armor.png";
         
         tradeDict["Green Base Armor"].itemsAndQuantityNeeded = 
         { 
@@ -1409,6 +1411,7 @@ cppyy.cppdef(
         };
         tradeDict["Green Base Armor"].description = "Raises Stats by ...";
         tradeDict["Green Base Armor"].number = 0;
+        tradeDict["Green Base Armor"].image_path = "Assets/green armor.png";
         
         tradeDict["Pointy Sword"].itemsAndQuantityNeeded = 
         { 
@@ -1416,20 +1419,23 @@ cppyy.cppdef(
         };
         tradeDict["Pointy Sword"].description = "Raises Stats by ...";
         tradeDict["Pointy Sword"].number = 0;
-        
+        tradeDict["Pointy Sword"].image_path = "Assets/pointy sword.png";
+
         tradeDict["Pointy Base Armor"].itemsAndQuantityNeeded = 
         { 
             {"Knife", 5}, {"Cactuses", 10}, {"Sands", 20}, {"Rocks", 15}, {"Base Armor", 1}
         };
         tradeDict["Pointy Base Armor"].description = "Raises Stats by ...";
         tradeDict["Pointy Base Armor"].number = 0;
-        
+        tradeDict["Pointy Base Armor"].image_path = "Assets/spiky armor.png";
+
         tradeDict["Armor 1.0"].itemsAndQuantityNeeded = 
         { 
             {"Silvers", 3}, {"Knives", 10}, {"Sands", 125}, {"Rocks", 150}, {"Base Armor", 1}
         };
         tradeDict["Armor 1.0"].description = "Raises Stats by ...";
         tradeDict["Armor 1.0"].number = 0;
+        tradeDict["Armor 1.0"].image_path = "Assets/armor 1.0.png";
         
         tradeDict["Armor 2.0"].itemsAndQuantityNeeded =
         {
@@ -1437,13 +1443,15 @@ cppyy.cppdef(
         };
         tradeDict["Armor 2.0"].description = "Raises Stats by ...";
         tradeDict["Armor 2.0"].number = 0;
-        
+        tradeDict["Armor 2.0"].image_path = "Assets/armor 2.0.png";
+
         tradeDict["Boots of Swiftness"].itemsAndQuantityNeeded = 
         {
             {"Logs", 10}, {"Sands", 50}, {"Emeralds", 1}
         };
         tradeDict["Boots of Swiftness"].description = "Enhances speed and allows for quicker movement.";
         tradeDict["Boots of Swiftness"].number = 0;
+        tradeDict["Boots of Swiftness"].image_path = "Assets/boots_of_swiftness.png";
         
         tradeDict["Sword of Strength"].itemsAndQuantityNeeded = 
         {
@@ -1451,6 +1459,7 @@ cppyy.cppdef(
         };
         tradeDict["Sword of Strength"].description = "Significantly boosts attack power and increases critical hit chance.";
         tradeDict["Sword of Strength"].number = 0;
+        tradeDict["Sword of Strength"].image_path = "Assets/sword of strength.png";
         
         tradeDict["Ring of Vitality"].itemsAndQuantityNeeded = 
         {
@@ -1458,7 +1467,8 @@ cppyy.cppdef(
         };
         tradeDict["Ring of Vitality"].description = "Boosts health regeneration and increases overall stamina.";
         tradeDict["Ring of Vitality"].number = 0;
-        
+        tradeDict["Ring of Vitality"].image_path = "Assets/ring_of_vitality.png";
+
         for (const auto& i: tradeDict)
         {
             tradeDictKeys.push_back(i.first);
@@ -1637,11 +1647,13 @@ base_font_size = 32  # Base font size you designed for
 font_size = base_font_size
 #scaled_font_size = scale_font(font_size)
 font = pygame.font.Font('freesansbold.ttf', scale_font(font_size))
+underlined_font = pygame.font.Font('freesansbold.ttf', scale_font(font_size))
+underlined_font.set_underline(True)
 #print(scaled_font_size)
 base_font_height = font.size("hi")[1]
 
-def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0, scale = True, thresh = 0.9):
-    global X, Y, font, font_size, base_screen_height, base_font_height, base_font_size
+def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0, scale = True, thresh = 0.9, underline = False):
+    global X, Y, font, font_size, base_screen_height, base_font_height, base_font_size, underlined_font
     font_size = base_font_size
     font = pygame.font.Font('freesansbold.ttf', font_size)
     #Rescaling the font size so it does not trail off the screen
@@ -1654,15 +1666,20 @@ def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset
         font = pygame.font.Font('freesansbold.ttf', font_size)
         font_sz = font.size(text)
         
-    
-    
-    font = pygame.font.Font('freesansbold.ttf', font_size)
-    
-    
-    text = font.render(text, True, color, background_color)
-    textRect = text.get_rect()
-    textRect.center = (X//2+offset_x, loc_y)
-    screen.blit(text, textRect)
+    textRect = None
+    if underline:
+        underlined_font = pygame.font.Font('freesansbold.ttf', font_size)
+        underlined_font.set_underline(True)
+        text = underlined_font.render(text, True, color, background_color)
+        textRect = text.get_rect()
+        textRect.center = (X//2+offset_x, loc_y)
+        screen.blit(text, textRect)
+    else:
+        font = pygame.font.Font('freesansbold.ttf', font_size)
+        text = font.render(text, True, color, background_color)
+        textRect = text.get_rect()
+        textRect.center = (X//2+offset_x, loc_y)
+        screen.blit(text, textRect)
     
     # Adjust fonts dynamically based on screen size
     return textRect
@@ -1714,6 +1731,8 @@ def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: i
     count = 0
     if new_screen:
         screen.fill(color)
+    pygame_print("Heroes", Y // height, color=black, background_color=color, underline=True)
+    count += inc
     for num, item in enumerate(items):
         pygame_print(item, Y // height + count, color=(yellow if num == selectNumber else black),
                      background_color=color)
@@ -2473,26 +2492,29 @@ def printItem(role, item_name):
                 pygame.display.update()
                 
 def print_trade_requirements(role, item_name):
-    global X, Y
-    pygame_print(f"Requirements to trade for '{item_name}':",offset_x=-int(0.25*X), loc_y=int(0.4267*Y), thresh=0.45)
-    i = 0
+    global X, Y, font
+    start_y = 0.1267*Y
+    inc_y = .05*Y
+    pygame_print(f"Requirements to trade for '{item_name}'",offset_x=int(0.25*X), loc_y=int(start_y), thresh=0.45, underline=True)
+    i = inc_y
     for item_and_quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded:
-        pygame_print(f"  - {item_and_quantity_needed.first}: {item_and_quantity_needed.second}", offset_x=-int(0.25*X), loc_y=int(0.3767*Y), thresh=0.45)
-
-    pygame_print(f"\nItems and quantities the user has for '{item_name}':", offset_x=-int(0.25*X), loc_y=int(0.3267*Y), thresh=0.45)
-    for item, quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded.items():
-        quantity_have = role.numInv.get(item, {}).get("Number", 0)
-        pygame_print(f"  - {item}: {quantity_have}", offset_x=-int(0.25*X), loc_y=int(0.2767*Y), thresh=0.45)
+        pygame_print(f"  - {item_and_quantity_needed.first}: {item_and_quantity_needed.second}", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45)
+        i += inc_y
+        
+    pygame_print(f"Items and quantities the user has for '{item_name}'", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45, underline=True)
+    i += inc_y
+    for item_and_quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded:
+        quantity_have = role.numInv[item_and_quantity_needed.first]["Number"]
+        pygame_print(f"  - {item_and_quantity_needed.first}: {quantity_have}", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45)
+        i += inc_y
     
-    
-
 def tradeItem(role, item_name):
     global font, white, black, orange, screen, X, Y
     screen.fill(white)  # clear the screen
 
     square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
 
-    image_name = cppStringConvert(role.stringInv[item_name]["Picture"])
+    image_name = cppStringConvert(role.tradeDict[item_name].image_path)
     image_name = image_name if len(image_name) else cppStringConvert(role.placeholder_image)
     
     image = pygame.image.load(image_name)
@@ -2507,11 +2529,11 @@ def tradeItem(role, item_name):
     pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
     pygame_print(f"Type: Equip", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
     long_pygame_print(f"Description: {cppStringConvert(role.tradeDict[item_name].description)}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
-    pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
+    pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.5867*Y), thresh=0.45)
     #TODO: Print out (1.) Items and corresponding quantities the user needs in order to trade for 1 `item_name` (2.) Items and corresponding quantities the user has for `item_name`
+    print_trade_requirements(role, item_name)
     
     pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-
 
     rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
 #    on_sell_rect = False
@@ -2534,8 +2556,9 @@ def tradeItem(role, item_name):
                 pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
                 pygame_print(f"Type: Equip", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
                 long_pygame_print(f"Description: {cppStringConvert(role.tradeDict[item_name].description)}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
-                pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
-                
+                pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.5867*Y), thresh=0.45)
+                print_trade_requirements(role, item_name)
+
                 pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
 
                 rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
@@ -2555,7 +2578,8 @@ def tradeItem(role, item_name):
                 pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
                 pygame_print(f"Type: Equip", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
                 long_pygame_print(f"Description: {cppStringConvert(role.tradeDict[item_name].description)}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
-                pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
+                pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.5867*Y), thresh=0.45)
+                print_trade_requirements(role, item_name)
 
                 pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
 
@@ -2578,7 +2602,8 @@ def tradeItem(role, item_name):
                     pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
                     pygame_print(f"Type: Equip", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
                     long_pygame_print(f"Description: {cppStringConvert(role.tradeDict[item_name].description)}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
-                    pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
+                    pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.5867*Y), thresh=0.45)
+                    print_trade_requirements(role, item_name)
 
                     pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
 
@@ -2593,7 +2618,8 @@ def tradeItem(role, item_name):
                 pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
                 pygame_print(f"Type: Equip", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
                 long_pygame_print(f"Description: {cppStringConvert(role.tradeDict[item_name].description)}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
-                pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
+                pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.5867*Y), thresh=0.45)
+                print_trade_requirements(role, item_name)
 
                 pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
 
@@ -2607,8 +2633,8 @@ def tradeItem(role, item_name):
                 pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
                 pygame_print(f"Type: Equip", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
                 long_pygame_print(f"Description: {cppStringConvert(role.tradeDict[item_name].description)}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
-                pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
-
+                pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.5867*Y), thresh=0.45)
+                print_trade_requirements(role, item_name)
                 pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
 
                 rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
@@ -4286,11 +4312,11 @@ def Menu(role, setting):
         pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
         pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
         pygame_print("Mine", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
-        pygame_print("Inv", (0.3867*Y), color=(orange if optionNumber == 3 else black), background_color=white)
+        pygame_print("Inventory", (0.3867*Y), color=(orange if optionNumber == 3 else black), background_color=white)
         pygame_print("Shop", (0.44*Y), color=(orange if optionNumber == 4 else black), background_color=white)
         pygame_print("Quests", (0.4934*Y), color=(orange if optionNumber == 5 else black), background_color=white)
         pygame_print("Stats", (0.5467*Y), color=(orange if optionNumber == 6 else black), background_color=white)
-        pygame_print("InputMap", (0.6*Y), color=(orange if optionNumber == 7 else black), background_color=white)
+        pygame_print("Input Map", (0.6*Y), color=(orange if optionNumber == 7 else black), background_color=white)
         pygame.display.update()
         while True:
             for event in pygame.event.get():  # update the option number if necessary
@@ -4305,11 +4331,11 @@ def Menu(role, setting):
                     pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
                     pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
                     pygame_print("Mine", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
-                    pygame_print("Inv", (0.3867*Y), color=(orange if optionNumber == 3 else black), background_color=white)
+                    pygame_print("Inventory", (0.3867*Y), color=(orange if optionNumber == 3 else black), background_color=white)
                     pygame_print("Shop", (0.44*Y), color=(orange if optionNumber == 4 else black), background_color=white)
                     pygame_print("Quests", (0.4934*Y), color=(orange if optionNumber == 5 else black), background_color=white)
                     pygame_print("Stats", (0.5467*Y), color=(orange if optionNumber == 6 else black), background_color=white)
-                    pygame_print("InputMap", (0.6*Y), color=(orange if optionNumber == 7 else black), background_color=white)
+                    pygame_print("Input Map", (0.6*Y), color=(orange if optionNumber == 7 else black), background_color=white)
                     pygame.display.update()
                 if event.type == pygame.KEYDOWN:  # checking if any key was selected
                     if event.key == pygame.K_DOWN:
@@ -4320,11 +4346,11 @@ def Menu(role, setting):
                         pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
                         pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
                         pygame_print("Mine", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
-                        pygame_print("Inv", (0.3867*Y), color=(orange if optionNumber == 3 else black), background_color=white)
+                        pygame_print("Inventory", (0.3867*Y), color=(orange if optionNumber == 3 else black), background_color=white)
                         pygame_print("Shop", (0.44*Y), color=(orange if optionNumber == 4 else black), background_color=white)
                         pygame_print("Quests", (0.4934*Y), color=(orange if optionNumber == 5 else black), background_color=white)
                         pygame_print("Stats", (0.5467*Y), color=(orange if optionNumber == 6 else black), background_color=white)
-                        pygame_print("InputMap", (0.6*Y), color=(orange if optionNumber == 7 else black), background_color=white)
+                        pygame_print("Input Map", (0.6*Y), color=(orange if optionNumber == 7 else black), background_color=white)
                         pygame.display.update()
                     elif event.key == pygame.K_UP:
                         optionNumber = optionNumber - 1 if optionNumber != 0 else 7
@@ -4334,11 +4360,11 @@ def Menu(role, setting):
                         pygame_print("Map", (0.2267*Y), color=(orange if optionNumber == 0 else black), background_color=white)
                         pygame_print("Search", (0.28*Y), color=(orange if optionNumber == 1 else black), background_color=white)
                         pygame_print("Mine", (0.3334*Y), color=(orange if optionNumber == 2 else black), background_color=white)
-                        pygame_print("Inv", (0.3867*Y), color=(orange if optionNumber == 3 else black), background_color=white)
+                        pygame_print("Inventory", (0.3867*Y), color=(orange if optionNumber == 3 else black), background_color=white)
                         pygame_print("Shop", (0.44*Y), color=(orange if optionNumber == 4 else black), background_color=white)
                         pygame_print("Quests", (0.4934*Y), color=(orange if optionNumber == 5 else black), background_color=white)
                         pygame_print("Stats", (0.5467*Y), color=(orange if optionNumber == 6 else black), background_color=white)
-                        pygame_print("InputMap", (0.6*Y), color=(orange if optionNumber == 7 else black), background_color=white)
+                        pygame_print("Input Map", (0.6*Y), color=(orange if optionNumber == 7 else black), background_color=white)
                         pygame.display.update()
                     elif event.key == pygame.K_RETURN:
                         if optionNumber == 0:  # Map
@@ -4371,15 +4397,14 @@ def game():
         displayedHeroes = False
         dispayedChest = False
         displayedPlaces = False
-        optionNumber = 3  # (3, 4, or 5)
+        optionNumber = 0  # (0, 1, or 2)
         updated = False
         playerhero = ""  # declare the hero that the user wants to be
-        heroes = displayHeroes()
+        heroes
         YesNo = ("Yes", "No")
         RoleHero = None
         Place = None
         resized = False
-
         while True:
             pygame.display.update()
             
@@ -4415,10 +4440,10 @@ def game():
                 elif displayedHeroes and not dispayedChest:
                     if event.type == pygame.KEYDOWN:  # checking if any key was selected
                         if event.key == pygame.K_DOWN:
-                            optionNumber = optionNumber + 1 if optionNumber != 5 else 3
+                            optionNumber = optionNumber + 1 if optionNumber != 2 else 0
                             updateList(heroes, optionNumber, inc = 0.1*Y) # update screen
                         elif event.key == pygame.K_UP:
-                            optionNumber = optionNumber - 1 if optionNumber != 3 else 5
+                            optionNumber = optionNumber - 1 if optionNumber != 0 else 2
                             updateList(heroes, optionNumber, inc = 0.1*Y)  # update screen
                         elif event.key == pygame.K_RETURN:
                             playerhero = heroes[optionNumber]
