@@ -126,6 +126,7 @@ cppyy.cppdef(
         // Assignment operator overload
         CustomBool() {value=false;}
         CustomBool& operator=(bool);
+        bool operator()();
     };
     
     struct SpecialShot
@@ -208,7 +209,7 @@ cppyy.cppdef(
         int number;
         std::string image_path;
         CustomBool equipped;
-        std::unordered_map<std::string, float> statBoost; //
+        std::unordered_map<std::string, float> stat_boost; 
     };
 
     struct Role : public SpecialShot
@@ -262,6 +263,8 @@ cppyy.cppdef(
         std::vector<std::string> QuestItemsVec();
         std::pair<std::unordered_map<std::string, std::unordered_map<std::string, double>>, std::vector<std::string>> printTradeInfo();
         std::vector<std::string> GetItemsUserCanTrade();
+        std::vector<std::string> GetUserTradeItems();
+        void EquipItem(const std::string&);
         int GetMaxItemAmount(const std::string&);
         void updateTradeDictInventory(int, const std::string&);
         
@@ -800,12 +803,25 @@ cppyy.cppdef(
                     break;
                 }
             }
-            if (found)
+            if (found && !entry.second.number)
             {
                 items_user_can_trade.push_back(entry.first);
             }
         }
         return items_user_can_trade;
+    }
+    
+    std::vector<std::string> Role::GetUserTradeItems()
+    {
+        std::vector<std::string> items_user_got_trading;
+        for (const auto& entry: this->tradeDict) //each of the trade items
+        {
+            if (entry.second.number)
+            {
+                items_user_got_trading.push_back(entry.first);
+            }
+        }
+        return items_user_got_trading;
     }
     
     int Role::GetMaxItemAmount(const std::string& item_name)
@@ -821,6 +837,10 @@ cppyy.cppdef(
              - => max_amount = min({3//1, 7//5, 2//1}) = 1
         */
         
+        if (this->tradeDict[item_name].number)
+        {
+            return 0; //can only have up to one of a given trade item 
+        }
         int max_amount = -1;
         int total;
         //Iterating over 
@@ -835,10 +855,58 @@ cppyy.cppdef(
             {
                 total += this->tradeDict[entry.first].number;
             }
-            total = total / entry.second;
-            max_amount = ((max_amount < 0 || max_amount > total) ? total : max_amount);
+            total = total / entry.second; //the amount of a given item the user has divided by the amount the user needs to trade for `item_name`
+            max_amount = ((max_amount < 0 || max_amount > total) ? total : max_amount); 
         }
         return max_amount;
+    }
+    
+    void Role::EquipItem(const std::string& item_name)
+    {
+        this->tradeDict[item_name].equipped.value = true;
+        for (auto& item: this->tradeDict)
+        {
+            if (item.second.equipped())
+            {
+                item.second.equipped.value = false;
+                for (const auto& stat: item.second.stat_boost)
+                {
+                    if (stat.first == "Attack")
+                    {
+                        this->attackpower += (item.first != item_name) ? -stat.second : stat.second;
+                    }
+                    else if (stat.first == "Defense")
+                    {
+                        this->baseDefense += (item.first != item_name) ? -stat.second : stat.second;
+                    }
+                    else if (stat.first == "Speed")
+                    {
+                        this->speed += (item.first != item_name) ? -stat.second : stat.second;
+                    }
+                    else if (stat.first == "Health")
+                    {
+                        this->base_health += (item.first != item_name) ? -stat.second : stat.second;
+                    }
+                    //TODO: Finish by adding all of the stats that appear in the Role Struct defintion, i.e., SOME from the following:
+                    /*
+                        double base_health;
+                        double shot_speed;
+                        double attackpower;
+                        double defense;
+                        double attackStamina;
+                        double defenseStamina;
+                        double baseDefense;
+                        double searchTime;
+                        int maxLevel;
+                        int startLevel;
+                        int currLevel;
+                        double currExp;
+                        double LevelExp;
+                        double speed;
+                    */
+                }
+            }
+        }
     }
     
     void Role::updateTradeDictInventory(int num_item, const std::string& item_name)
@@ -1431,7 +1499,7 @@ cppyy.cppdef(
         tradeDict["Green Base Armor"].image_path = "Assets/green armor.png";
         tradeDict["Green Base Armor"].equipped.r = this;
         tradeDict["Green Base Armor"].equipped = false;
-        tradeDict{"Green Base Armor"].stat_boost["Attack"] = 15.0f;
+        tradeDict["Green Base Armor"].stat_boost["Attack"] = 15.0f;
         
         tradeDict["Pointy Sword"].itemsAndQuantityNeeded = 
         { 
@@ -1442,7 +1510,7 @@ cppyy.cppdef(
         tradeDict["Pointy Sword"].image_path = "Assets/pointy sword.png";
         tradeDict["Pointy Sword"].equipped.r = this;
         tradeDict["Pointy Sword"].equipped = false;
-        tradeDict["Pointy Sword"].stat_boost{"Attack"} = 25.0f;
+        tradeDict["Pointy Sword"].stat_boost["Attack"] = 25.0f;
 
         tradeDict["Pointy Base Armor"].itemsAndQuantityNeeded = 
         { 
@@ -1453,7 +1521,7 @@ cppyy.cppdef(
         tradeDict["Pointy Base Armor"].image_path = "Assets/spiky armor.png";
         tradeDict["Pointy Base Armor"].equipped.r = this;
         tradeDict["Pointy Base Armor"].equipped = false;
-        tradeDict{"Pointy Base Armor"].stat_boost["Attack"] = 15.0f;
+        tradeDict["Pointy Base Armor"].stat_boost["Attack"] = 15.0f;
         
         tradeDict["Armor 1.0"].itemsAndQuantityNeeded = 
         { 
@@ -1464,7 +1532,7 @@ cppyy.cppdef(
         tradeDict["Armor 1.0"].image_path = "Assets/armor 1.0.png";
         tradeDict["Armor 1.0"].equipped.r = this;
         tradeDict["Armor 1.0"].equipped = false;
-        tradeDict{"Armor 1.0"].stat_boost["Attack"] = 20.0f;
+        tradeDict["Armor 1.0"].stat_boost["Attack"] = 20.0f;
         
         tradeDict["Armor 2.0"].itemsAndQuantityNeeded =
         {
@@ -1556,6 +1624,11 @@ cppyy.cppdef(
     {
         out << C.value << '\n';
         return out;
+    }
+    
+    bool CustomBool::operator()()
+    {
+        return value;
     }
 
 ''')
@@ -2604,7 +2677,6 @@ def tradeItem(role, item_name):
     pygame.display.update()
 
     while True:
-        
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
@@ -2631,9 +2703,9 @@ def tradeItem(role, item_name):
                 if event.key == pygame.K_RETURN:
                     return 0
                 elif event.key == pygame.K_DOWN:
-                    num_item = num_item - 1 if num_item != 0 else max_amount
+                    num_item = 0 if num_item != 0 else min(1, max_amount)
                 elif event.key == pygame.K_UP:
-                    num_item = num_item + 1 if num_item != max_amount else 0
+                    num_item = min(1, max_amount) if num_item != 1 else 0
                     
                 screen.fill(white)  # clear the screen
                 pygame.draw.rect(screen, white, square_rect)
@@ -2657,6 +2729,7 @@ def tradeItem(role, item_name):
                     role.updateTradeDictInventory(num_item, item_name)
                     
                     max_amount = role.GetMaxItemAmount(item_name)
+                    print("Max amount =",max_amount)
                     num_item = 0
 
                     screen.fill(white)  # clear the screen
@@ -2720,7 +2793,7 @@ def EquipItem(role, item_name):
 
 def TradeItemInventoryEquip(Role):
     global X, Y, screen, white
-    tradeItems = Role.GetItemsUserCanTrade()
+    tradeItems = Role.GetUserTradeItems()
     if not tradeItems.size():
         screen.fill(white);
         pygame_print("You don't have any items that you can equip!", 0.4*Y, color=black, background_color=white)
@@ -2780,6 +2853,12 @@ def TradeItemInventoryEquip(Role):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     # Handle the selection of the item
+                    Role.tradeDict[tradeItems[optionNumber]].equipped.value
+                    Role.EquipItem(tradeItems[optionNumber])
+                    
+                    
+                    
+                    
                     tradeItem(Role, tradeItems[optionNumber].title())
                     tradeItems = Role.GetItemsUserCanTrade()
                     if tradeItems.size() == 0:
