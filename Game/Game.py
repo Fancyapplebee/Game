@@ -265,6 +265,7 @@ cppyy.cppdef(
         std::vector<std::string> GetItemsUserCanTrade();
         std::vector<std::string> GetUserTradeItems();
         void EquipItem(const std::string&);
+        void DequipItem(const std::string&);
         int GetMaxItemAmount(const std::string&);
         void updateTradeDictInventory(int, const std::string&);
         
@@ -861,85 +862,75 @@ cppyy.cppdef(
         return max_amount;
     }
     
+    /*
+        The rule now is that we are only equipping one item at a time, i.e., 
+        when the user equips an item any previously equipped items are dequipped
+    */
     void Role::EquipItem(const std::string& item_name)
     {
         this->tradeDict[item_name].equipped.value = true;
+        bool is_not_item;
         for (auto& item: this->tradeDict)
         {
             if (item.second.equipped())
-            {
-                item.second.equipped.value = false;
+            {   
+                is_not_item = (item.first != item_name);
+                //The item should be equipped if it's equal to item_name else it should be dequipped
+                item.second.equipped.value = !is_not_item; 
                 for (const auto& stat: item.second.stat_boost)
                 {
                     if (stat.first == "Attack")
                     {
-                        this->attackpower += (item.first != item_name) ? -stat.second : stat.second;
+                        this->attackpower *= (is_not_item ? stat.second : 1.0f/stat.second);
                     }
                     else if (stat.first == "Defense")
                     {
-                        this->baseDefense += (item.first != item_name) ? -stat.second : stat.second;
+                        this->baseDefense *= (is_not_item ? stat.second : 1.0f/stat.second);
                     }
                     else if (stat.first == "Speed")
                     {
-                        this->speed += (item.first != item_name) ? -stat.second : stat.second;
+                        this->speed *= (is_not_item ? stat.second : 1.0f/stat.second);
                     }
                     else if (stat.first == "Health")
                     {
-                        this->base_health += (item.first != item_name) ? -stat.second : stat.second;
+                        this->base_health *= (is_not_item ? stat.second : 1.0f/stat.second);
                     }
-                    else if (stat.first = "base_health")
+                    else if (stat.first == "base_health")
                     {
-                        this->base_health += (item.first != item_name) ? -stat.second : stat.second;
+                        this->base_health *= (is_not_item ? stat.second : 1.0f/stat.second);
                     }
-                    else if (stat.first = "shot_speed")
+                    else if (stat.first == "shot_speed")
                     {
-                        this->shot_speed += (item.first != item_name) ? -stat.second : stat.second;
+                        this->shot_speed *= (is_not_item ? stat.second : 1.0f/stat.second);
                     }
-                    else if (stat.first = "attackpower")
+                    else if (stat.first == "attackpower")
                     {
-                        this->attackpower += (item.first != item_name) ? -stat.second : stat.second;
+                        this->attackpower *= (is_not_item ? stat.second : 1.0f/stat.second);
                     }
-                    else if (stat.first = "defense")
+                    else if (stat.first == "defense")
                     {
-                        this->defense += (item.first != item_name) ? -stat.second : stat.second;
+                        this->defense *= (is_not_item ? stat.second : 1.0f/stat.second);
                     }
-                    else if (stat.first = "attackStamina")
+                    else if (stat.first == "attackStamina")
                     {
-                        this->attackStamina += (item.first != item_name) ? -stat.second : stat.second;
+                        this->attackStamina *= (is_not_item ? stat.second : 1.0f/stat.second);
                     }
-                    else if (stat.first = "defenseStamina")
+                    else if (stat.first == "defenseStamina")
                     {
-                        this->defenseStamina += (item.first != item_name) ? -stat.second : stat.second;
+                        this->defenseStamina *= (is_not_item ? stat.second : 1.0f/stat.second);
                     }
-                    else if (stat.first = "baseDefense")
+                    else if (stat.first == "baseDefense")
                     {
-                        this->baseDefense += (item.first != item_name) ? -stat.second : stat.second;
+                        this->baseDefense *= (is_not_item ? stat.second : 1.0f/stat.second);
                     }
-                    else if (stat.first = "searchTime")
+                    else if (stat.first == "searchTime")
                     {
-                        this->searchTime += (item.first != item_name) ? -stat.second : stat.second;
+                        this->searchTime *= (is_not_item ? stat.second : 1.0f/stat.second);
                     }
-                    else if (stat.first = "speed")
+                    else if (stat.first == "speed")
                     {
-                        this->speed += (item.first != item_name) ? -stat.second : stat.second;
+                        this->speed *= (is_not_item ? stat.second : 1.0f/stat.second);
                     }
-                    //TODO: Finish by adding all of the stats that appear in the Role Struct defintion, i.e., SOME from the following:
-                    /*
-                        double base_health;
-                        double shot_speed;
-                        double attackpower;
-                        double defense;
-                        double attackStamina;
-                        double defenseStamina;
-                        double baseDefense;
-                        double searchTime;
-                        int maxLevel;
-                        int startLevel;
-                        int currLevel;
-                        double currExp;
-                        double LevelExp;
-                        double speed;
-                    */
                 }
             }
         }
@@ -2679,7 +2670,7 @@ def print_trade_requirements(role, item_name):
         quantity_have = role.numInv[item_and_quantity_needed.first]["Number"]
         pygame_print(f"  - {item_and_quantity_needed.first}: {quantity_have}", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45)
         i += inc_y
-    
+
 def tradeItem(role, item_name):
     global font, white, black, orange, screen, X, Y
     screen.fill(white)  # clear the screen
@@ -2702,7 +2693,6 @@ def tradeItem(role, item_name):
     pygame_print(f"Type: Equip", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
     long_pygame_print(f"Description: {cppStringConvert(role.tradeDict[item_name].description)}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
     pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.5867*Y), thresh=0.45)
-    #TODO: Print out (1.) Items and corresponding quantities the user needs in order to trade for 1 `item_name` (2.) Items and corresponding quantities the user has for `item_name`
     print_trade_requirements(role, item_name)
     
     pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
@@ -2813,26 +2803,97 @@ def tradeItem(role, item_name):
 #                on_sell_rect = False
                 pygame.display.update()
 
-def EquipItem(role, item_name):
-    if item_name not in role.stringInv:
-        print(f"Item '{item_name}' not found in inventory.")
-        return
+#TODO: Finish this and add this to the TradeItem function
+def equip_stat_boost_description(role, item_name):
+    global X, Y, font
+    start_y = 0.1267*Y
+    inc_y = .05*Y
+    pygame_print(f"Requirements to trade for '{item_name}'",offset_x=int(0.25*X), loc_y=int(start_y), thresh=0.45, underline=True)
+    i = inc_y
+    for item_and_quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded:
+        pygame_print(f"  - {item_and_quantity_needed.first}: {item_and_quantity_needed.second}", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45)
+        i += inc_y
+        
+    pygame_print(f"Items and quantities the user has for '{item_name}'", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45, underline=True)
+    i += inc_y
+    for item_and_quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded:
+        quantity_have = role.numInv[item_and_quantity_needed.first]["Number"]
+        pygame_print(f"  - {item_and_quantity_needed.first}: {quantity_have}", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45)
+        i += inc_y
 
-    elif role.numInv[item_name]["Number"] <= 0:
-        print(f"No '{item_name}' available to equip.")
-        return
+def EquipItemInterface(role, item_name):
+    global font, white, black, orange, screen, X, Y
+    screen.fill(white)  # clear the screen
+    image_width, image_height = int(0.8*X), int(0.5*Y)
+    image_left, image_top = int(0.05*X), int(0.1*Y)
+    square_rect = pygame.Rect(image_left, image_top, image_width, image_height)  # left, top, width, height
+    image_name = cppStringConvert(role.tradeDict[item_name].image_path)
+    image_name = image_name if len(image_name) else cppStringConvert(role.placeholder_image)
+    image = pygame.image.load(image_name)
+    image = pygame.transform.scale(image, (image_width, image_height))
+    
+    optionNumber = 0
 
-    else:
-        role.equippedItems.append(item_name)
-        pygame_print(f"Equipped '{item_name}' to {role.name}.")
-        print(f"Equipped '{item_name}' to {role.name}.")
+    pygame.draw.rect(screen, white, square_rect)
+    screen.blit(image, square_rect.topleft)
+    pygame_print(f"{item_name}", loc_y=int(0.8*Y), thresh=0.9)
+    #Get if item is equipped
+    equipped_string = "Dequip?" if role.tradeDict[item_name].equipped() else "Equip?"
+    pygame_print(f"{equipped_string}", loc_y=int(0.825*Y), thresh=0.9)
+    pygame_print("Yes",  loc_y=int(0.85*Y), color=(orange if optionNumber == 0 else black))
+    pygame_print("No",  loc_y=int(0.875*Y), color=(orange if optionNumber == 1 else black))
+    
+#    long_pygame_print(f"Description: {cppStringConvert(role.tradeDict[item_name].description)}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
+    
+#    pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
+#
+#    rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
+#    on_sell_rect = False
 
-    # Apply stat boosts
-    stat_boosts = role.tradeDict[item_name].get("stat_boost", {})
-    for stat, boost in stat_boosts.items():
-        if hasattr(role, stat):
-            setattr(role, stat, getattr(role, stat) + boost)
-            print(f"Increased {stat} by {boost}. New value: {getattr(role, stat)}")
+    pygame.display.update()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.VIDEORESIZE:
+                X, Y = screen.get_width(), screen.get_height()
+                X = 410 if X < 410 else X
+                image_width, image_height = int(0.8*X), int(0.65*Y)
+                image_left, image_top = int(0.05*X), int(0.1*Y)
+                print(f"X, Y = {X}, {Y}")
+                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                square_rect = pygame.Rect(image_left, image_top, image_width, image_height)  # left, top, width, height
+                image = pygame.image.load(image_name)
+                image = pygame.transform.scale(image, (image_width, image_height))
+                pygame.draw.rect(screen, white, square_rect)
+                screen.blit(image, square_rect.topleft)
+                pygame.draw.rect(screen, white, square_rect)
+                screen.blit(image, square_rect.topleft)
+                pygame_print(f"{item_name}", loc_y=int(0.8*Y), thresh=0.9)
+                #Get if item is equipped
+                equipped_string = "Dequip?" if role.tradeDict[item_name].equipped() else "Equip?"
+                pygame_print(f"{equipped_string}", loc_y=int(0.825*Y), thresh=0.9)
+                pygame_print("Yes",  loc_y=int(0.85*Y), color=(orange if optionNumber == 0 else black))
+                pygame_print("No",  loc_y=int(0.875*Y), color=(orange if optionNumber == 1 else black))
+                pygame.display.update()
+                
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    #TODO: Create a DequipItem function
+                    #TODO: if not optionNumber (Call EquipItem(item_name) if equipped_string == "Equip" else DequipItem(item_name)) and return else just return
+                    
+                elif event.key == pygame.K_DOWN or event.key == pygame.K_UP:
+                    optionNumber = not optionNumber
+                    
+                screen.fill(white)  # clear the screen
+                pygame.draw.rect(screen, white, square_rect)
+                screen.blit(image, square_rect.topleft)
+                pygame_print(f"{item_name}", loc_y=int(0.8*Y), thresh=0.9)
+                #Get if item is equipped
+                equipped_string = "Dequip?" if role.tradeDict[item_name].equipped() else "Equip?"
+                pygame_print(f"{equipped_string}", loc_y=int(0.825*Y), thresh=0.9)
+                pygame_print("Yes",  loc_y=int(0.85*Y), color=(orange if optionNumber == 0 else black))
+                pygame_print("No",  loc_y=int(0.875*Y), color=(orange if optionNumber == 1 else black))
+                pygame.display.update()
 
 def TradeItemInventoryEquip(Role):
     global X, Y, screen, white
@@ -2854,7 +2915,7 @@ def TradeItemInventoryEquip(Role):
     last_move_time = pygame.time.get_ticks()
     while True:
         screen.fill(white)  # clear the screen
-        pygame_print(f"What would you like to equip?", (0.08*Y), color=black, background_color=white)
+        pygame_print(f"What would you like to equip/dequip?", (0.08*Y), color=black, background_color=white)
         pygame_print("=================================", (0.134*Y), color=black, background_color=white)
         text_y = (0.1867*Y)
         for i in range(startTradeIdx, endTradeIdx):
@@ -2870,7 +2931,7 @@ def TradeItemInventoryEquip(Role):
         current_time = pygame.time.get_ticks()
 
         if keys[pygame.K_DOWN] and current_time - last_move_time > move_delay:
-            optionNumber = optionNumber + 1 if optionNumber != sellableItems.size() - 1 else 0
+            optionNumber = optionNumber + 1 if optionNumber != tradeItems.size() - 1 else 0
             if optionNumber == 0:
                 startTradeIdx = 0
             elif startTradeIdx + 1 + maxItems <= tradeItems.size() and optionNumber > startTradeIdx - 1 + maxItems:
@@ -2896,16 +2957,12 @@ def TradeItemInventoryEquip(Role):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     # Handle the selection of the item
-                    Role.tradeDict[tradeItems[optionNumber]].equipped.value
-                    Role.EquipItem(tradeItems[optionNumber])
+#                    Role.tradeDict[tradeItems[optionNumber]].equipped.value
+                    Role.EquipItemInterface(Role, tradeItems[optionNumber])
                     
-                    
-                    
-                    
-                    tradeItem(Role, tradeItems[optionNumber].title())
-                    tradeItems = Role.GetItemsUserCanTrade()
-                    if tradeItems.size() == 0:
-                        return
+#                    tradeItems = Role.GetItemsUserCanTrade()
+#                    if tradeItems.size() == 0:
+#                        return
                     optionNumber = 0
                     startTradeIdx = 0
                     endTradeIdx = min(tradeItems.size(), maxItems)
