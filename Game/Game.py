@@ -887,6 +887,42 @@ cppyy.cppdef(
                     {
                         this->base_health += (item.first != item_name) ? -stat.second : stat.second;
                     }
+                    else if (stat.first = "base_health")
+                    {
+                        this->base_health += (item.first != item_name) ? -stat.second : stat.second;
+                    }
+                    else if (stat.first = "shot_speed")
+                    {
+                        this->shot_speed += (item.first != item_name) ? -stat.second : stat.second;
+                    }
+                    else if (stat.first = "attackpower")
+                    {
+                        this->attackpower += (item.first != item_name) ? -stat.second : stat.second;
+                    }
+                    else if (stat.first = "defense")
+                    {
+                        this->defense += (item.first != item_name) ? -stat.second : stat.second;
+                    }
+                    else if (stat.first = "attackStamina")
+                    {
+                        this->attackStamina += (item.first != item_name) ? -stat.second : stat.second;
+                    }
+                    else if (stat.first = "defenseStamina")
+                    {
+                        this->defenseStamina += (item.first != item_name) ? -stat.second : stat.second;
+                    }
+                    else if (stat.first = "baseDefense")
+                    {
+                        this->baseDefense += (item.first != item_name) ? -stat.second : stat.second;
+                    }
+                    else if (stat.first = "searchTime")
+                    {
+                        this->searchTime += (item.first != item_name) ? -stat.second : stat.second;
+                    }
+                    else if (stat.first = "speed")
+                    {
+                        this->speed += (item.first != item_name) ? -stat.second : stat.second;
+                    }
                     //TODO: Finish by adding all of the stats that appear in the Role Struct defintion, i.e., SOME from the following:
                     /*
                         double base_health;
@@ -2790,6 +2826,13 @@ def EquipItem(role, item_name):
         role.equippedItems.append(item_name)
         pygame_print(f"Equipped '{item_name}' to {role.name}.")
         print(f"Equipped '{item_name}' to {role.name}.")
+
+    # Apply stat boosts
+    stat_boosts = role.tradeDict[item_name].get("stat_boost", {})
+    for stat, boost in stat_boosts.items():
+        if hasattr(role, stat):
+            setattr(role, stat, getattr(role, stat) + boost)
+            print(f"Increased {stat} by {boost}. New value: {getattr(role, stat)}")
 
 def TradeItemInventoryEquip(Role):
     global X, Y, screen, white

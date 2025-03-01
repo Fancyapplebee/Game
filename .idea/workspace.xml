@@ -116,8 +116,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-76f8388c3a79-JavaScript-PY-243.24978.54" />
-        <option value="bundled-python-sdk-91e3b7efe1d4-466328ff949b-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.24978.54" />
+        <option value="bundled-js-predefined-d6986cc7102b-4027fba43365-JavaScript-PY-251.20015.54" />
+        <option value="bundled-python-sdk-dd039514c13f-b9098cbcb096-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.20015.54" />
       </set>
     </attachedChunks>
   </component>
@@ -332,7 +332,8 @@
       <workItem from="1739639498022" duration="2704000" />
       <workItem from="1740198031441" duration="132000" />
       <workItem from="1740198184163" duration="698000" />
-      <workItem from="1740244184864" duration="2086000" />
+      <workItem from="1740244184864" duration="3571000" />
+      <workItem from="1740851305760" duration="773000" />
     </task>
     <task id="LOCAL-00001" summary="it works">
       <created>1657430290327</created>
@@ -445,14 +446,6 @@
       <option name="presentableId" value="LOCAL-00016" />
       <option name="project" value="LOCAL" />
       <updated>1687021377997</updated>
-    </task>
-    <task id="LOCAL-00043" summary="Ammended JSON files&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
-      <option name="closed" value="true" />
-      <created>1708149674375</created>
-      <option name="number" value="00043" />
-      <option name="presentableId" value="LOCAL-00043" />
-      <option name="project" value="LOCAL" />
-      <updated>1708149674375</updated>
     </task>
     <task id="LOCAL-00044" summary="Updated game files//GAME&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
       <option name="closed" value="true" />
@@ -710,7 +703,15 @@
       <option name="project" value="LOCAL" />
       <updated>1739641819998</updated>
     </task>
-    <option name="localTasksCounter" value="76" />
+    <task id="LOCAL-00076" summary="Equipitem and Tradeiteminventory">
+      <option name="closed" value="true" />
+      <created>1740247166950</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1740247166951</updated>
+    </task>
+    <option name="localTasksCounter" value="77" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
