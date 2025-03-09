@@ -935,7 +935,44 @@ cppyy.cppdef(
             }
         }
     }
+    void Role::DequipItem(const std::string& item_name) 
+    {
+        tradeDict[item_name].equipped.value = false;
+        for (const auto& stat_boost : tradeDict[item_name].stat_boost) {
+            const std::string& stat = stat_boost.first;
+            double boost = stat_boost.second;
     
+            if (stat == "base_health") {
+                base_health /= boost;
+            } else if (stat == "shot_speed") {
+                shot_speed /= boost;
+            } else if (stat == "attackpower") {
+                attackpower /= boost;
+            } else if (stat == "defense") {
+                defense /= boost;
+            } else if (stat == "attackStamina") {
+                attackStamina /= boost;
+            } else if (stat == "defenseStamina") {
+                defenseStamina /= boost;
+            } else if (stat == "baseDefense") {
+                baseDefense /= boost;
+            } else if (stat == "searchTime") {
+                searchTime /= boost;
+            } else if (stat == "maxLevel") {
+                maxLevel -= static_cast<int>(boost);
+            } else if (stat == "startLevel") {
+                startLevel -= static_cast<int>(boost);
+            } else if (stat == "currLevel") {
+                currLevel -= static_cast<int>(boost);
+            } else if (stat == "currExp") {
+                currExp /= boost;
+            } else if (stat == "LevelExp") {
+                LevelExp /= boost;
+            } else if (stat == "speed") {
+                speed /= boost;
+            }
+        }
+    }
     void Role::updateTradeDictInventory(int num_item, const std::string& item_name)
     {
         for (const auto& entry: this->tradeDict[item_name].itemsAndQuantityNeeded)
@@ -2878,6 +2915,7 @@ def EquipItemInterface(role, item_name):
                 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
+                    return
                     #TODO: Create a DequipItem function
                     #TODO: if not optionNumber (Call EquipItem(item_name) if equipped_string == "Equip" else DequipItem(item_name)) and return else just return
                     
