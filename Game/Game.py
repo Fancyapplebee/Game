@@ -935,8 +935,6 @@ cppyy.cppdef(
             }
         }
     }
-#Attack
-#Health
     void Role::DequipItem(const std::string& item_name) 
     {
         tradeDict[item_name].equipped.value = false;
@@ -1552,7 +1550,7 @@ cppyy.cppdef(
         tradeDict["Base Armor"].image_path = "Assets/armor.png";
         tradeDict["Base Armor"].equipped.r = this;
         tradeDict["Base Armor"].equipped = false;
-        tradeDict["Base Armor"].stat_boost["Attack"] = 1.25f;
+        tradeDict["Base Armor"].stat_boost["Attack"] = 10.0f;
         //TODO: Fill up stat_boost dictionary for each of the items (i.e., Base Armor, Green Base Armor, etc.), like the line below
         //tradeDict["Base Armor"].stat_boost["Attack"] = 10.0f;
         
@@ -1565,7 +1563,7 @@ cppyy.cppdef(
         tradeDict["Green Base Armor"].image_path = "Assets/green armor.png";
         tradeDict["Green Base Armor"].equipped.r = this;
         tradeDict["Green Base Armor"].equipped = false;
-        tradeDict["Green Base Armor"].stat_boost["Attack"] = 1.5f;
+        tradeDict["Green Base Armor"].stat_boost["Attack"] = 15.0f;
         
         tradeDict["Pointy Sword"].itemsAndQuantityNeeded = 
         { 
@@ -1576,7 +1574,7 @@ cppyy.cppdef(
         tradeDict["Pointy Sword"].image_path = "Assets/pointy sword.png";
         tradeDict["Pointy Sword"].equipped.r = this;
         tradeDict["Pointy Sword"].equipped = false;
-        tradeDict["Pointy Sword"].stat_boost["Attack"] = 1.5f;
+        tradeDict["Pointy Sword"].stat_boost["Attack"] = 25.0f;
 
         tradeDict["Pointy Base Armor"].itemsAndQuantityNeeded = 
         { 
@@ -1587,7 +1585,7 @@ cppyy.cppdef(
         tradeDict["Pointy Base Armor"].image_path = "Assets/spiky armor.png";
         tradeDict["Pointy Base Armor"].equipped.r = this;
         tradeDict["Pointy Base Armor"].equipped = false;
-        tradeDict["Pointy Base Armor"].stat_boost["Attack"] = 1.75f;
+        tradeDict["Pointy Base Armor"].stat_boost["Attack"] = 15.0f;
         
         tradeDict["Armor 1.0"].itemsAndQuantityNeeded = 
         { 
@@ -1598,7 +1596,7 @@ cppyy.cppdef(
         tradeDict["Armor 1.0"].image_path = "Assets/armor 1.0.png";
         tradeDict["Armor 1.0"].equipped.r = this;
         tradeDict["Armor 1.0"].equipped = false;
-        tradeDict["Armor 1.0"].stat_boost["Attack"] = 2.0f;
+        tradeDict["Armor 1.0"].stat_boost["Attack"] = 20.0f;
         
         tradeDict["Armor 2.0"].itemsAndQuantityNeeded =
         {
@@ -1609,7 +1607,7 @@ cppyy.cppdef(
         tradeDict["Armor 2.0"].image_path = "Assets/armor 2.0.png";
         tradeDict["Armor 2.0"].equipped.r = this;
         tradeDict["Armor 2.0"].equipped = false;
-        tradeDict["Armor 2.0"].stat_boost["Attack"] = 2.25f;
+        tradeDict["Armor 2.0"].stat_boost["Attack"] = 25.0f;
 
         tradeDict["Boots of Swiftness"].itemsAndQuantityNeeded = 
         {
@@ -1620,7 +1618,7 @@ cppyy.cppdef(
         tradeDict["Boots of Swiftness"].image_path = "Assets/boots_of_swiftness.png";
         tradeDict["Boots of Swiftness"].equipped.r = this;
         tradeDict["Boots of Swiftness"].equipped = false;
-        tradeDict["Boots of Swiftness"].stat_boost["Speed"] = 2.0f;
+        tradeDict["Boots of Swiftness"].stat_boost["Speed"] = 0.5f;
 
         tradeDict["Sword of Strength"].itemsAndQuantityNeeded = 
         {
@@ -1631,7 +1629,7 @@ cppyy.cppdef(
         tradeDict["Sword of Strength"].image_path = "Assets/sword of strength.png";
         tradeDict["Sword of Strength"].equipped.r = this;
         tradeDict["Sword of Strength"].equipped = false;
-        tradeDict["Sword of Strength"].stat_boost["Attack"] = 2.5f;
+        tradeDict["Sword of Strength"].stat_boost["Attack"] = 30.0f;
 
         tradeDict["Ring of Vitality"].itemsAndQuantityNeeded = 
         {
@@ -1642,7 +1640,7 @@ cppyy.cppdef(
         tradeDict["Ring of Vitality"].image_path = "Assets/ring_of_vitality.png";
         tradeDict["Sword of Strength"].equipped.r = this;
         tradeDict["Ring of Vitality"].equipped = false;
-        tradeDict["Ring of Vitality"].stat_boost["Health"] = 2.0f;
+        tradeDict["Ring of Vitality"].stat_boost["Health"] = 10.0f;
 
         for (const auto& i: tradeDict)
         {
