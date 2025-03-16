@@ -842,7 +842,7 @@ cppyy.cppdef(
         {
             return 0; //can only have up to one of a given trade item 
         }
-        int max_amount = -1;
+        int max_amount = 0;
         int total;
         //Iterating over 
         for (const auto& entry: this->tradeDict[item_name].itemsAndQuantityNeeded)
@@ -869,69 +869,40 @@ cppyy.cppdef(
     void Role::EquipItem(const std::string& item_name)
     {
         this->tradeDict[item_name].equipped.value = true;
-        bool is_not_item;
-        for (auto& item: this->tradeDict)
+
+        for (const auto& stat: this->tradeDict[item_name].stat_boost)
         {
-            if (item.second.equipped())
-            {   
-                is_not_item = (item.first != item_name);
-                //The item should be equipped if it's equal to item_name else it should be dequipped
-                item.second.equipped.value = !is_not_item; 
-                for (const auto& stat: item.second.stat_boost)
-                {
-                    if (stat.first == "Attack")
-                    {
-                        this->attackpower *= (is_not_item ? stat.second : 1.0f/stat.second);
-                    }
-                    else if (stat.first == "Defense")
-                    {
-                        this->baseDefense *= (is_not_item ? stat.second : 1.0f/stat.second);
-                    }
-                    else if (stat.first == "Speed")
-                    {
-                        this->speed *= (is_not_item ? stat.second : 1.0f/stat.second);
-                    }
-                    else if (stat.first == "Health")
-                    {
-                        this->base_health *= (is_not_item ? stat.second : 1.0f/stat.second);
-                    }
-                    else if (stat.first == "base_health")
-                    {
-                        this->base_health *= (is_not_item ? stat.second : 1.0f/stat.second);
-                    }
-                    else if (stat.first == "shot_speed")
-                    {
-                        this->shot_speed *= (is_not_item ? stat.second : 1.0f/stat.second);
-                    }
-                    else if (stat.first == "attackpower")
-                    {
-                        this->attackpower *= (is_not_item ? stat.second : 1.0f/stat.second);
-                    }
-                    else if (stat.first == "defense")
-                    {
-                        this->defense *= (is_not_item ? stat.second : 1.0f/stat.second);
-                    }
-                    else if (stat.first == "attackStamina")
-                    {
-                        this->attackStamina *= (is_not_item ? stat.second : 1.0f/stat.second);
-                    }
-                    else if (stat.first == "defenseStamina")
-                    {
-                        this->defenseStamina *= (is_not_item ? stat.second : 1.0f/stat.second);
-                    }
-                    else if (stat.first == "baseDefense")
-                    {
-                        this->baseDefense *= (is_not_item ? stat.second : 1.0f/stat.second);
-                    }
-                    else if (stat.first == "searchTime")
-                    {
-                        this->searchTime *= (is_not_item ? stat.second : 1.0f/stat.second);
-                    }
-                    else if (stat.first == "speed")
-                    {
-                        this->speed *= (is_not_item ? stat.second : 1.0f/stat.second);
-                    }
-                }
+            if (stat.first == "Attack" || stat.first == "attackpower") //Attach
+            {
+                this->attackpower *= stat.second;
+            }
+            else if (stat.first == "Defense" || stat.first == "defense" || stat.first == "baseDefense") //Defense
+            {
+                this->baseDefense *= stat.second;
+            }
+            else if (stat.first == "Speed" || stat.first == "speed") //Speed
+            {
+                this->speed *= stat.second;
+            }
+            else if (stat.first == "Health" || stat.first == "base_health") //Health
+            {
+                this->base_health *= stat.second;
+            }
+            else if (stat.first == "shot_speed")
+            {
+                this->shot_speed *= stat.second;
+            }
+            else if (stat.first == "attackStamina")
+            {
+                this->attackStamina *= stat.second;
+            }
+            else if (stat.first == "defenseStamina")
+            {
+                this->defenseStamina *= stat.second;
+            }
+            else if (stat.first == "searchTime")
+            {
+                this->searchTime *= stat.second;
             }
         }
     }
@@ -942,33 +913,21 @@ cppyy.cppdef(
             const std::string& stat = stat_boost.first;
             double boost = stat_boost.second;
     
-            if (stat == "base_health") {
+            if (stat == "base_health" || stat == "Health") {
                 base_health /= boost;
             } else if (stat == "shot_speed") {
                 shot_speed /= boost;
-            } else if (stat == "attackpower") {
+            } else if (stat == "attackpower" || stat == "Attack") {
                 attackpower /= boost;
-            } else if (stat == "defense") {
-                defense /= boost;
+            } else if (stat == "defense" || stat == "Defense" || stat == "baseDefense") {
+                baseDefense /= boost;
             } else if (stat == "attackStamina") {
                 attackStamina /= boost;
             } else if (stat == "defenseStamina") {
                 defenseStamina /= boost;
-            } else if (stat == "baseDefense") {
-                baseDefense /= boost;
             } else if (stat == "searchTime") {
                 searchTime /= boost;
-            } else if (stat == "maxLevel") {
-                maxLevel -= static_cast<int>(boost);
-            } else if (stat == "startLevel") {
-                startLevel -= static_cast<int>(boost);
-            } else if (stat == "currLevel") {
-                currLevel -= static_cast<int>(boost);
-            } else if (stat == "currExp") {
-                currExp /= boost;
-            } else if (stat == "LevelExp") {
-                LevelExp /= boost;
-            } else if (stat == "speed") {
+            } else if (stat == "speed" || stat == "Speed") {
                 speed /= boost;
             }
         }
@@ -1551,8 +1510,6 @@ cppyy.cppdef(
         tradeDict["Base Armor"].equipped.r = this;
         tradeDict["Base Armor"].equipped = false;
         tradeDict["Base Armor"].stat_boost["Attack"] = 1.25f;
-        //TODO: Fill up stat_boost dictionary for each of the items (i.e., Base Armor, Green Base Armor, etc.), like the line below
-        //tradeDict["Base Armor"].stat_boost["Attack"] = 10.0f;
         
         tradeDict["Green Base Armor"].itemsAndQuantityNeeded = 
         { 
@@ -1853,7 +1810,7 @@ underlined_font.set_underline(True)
 #print(scaled_font_size)
 base_font_height = font.size("hi")[1]
 
-def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0, scale = True, thresh = 0.9, underline = False):
+def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0, scale = True, thresh = 0.9, underline = False, letter_spacing = 0):
     global X, Y, font, font_size, base_screen_height, base_font_height, base_font_size, underlined_font
     font_size = base_font_size
     font = pygame.font.Font('freesansbold.ttf', font_size)
@@ -1871,16 +1828,50 @@ def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset
     if underline:
         underlined_font = pygame.font.Font('freesansbold.ttf', font_size)
         underlined_font.set_underline(True)
-        text = underlined_font.render(text, True, color, background_color)
-        textRect = text.get_rect()
-        textRect.center = (X//2+offset_x, loc_y)
-        screen.blit(text, textRect)
+        if letter_spacing:
+            # First get width of text
+            text_width = 0
+            for char in text:
+                char_surface = underlined_font.render(char, True, color)
+                text_width += char_surface.get_width() + letter_spacing
+        
+            loc_x = (X//2)+offset_x-(text_width//2)
+            for char in text:
+                char_surface = underlined_font.render(char, True, color)
+                charRect = char_surface.get_rect()
+                #charRect.center = (loc_x, loc_y)
+                charRect.left = loc_x
+                charRect.centery = loc_y
+                screen.blit(char_surface, charRect)
+                loc_x += char_surface.get_width() + letter_spacing
+        else:
+            text = underlined_font.render(text, True, color, background_color)
+            textRect = text.get_rect()
+            textRect.center = (X//2+offset_x, loc_y)
+            screen.blit(text, textRect)
     else:
         font = pygame.font.Font('freesansbold.ttf', font_size)
-        text = font.render(text, True, color, background_color)
-        textRect = text.get_rect()
-        textRect.center = (X//2+offset_x, loc_y)
-        screen.blit(text, textRect)
+        if letter_spacing:
+            # First get width of text
+            text_width = 0
+            for char in text:
+                char_surface = font.render(char, True, color)
+                text_width += char_surface.get_width() + letter_spacing
+        
+            loc_x = (X//2)+offset_x-(text_width//2)
+            for char in text:
+                char_surface = font.render(char, True, color)
+                charRect = char_surface.get_rect()
+#                charRect.center = (loc_x, loc_y)
+                charRect.left = loc_x
+                charRect.centery = loc_y
+                screen.blit(char_surface, charRect)
+                loc_x += char_surface.get_width() + letter_spacing
+        else:
+            text = font.render(text, True, color, background_color)
+            textRect = text.get_rect()
+            textRect.center = (X//2+offset_x, loc_y)
+            screen.blit(text, textRect)
     
     # Adjust fonts dynamically based on screen size
     return textRect
@@ -2690,7 +2681,8 @@ def printItem(role, item_name):
             elif not rect.collidepoint(pygame.mouse.get_pos()):
                 rect = AddButton(text="Use", offset_x=int(0.25 * X), loc_y=int(0.7334*Y), background_color=green)
                 pygame.display.update()
-                
+
+#TODO: Fix bug where some items are not printing (e.g. "Base Armor")
 def print_trade_requirements(role, item_name):
     global X, Y, font
     start_y = 0.1267*Y
@@ -2698,6 +2690,7 @@ def print_trade_requirements(role, item_name):
     pygame_print(f"Requirements to trade for '{item_name}'",offset_x=int(0.25*X), loc_y=int(start_y), thresh=0.45, underline=True)
     i = inc_y
     for item_and_quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded:
+#        print(f"{item_and_quantity_needed.first}")
         pygame_print(f"  - {item_and_quantity_needed.first}: {item_and_quantity_needed.second}", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45)
         i += inc_y
         
@@ -2705,6 +2698,7 @@ def print_trade_requirements(role, item_name):
     i += inc_y
     for item_and_quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded:
         quantity_have = role.numInv[item_and_quantity_needed.first]["Number"]
+#        print(f"{item_and_quantity_needed.first}")
         pygame_print(f"  - {item_and_quantity_needed.first}: {quantity_have}", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45)
         i += inc_y
 
@@ -2861,8 +2855,8 @@ def equip_stat_boost_description(role, item_name):
 def EquipItemInterface(role, item_name):
     global font, white, black, orange, screen, X, Y
     screen.fill(white)  # clear the screen
-    image_width, image_height = int(0.8*X), int(0.5*Y)
-    image_left, image_top = int(0.05*X), int(0.1*Y)
+    image_width, image_height = int(0.8*X), int(0.55*Y)
+    image_left, image_top = int(0.1*X), int(0.15*Y)
     square_rect = pygame.Rect(image_left, image_top, image_width, image_height)  # left, top, width, height
     image_name = cppStringConvert(role.tradeDict[item_name].image_path)
     image_name = image_name if len(image_name) else cppStringConvert(role.placeholder_image)
@@ -2873,11 +2867,11 @@ def EquipItemInterface(role, item_name):
 
     pygame.draw.rect(screen, white, square_rect)
     screen.blit(image, square_rect.topleft)
-    pygame_print(f"{item_name}", loc_y=int(0.8*Y), thresh=0.9)
+    pygame_print(f"{item_name}", loc_y=int(0.1*Y), thresh=0.9, underline = True)
     #Get if item is equipped
     equipped_string = "Dequip?" if role.tradeDict[item_name].equipped() else "Equip?"
-    pygame_print(f"{equipped_string}", loc_y=int(0.825*Y), thresh=0.9)
-    pygame_print("Yes",  loc_y=int(0.85*Y), color=(orange if optionNumber == 0 else black))
+    pygame_print(f"{equipped_string}", loc_y=int(0.76*Y), thresh=0.9)
+    pygame_print("Yes",  loc_y=int(0.825*Y), color=(orange if optionNumber == 0 else black))
     pygame_print("No",  loc_y=int(0.875*Y), color=(orange if optionNumber == 1 else black))
     
 #    long_pygame_print(f"Description: {cppStringConvert(role.tradeDict[item_name].description)}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
@@ -2894,10 +2888,11 @@ def EquipItemInterface(role, item_name):
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
                 X = 410 if X < 410 else X
-                image_width, image_height = int(0.8*X), int(0.65*Y)
-                image_left, image_top = int(0.05*X), int(0.1*Y)
+                image_width, image_height = int(0.8*X), int(0.55*Y)
+                image_left, image_top = int(0.1*X), int(0.15*Y)
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                screen.fill(white);
                 square_rect = pygame.Rect(image_left, image_top, image_width, image_height)  # left, top, width, height
                 image = pygame.image.load(image_name)
                 image = pygame.transform.scale(image, (image_width, image_height))
@@ -2905,19 +2900,26 @@ def EquipItemInterface(role, item_name):
                 screen.blit(image, square_rect.topleft)
                 pygame.draw.rect(screen, white, square_rect)
                 screen.blit(image, square_rect.topleft)
-                pygame_print(f"{item_name}", loc_y=int(0.8*Y), thresh=0.9)
+                pygame_print(f"{item_name}", loc_y=int(0.1*Y), thresh=0.9, underline = True)
                 #Get if item is equipped
                 equipped_string = "Dequip?" if role.tradeDict[item_name].equipped() else "Equip?"
-                pygame_print(f"{equipped_string}", loc_y=int(0.825*Y), thresh=0.9)
-                pygame_print("Yes",  loc_y=int(0.85*Y), color=(orange if optionNumber == 0 else black))
+                pygame_print(f"{equipped_string}", loc_y=int(0.76*Y), thresh=0.9)
+                pygame_print("Yes",  loc_y=int(0.825*Y), color=(orange if optionNumber == 0 else black))
                 pygame_print("No",  loc_y=int(0.875*Y), color=(orange if optionNumber == 1 else black))
                 pygame.display.update()
                 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
+                    if not optionNumber: #I.e., if option is "Yes"
+                        if equipped_string == "Equip?":
+                            role.EquipItem(item_name)
+                            pygame_print(f"{item_name} Equipped!", loc_y = Y // 2)
+                        elif equipped_string == "Dequip?":
+                            role.DequipItem(item_name)
+                            pygame_print(f"{item_name} Dequipped!", loc_y = Y // 2)
+                        pygame.display.update()
+                        wait_til_enter()
                     return
-                    #TODO: Create a DequipItem function
-                    #TODO: if not optionNumber (Call EquipItem(item_name) if equipped_string == "Equip" else DequipItem(item_name)) and return else just return
                     
                 elif event.key == pygame.K_DOWN or event.key == pygame.K_UP:
                     optionNumber = not optionNumber
@@ -2925,11 +2927,11 @@ def EquipItemInterface(role, item_name):
                 screen.fill(white)  # clear the screen
                 pygame.draw.rect(screen, white, square_rect)
                 screen.blit(image, square_rect.topleft)
-                pygame_print(f"{item_name}", loc_y=int(0.8*Y), thresh=0.9)
+                pygame_print(f"{item_name}", loc_y=int(0.1*Y), thresh=0.9, underline = True)
                 #Get if item is equipped
                 equipped_string = "Dequip?" if role.tradeDict[item_name].equipped() else "Equip?"
-                pygame_print(f"{equipped_string}", loc_y=int(0.825*Y), thresh=0.9)
-                pygame_print("Yes",  loc_y=int(0.85*Y), color=(orange if optionNumber == 0 else black))
+                pygame_print(f"{equipped_string}", loc_y=int(0.76*Y), thresh=0.9)
+                pygame_print("Yes",  loc_y=int(0.825*Y), color=(orange if optionNumber == 0 else black))
                 pygame_print("No",  loc_y=int(0.875*Y), color=(orange if optionNumber == 1 else black))
                 pygame.display.update()
 
@@ -2953,7 +2955,8 @@ def TradeItemInventoryEquip(Role):
     last_move_time = pygame.time.get_ticks()
     while True:
         screen.fill(white)  # clear the screen
-        pygame_print(f"What would you like to equip/dequip?", (0.08*Y), color=black, background_color=white)
+#        pygame_print(f"What would you like to equip or dequip?", (0.08*Y), color=black, background_color=white, letter_spacing=1.5)
+        pygame_print(f"What would you like to equip or dequip?", (0.08*Y), color=black, background_color=white)
         pygame_print("=================================", (0.134*Y), color=black, background_color=white)
         text_y = (0.1867*Y)
         for i in range(startTradeIdx, endTradeIdx):
@@ -2996,7 +2999,7 @@ def TradeItemInventoryEquip(Role):
                 if event.key == pygame.K_RETURN:
                     # Handle the selection of the item
 #                    Role.tradeDict[tradeItems[optionNumber]].equipped.value
-                    Role.EquipItemInterface(Role, tradeItems[optionNumber])
+                    EquipItemInterface(Role, tradeItems[optionNumber])
                     
 #                    tradeItems = Role.GetItemsUserCanTrade()
 #                    if tradeItems.size() == 0:
@@ -3921,7 +3924,13 @@ def QuestGames(Setting, role):
 
 def TradeOption(Role):
     global X, Y, screen
-    tradeItems = Role.GetItemsUserCanTrade()
+#    tradeItems = Role.GetItemsUserCanTrade()
+#    if not tradeItems.size():
+#        pygame_print("You don't have any items that you can trade for!", 0.4*Y, color=black, background_color=white)
+#        pygame.display.update()
+#        wait_til_enter()
+#        return
+    tradeItems = Role.tradeDictKeys #TODO: Fix Bugs!
     if not tradeItems.size():
         pygame_print("You don't have any items that you can trade for!", 0.4*Y, color=black, background_color=white)
         pygame.display.update()
@@ -3954,7 +3963,7 @@ def TradeOption(Role):
         current_time = pygame.time.get_ticks()
 
         if keys[pygame.K_DOWN] and current_time - last_move_time > move_delay:
-            optionNumber = optionNumber + 1 if optionNumber != sellableItems.size() - 1 else 0
+            optionNumber = optionNumber + 1 if optionNumber != tradeItems.size() - 1 else 0
             if optionNumber == 0:
                 startTradeIdx = 0
             elif startTradeIdx + 1 + maxItems <= tradeItems.size() and optionNumber > startTradeIdx - 1 + maxItems:
@@ -3980,10 +3989,10 @@ def TradeOption(Role):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     # Handle the selection of the item
-                    tradeItem(Role, tradeItems[optionNumber].title())
-                    tradeItems = Role.GetItemsUserCanTrade()
-                    if tradeItems.size() == 0:
-                        return
+                    tradeItem(Role, tradeItems[optionNumber])
+#                    tradeItems = Role.GetItemsUserCanTrade()
+#                    if tradeItems.size() == 0:
+#                        return
                     optionNumber = 0
                     startTradeIdx = 0
                     endTradeIdx = min(tradeItems.size(), maxItems)
