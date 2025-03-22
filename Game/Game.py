@@ -3554,6 +3554,13 @@ def QuestGames(Setting, role):
         enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
         screen.blit(enemy_image, enemy_rect.topleft)
         font = pygame.font.Font('freesansbold.ttf', int(0.04266*Y))
+    if role.equippedItems:
+        equipped_item = role.equippedItems[0]
+        equipped_image_path = role.tradeDict[equipped_item].image_path
+        equipped_image = pygame.image.load(equipped_image_path)
+        equipped_image = pygame.transform.scale(equipped_image, (int(0.2 * X), int(0.2 * Y)))
+        equipped_rect = equipped_image.get_rect(center=(role_rect.centerx, role_rect.centery))
+        screen.blit(equipped_image, equipped_rect.topleft)
 
     role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
     enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
