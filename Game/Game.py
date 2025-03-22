@@ -249,6 +249,7 @@ cppyy.cppdef(
         double LevelExp;
         double speed;
         const std::string placeholder_image = "Assets/armour.png";
+        std::string equipped_item;
         bool can_attack();
         void update_wait_time();
         void defend();
@@ -856,8 +857,10 @@ cppyy.cppdef(
             {
                 total += this->tradeDict[entry.first].number;
             }
+            std::cout << "Entry = (" << entry.first << ", " << entry.second << "), total = " << total << '\n';
             total = total / entry.second; //the amount of a given item the user has divided by the amount the user needs to trade for `item_name`
-            max_amount = ((max_amount < 0 || max_amount > total) ? total : max_amount); 
+            std::cout << "total = " << total << '\n';
+            max_amount = std::min(1, total);
         }
         return max_amount;
     }
@@ -868,7 +871,8 @@ cppyy.cppdef(
     */
     void Role::EquipItem(const std::string& item_name)
     {
-        this->tradeDict[item_name].equipped.value = true;
+        this->tradeDict[item_name].equipped = true;
+        this->equipped_item = item_name;
 
         for (const auto& stat: this->tradeDict[item_name].stat_boost)
         {
@@ -908,7 +912,8 @@ cppyy.cppdef(
     }
     void Role::DequipItem(const std::string& item_name) 
     {
-        tradeDict[item_name].equipped.value = false;
+        tradeDict[item_name].equipped = false;
+        this->equipped_item.clear();
         for (const auto& stat_boost : tradeDict[item_name].stat_boost) {
             const std::string& stat = stat_boost.first;
             double boost = stat_boost.second;
@@ -972,6 +977,7 @@ cppyy.cppdef(
         currExp = 0;
         LevelExp = 0; //override in derived classes
         speed = 0;
+        this->equipped_item.reserve(20); //makes it so the string won't have to reallocate memory if a string literal with length <= 20 is assigned to it
 
     //        for (auto i : stringInv)
     //        for i in stringInv
@@ -1685,7 +1691,6 @@ class PercyJackson(Role, IPBase):
         self.ExpLevelFunc = lambda x: x ** 2.5
         self.LevelExp = self.ExpLevelFunc(self.currLevel + 1)
         self.money = 50  # because the economy in italy is so bad :)
-        self.equippedItems = []
 
 #    Naming variables convention
 #        mac_and_cheese : snake case
@@ -1710,7 +1715,6 @@ class Elf(Role, IPBase):
         self.ExpLevelFunc = lambda x: x ** 1.5
         self.LevelExp = self.ExpLevelFunc(self.currLevel + 1)
         self.money = 200
-        self.equippedItems = []
 
 class Zelda(Role, IPBase):
     def __init__(self, name):
@@ -1733,7 +1737,6 @@ class Zelda(Role, IPBase):
         #        self.AttackLevelFunc = lambda x: 20*(1-0.05)**x
         self.LevelExp = self.ExpLevelFunc(self.currLevel + 1)
         self.money = 100
-        self.equippedItems = []
 
 class NeutralNPC:
     def __init__(self):
@@ -1747,7 +1750,6 @@ class NeutralNPC:
             self.picture = "🪓"
             self.expYield = 0.12 + random() / 50  # random number from 0.12 - 0.14
             self.image_name = "woodchucker.png"
-
 
 def increaseStats(role):
     role.attackpower += role.AttackLevelFunc(role.currLevel)
@@ -1769,7 +1771,6 @@ def increaseExp(role, netExp):
         role.LevelExp = role.ExpLevelFunc(role.currLevel + 1)
         role.currExp = 0
         role.currExp += netExp
-
 
 def displayHeroes(printing=False):
     lines = ["------", "Heroes", "------"]
@@ -2710,13 +2711,13 @@ def tradeItem(role, item_name):
 
     image_name = cppStringConvert(role.tradeDict[item_name].image_path)
     image_name = image_name if len(image_name) else cppStringConvert(role.placeholder_image)
-    
     image = pygame.image.load(image_name)
-    
     image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
     
     num_item = 0 #Count the amount of item_name that the user wants to buy
+    print(f"item_name = {item_name}")
     max_amount = role.GetMaxItemAmount(item_name)
+    print(f"max_amount = {max_amount}")
 
     pygame.draw.rect(screen, white, square_rect)
     screen.blit(image, square_rect.topleft)
@@ -2833,24 +2834,6 @@ def tradeItem(role, item_name):
                 rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
 #                on_sell_rect = False
                 pygame.display.update()
-
-#TODO: Finish this and add this to the TradeItem function
-def equip_stat_boost_description(role, item_name):
-    global X, Y, font
-    start_y = 0.1267*Y
-    inc_y = .05*Y
-    pygame_print(f"Requirements to trade for '{item_name}'",offset_x=int(0.25*X), loc_y=int(start_y), thresh=0.45, underline=True)
-    i = inc_y
-    for item_and_quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded:
-        pygame_print(f"  - {item_and_quantity_needed.first}: {item_and_quantity_needed.second}", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45)
-        i += inc_y
-        
-    pygame_print(f"Items and quantities the user has for '{item_name}'", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45, underline=True)
-    i += inc_y
-    for item_and_quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded:
-        quantity_have = role.numInv[item_and_quantity_needed.first]["Number"]
-        pygame_print(f"  - {item_and_quantity_needed.first}: {quantity_have}", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45)
-        i += inc_y
 
 def EquipItemInterface(role, item_name):
     global font, white, black, orange, screen, X, Y
@@ -3361,6 +3344,14 @@ Rolling a dice:
  
 '''
 
+def get_role_rect(role_rect, role, buffer_width = int(.025*X), buffer_height = int(.025*X)):
+    if role.equipped_item:
+        equipped_image_path = cppStringConvert(role.tradeDict[role.equipped_item].image_path)
+        equipped_image = pygame.image.load(equipped_image_path)
+        equipped_image = pygame.transform.scale(equipped_image, (buffer_width, buffer_height))
+        screen.blit(equipped_image, role_rect.topleft)
+    return role_rect
+
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red, screen
     role.health = role.base_health  # TODO: delete!
@@ -3537,6 +3528,7 @@ def QuestGames(Setting, role):
             f"Assets/{role_image_name}" if not role.flipped else f"Assets/{role_image_name_flipped}")
         role_image = pygame.transform.scale(role_image, (buffer_width, buffer_width))
         screen.blit(role_image, role_rect.topleft)
+        get_role_rect(role_rect, role, buffer_width = int(.025*X), buffer_height = int(.025*X))
         
         # Enemy Health Bar
         #min(Y) = 170, min(X) = 485, max(Y) = 230, max(X) = 635
@@ -3554,15 +3546,8 @@ def QuestGames(Setting, role):
         enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
         screen.blit(enemy_image, enemy_rect.topleft)
         font = pygame.font.Font('freesansbold.ttf', int(0.04266*Y))
-    if role.equippedItems:
-        equipped_item = role.equippedItems[0]
-        equipped_image_path = role.tradeDict[equipped_item].image_path
-        equipped_image = pygame.image.load(equipped_image_path)
-        equipped_image = pygame.transform.scale(equipped_image, (int(0.2 * X), int(0.2 * Y)))
-        equipped_rect = equipped_image.get_rect(center=(role_rect.centerx, role_rect.centery))
-        screen.blit(equipped_image, equipped_rect.topleft)
 
-    role_rect = pygame.Rect(start_x, start_y, buffer_width, buffer_width)
+    role_rect = get_role_rect(pygame.Rect(start_x, start_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
     enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
     renderRole()
 
@@ -3707,7 +3692,7 @@ def QuestGames(Setting, role):
                 shotsEnemyFired = [Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in shotsEnemyFired]
 #                print(f"X = {old_X} -> X = {X}, Y = {old_Y} -> Y = {Y}, start_x = {start_x / X_ratio} -> start_x = {start_x}, curr_y = {curr_y / Y_ratio} -> curr_y = {curr_y}")
                 
-                role_rect = pygame.Rect(start_x, curr_y, buffer_width, buffer_width)
+                role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
                 enemy_rect = pygame.Rect(enemy_x, curr_enemy_y, buffer_width, buffer_width)
                 renderRole()
 
@@ -3817,7 +3802,7 @@ def QuestGames(Setting, role):
                 enemy_x -= enemy.speed * 10
             enemy.flipped = False
 
-        role_rect = pygame.Rect(start_x, curr_y, buffer_width, buffer_width)
+        role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
         enemy_rect = pygame.Rect(enemy_x, curr_enemy_y, buffer_width, buffer_width)
         renderRole()
 
