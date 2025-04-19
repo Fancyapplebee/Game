@@ -839,7 +839,7 @@ cppyy.cppdef(
              - => max_amount = min({3//1, 7//5, 2//1}) = 1
         */
         
-        if (this->tradeDict[item_name].number)
+        if (this->tradeDict.find(item_name) != this->tradeDict.end() && this->tradeDict[item_name].number)
         {
             return 0; //can only have up to one of a given trade item 
         }
@@ -857,9 +857,9 @@ cppyy.cppdef(
             {
                 total += this->tradeDict[entry.first].number;
             }
-            std::cout << "Entry = (" << entry.first << ", " << entry.second << "), total = " << total << '\n';
+            //std::cout << "Entry = (" << entry.first << ", " << entry.second << "), total = " << total << '\n';
             total = total / entry.second; //the amount of a given item the user has divided by the amount the user needs to trade for `item_name`
-            std::cout << "total = " << total << '\n';
+            //std::cout << "total = " << total << '\n';
             max_amount = std::min(1, total);
         }
         return max_amount;
@@ -876,7 +876,7 @@ cppyy.cppdef(
 
         for (const auto& stat: this->tradeDict[item_name].stat_boost)
         {
-            if (stat.first == "Attack" || stat.first == "attackpower") //Attach
+            if (stat.first == "Attack" || stat.first == "attackpower") //Attack
             {
                 this->attackpower *= stat.second;
             }
@@ -1552,7 +1552,7 @@ cppyy.cppdef(
         
         tradeDict["Armor 1.0"].itemsAndQuantityNeeded = 
         { 
-            {"Silvers", 3}, {"Knives", 10}, {"Sands", 125}, {"Rocks", 150}, {"Base Armor", 1}
+            {"Silvers", 3}, {"Knife", 10}, {"Sands", 125}, {"Rocks", 150}, {"Base Armor", 1}
         };
         tradeDict["Armor 1.0"].description = "Raises Stats by ...";
         tradeDict["Armor 1.0"].number = 0;
@@ -1563,7 +1563,7 @@ cppyy.cppdef(
         
         tradeDict["Armor 2.0"].itemsAndQuantityNeeded =
         {
-            {"Golds", 9}, {"Knives", 30}, {"Sands", 375}, {"Rocks", 200}, {"Armor 1.0", 1}
+            {"Golds", 9}, {"Knife", 30}, {"Sands", 375}, {"Rocks", 200}, {"Armor 1.0", 1}
         };
         tradeDict["Armor 2.0"].description = "Raises Stats by ...";
         tradeDict["Armor 2.0"].number = 0;
@@ -1680,7 +1680,8 @@ class PercyJackson(Role, IPBase):
         self.picture = "⚡️"
         self.image_name = "percy-start.png"
         self.shot_speed = 15
-        self.attackpower = 20
+#        self.attackpower = 20 #TODO: Uncomment
+        self.attackpower = 1000 #TODO: Comment
         self.base_health = 200
         self.health = 200
         self.baseDefense = 100
@@ -1704,7 +1705,8 @@ class Elf(Role, IPBase):
         self.picture = "🧝"
         self.image_name = "elf-start.png"
         self.shot_speed = 10
-        self.attackpower = 10
+#        self.attackpower = 10 #TODO: Uncomment
+        self.attackpower = 1000 #TODO: Comment
         self.base_health = 50
         self.health = 50
         self.baseDefense = 200
@@ -1722,8 +1724,8 @@ class Zelda(Role, IPBase):
         IPBase.__init__(self)
         self.picture = "🗡"
         self.image_name = "zelda-start.png"
-        # TODO: Change back to 20 for actual game
-        self.attackpower = 2000
+#        self.attackpower = 20 #TODO: Uncomment
+        self.attackpower = 1000 #TODO: Comment
         self.shot_speed = 15
         self.base_health = 100
         self.health = 100
@@ -2306,15 +2308,15 @@ def Stats(RoleHero):
     global X, Y, screen
     screen.fill(white)
     pygame_print(f"Attack Power = {RoleHero.attackpower:.0f}", int(0.12*Y))
-    pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", int(0.1734*Y))
-    pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", int(0.2267*Y))
-    pygame_print(f"Speed = {RoleHero.speed:.2f}", int(0.28*Y))
-    pygame_print(f"Attack Stamina = {RoleHero.attackStamina:.2f}", int(0.3333*Y))
-    pygame_print(f"Defense Stamina = {RoleHero.defenseStamina:.2f}", int(0.3867*Y))
-    pygame_print(f"Money = {RoleHero.money}", int(0.44*Y))
-    pygame_print(f"Quest Level = {RoleHero.questLevel}", int(0.4933*Y))
-    pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", int(0.5467*Y))
-    pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.6*Y))
+    pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", int(0.1734*Y))
+    pygame_print(f"Speed = {RoleHero.speed:.2f}", int(0.2267*Y))
+    pygame_print(f"Attack Stamina = {RoleHero.attackStamina:.2f}", int(0.28*Y))
+    pygame_print(f"Defense Stamina = {RoleHero.defenseStamina:.2f}", int(0.3333*Y))
+    pygame_print(f"Money = {RoleHero.money}", int(0.3867*Y))
+    pygame_print(f"Quest Level = {RoleHero.questLevel}", int(0.44*Y))
+    pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", int(0.4933*Y))
+    pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", int(0.5467*Y))
+    pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.8*Y))
     pygame.display.update()
     while True:
         for event in pygame.event.get():  # update the option number if necessary
@@ -2325,21 +2327,34 @@ def Stats(RoleHero):
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 screen.fill(white)
                 pygame_print(f"Attack Power = {RoleHero.attackpower:.0f}", int(0.12*Y))
-                pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", int(0.1734*Y))
-                pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", int(0.2267*Y))
-                pygame_print(f"Speed = {RoleHero.speed:.2f}", int(0.28*Y))
-                pygame_print(f"Attack Stamina = {RoleHero.attackStamina:.2f}", int(0.3333*Y))
-                pygame_print(f"Defense Stamina = {RoleHero.defenseStamina:.2f}", int(0.3867*Y))
-                pygame_print(f"Money = {RoleHero.money}", int(0.44*Y))
-                pygame_print(f"Quest Level = {RoleHero.questLevel}", int(0.4933*Y))
-                pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", int(0.5467*Y))
-                pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.6*Y))
+                pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", int(0.1734*Y))
+                pygame_print(f"Speed = {RoleHero.speed:.2f}", int(0.2267*Y))
+                pygame_print(f"Attack Stamina = {RoleHero.attackStamina:.2f}", int(0.28*Y))
+                pygame_print(f"Defense Stamina = {RoleHero.defenseStamina:.2f}", int(0.3333*Y))
+                pygame_print(f"Money = {RoleHero.money}", int(0.3867*Y))
+                pygame_print(f"Quest Level = {RoleHero.questLevel}", int(0.44*Y))
+                pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", int(0.4933*Y))
+                pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", int(0.5467*Y))
+                pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.7*Y))
                 pygame.display.update()
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_RETURN:
                     print("exiting menu")
                     return
 
+#        pygame.draw.rect(screen, white, (0.25*X, 0.53*Y, 0.5*X, 0.16*Y))
+#        font = pygame.font.Font('freesansbold.ttf', int(0.029333333333333333*Y))
+#        pygame_print(cppStringConvert(role.name), loc_y = 0.2*Y, offset_x=-0.1875*X)
+#        font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
+#        pygame_print("Lv. = "+ str(role.currLevel), loc_y=0.233*Y, offset_x=-0.14375*X)
+#        font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
+#        pygame.draw.rect(screen, black, (0.275*X, 0.76*Y, 0.45*X, 0.02667*Y)) #165 -> 165/800*X, 195 -> 195/750*Y
+#        pygame.draw.rect(screen, green, (0.275*X, 0.76*Y, 0.45*X*role.health/role.base_health, 0.02667*Y)) #Health bar
+#        font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
+#        pygame_print(f"{role.health:.0f} / {role.base_health:.0f}", loc_y=0.30667*Y, offset_x=-0.15625*X)
+#        font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
+#        pygame.draw.rect(screen, black, (0.20625*X, 0.32266*Y, 0.2125*X, 0.01333*Y))
+#        pygame.draw.rect(screen, cyan, (0.20625*X, 0.32266*Y, 0.2125*X*role.currExp/role.LevelExp, 0.01333*Y)) #Exp bar
 
 # prints a long pygame message
 def long_pygame_print(message, count=0, line_break=24, color=black, background_color=white, offset_x=0, start_height=int(0.12*Y), thresh = 0.9):
@@ -2401,7 +2416,6 @@ def Mine(role, setting):
     wait_til_enter()
     screen.fill(white)
     displayImageCustom(role.image_name, width = X//2, height = Y, loc_x = 0, loc_y = 0)
-    #TODO: Get Images for Neutral NPCs and display the neural NPC below
     displayImageCustom(Opponent.image_name, width = X//2, height = Y, loc_x = X//2, loc_y = 0)
     
     pygame.display.update()
@@ -2683,7 +2697,6 @@ def printItem(role, item_name):
                 rect = AddButton(text="Use", offset_x=int(0.25 * X), loc_y=int(0.7334*Y), background_color=green)
                 pygame.display.update()
 
-#TODO: Fix bug where some items are not printing (e.g. "Base Armor")
 def print_trade_requirements(role, item_name):
     global X, Y, font
     start_y = 0.1267*Y
@@ -2691,14 +2704,14 @@ def print_trade_requirements(role, item_name):
     pygame_print(f"Requirements to trade for '{item_name}'",offset_x=int(0.25*X), loc_y=int(start_y), thresh=0.45, underline=True)
     i = inc_y
     for item_and_quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded:
-#        print(f"{item_and_quantity_needed.first}")
+        print(f"{item_and_quantity_needed.first}, {item_and_quantity_needed.second}, item_and_quantity_needed.first.size() = {item_and_quantity_needed.first.size()}") #item_and_quantity_needed.first not printing (empty atm)
         pygame_print(f"  - {item_and_quantity_needed.first}: {item_and_quantity_needed.second}", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45)
         i += inc_y
         
     pygame_print(f"Items and quantities the user has for '{item_name}'", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45, underline=True)
     i += inc_y
     for item_and_quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded:
-        quantity_have = role.numInv[item_and_quantity_needed.first]["Number"]
+        quantity_have = role.numInv[item_and_quantity_needed.first]["Number"] if role.numInv.find(item_and_quantity_needed.first) != role.numInv.end() else role.tradeDict[item_and_quantity_needed.first].number
 #        print(f"{item_and_quantity_needed.first}")
         pygame_print(f"  - {item_and_quantity_needed.first}: {quantity_have}", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45)
         i += inc_y
@@ -2727,9 +2740,8 @@ def tradeItem(role, item_name):
     pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.5867*Y), thresh=0.45)
     print_trade_requirements(role, item_name)
     
-    pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-
-    rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
+    pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.78*Y), thresh=0.45)
+    rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.85*Y), background_color=green)
 #    on_sell_rect = False
 
     pygame.display.update()
@@ -2752,9 +2764,8 @@ def tradeItem(role, item_name):
                 pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.5867*Y), thresh=0.45)
                 print_trade_requirements(role, item_name)
 
-                pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-
-                rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
+                pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.78*Y), thresh=0.45)
+                rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.85*Y), background_color=green)
                 pygame.display.update()
                 
             elif event.type == pygame.KEYDOWN:
@@ -2774,9 +2785,8 @@ def tradeItem(role, item_name):
                 pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.5867*Y), thresh=0.45)
                 print_trade_requirements(role, item_name)
 
-                pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-
-                rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
+                pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.78*Y), thresh=0.45)
+                rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.85*Y), background_color=green)
                 pygame.display.update()
                 
             elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
@@ -2799,9 +2809,8 @@ def tradeItem(role, item_name):
                     pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.5867*Y), thresh=0.45)
                     print_trade_requirements(role, item_name)
 
-                    pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-
-                    rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
+                    pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.78*Y), thresh=0.45)
+                    rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.85*Y), background_color=green)
                     pygame.display.update()
                     
                     
@@ -2815,9 +2824,8 @@ def tradeItem(role, item_name):
                 pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.5867*Y), thresh=0.45)
                 print_trade_requirements(role, item_name)
 
-                pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-
-                rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
+                pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.78*Y), thresh=0.45)
+                rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.85*Y), background_color=green)
 #                on_sell_rect = True
                 pygame.display.update()
             elif not rect.collidepoint(pygame.mouse.get_pos()):# and on_sell_rect:
@@ -2829,12 +2837,11 @@ def tradeItem(role, item_name):
                 long_pygame_print(f"Description: {cppStringConvert(role.tradeDict[item_name].description)}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
                 pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.5867*Y), thresh=0.45)
                 print_trade_requirements(role, item_name)
-                pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-
-                rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
+                pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.78*Y), thresh=0.45)
+                rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.85*Y), background_color=green)
 #                on_sell_rect = False
                 pygame.display.update()
-
+#Stat level 1, Base Armor not equipped, attack power 20. Stat level 4, Base Armor not equipped, attack power 71. Stat level 4, Base Armor equipped, attack power 89. Stat level 6, Base Armor equipped, attack power 120. Stat level 6, Base Armor not equipped, attack power 96. Stat level 7, Base Armor not equipped, attack power 110. Stat level 7, Base Armor equipped, attack power 137.
 def EquipItemInterface(role, item_name):
     global font, white, black, orange, screen, X, Y
     screen.fill(white)  # clear the screen
@@ -3355,7 +3362,6 @@ def get_role_rect(role_rect, role, buffer_width = int(.025*X), buffer_height = i
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red, screen
     role.health = role.base_health  # TODO: delete!
-    role.attackpower = 1000  # TODO: delete!
     money = 0
     role_image_name = role.name.lower().replace(" jackson", "") + "-start.png"
     role_image_name_flipped = role_image_name.replace(".png", "flip.png")
@@ -3922,7 +3928,7 @@ def TradeOption(Role):
 #        pygame.display.update()
 #        wait_til_enter()
 #        return
-    tradeItems = Role.tradeDictKeys #TODO: Fix Bugs!
+    tradeItems = Role.tradeDictKeys
     if not tradeItems.size():
         pygame_print("You don't have any items that you can trade for!", 0.4*Y, color=black, background_color=white)
         pygame.display.update()
