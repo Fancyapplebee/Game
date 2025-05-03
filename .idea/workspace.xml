@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="Add stat boost application for equipped items in TradeItemInventory">
+    <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="Add equipped item display in Game.py">
+      <change afterPath="$PROJECT_DIR$/Game/Assets/zelda/39860b91-8d97-48e7-9961-05e8c56ed74e.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Game/Assets/zelda/ALTZELDA.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Game/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Game.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,6 +108,7 @@
       <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Game" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Game\Assets\zelda" />
       <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Game\Assets" />
       <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Game" />
       <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game" />
@@ -116,8 +118,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-76f8388c3a79-JavaScript-PY-243.24978.54" />
-        <option value="bundled-python-sdk-91e3b7efe1d4-466328ff949b-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.24978.54" />
+        <option value="bundled-js-predefined-d6986cc7102b-f27c65a3e318-JavaScript-PY-251.23774.444" />
+        <option value="bundled-python-sdk-890ed5b35930-d9c5bdb153f4-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.23774.444" />
       </set>
     </attachedChunks>
   </component>
@@ -336,7 +338,12 @@
       <workItem from="1740851305760" duration="1144000" />
       <workItem from="1741553321665" duration="2674000" />
       <workItem from="1742081132601" duration="34000" />
-      <workItem from="1742661629913" duration="1485000" />
+      <workItem from="1742661629913" duration="1928000" />
+      <workItem from="1743227770520" duration="595000" />
+      <workItem from="1745265265756" duration="15000" />
+      <workItem from="1745265380405" duration="32000" />
+      <workItem from="1746304367988" duration="10000" />
+      <workItem from="1746305386170" duration="375000" />
     </task>
     <task id="LOCAL-00001" summary="it works">
       <created>1657430290327</created>
@@ -449,14 +456,6 @@
       <option name="presentableId" value="LOCAL-00016" />
       <option name="project" value="LOCAL" />
       <updated>1687021377997</updated>
-    </task>
-    <task id="LOCAL-00046" summary="New game file&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
-      <option name="closed" value="true" />
-      <created>1709367121975</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1709367121975</updated>
     </task>
     <task id="LOCAL-00047" summary="New game file&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
       <option name="closed" value="true" />
@@ -714,7 +713,15 @@
       <option name="project" value="LOCAL" />
       <updated>1741553958111</updated>
     </task>
-    <option name="localTasksCounter" value="79" />
+    <task id="LOCAL-00079" summary="Add equipped item display in Game.py">
+      <option name="closed" value="true" />
+      <created>1742663161717</created>
+      <option name="number" value="00079" />
+      <option name="presentableId" value="LOCAL-00079" />
+      <option name="project" value="LOCAL" />
+      <updated>1742663161717</updated>
+    </task>
+    <option name="localTasksCounter" value="80" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -749,7 +756,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="Patched Verison&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <MESSAGE value="Patched Version&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <MESSAGE value="shot_beam_x fix&#10;&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <MESSAGE value="Added json files&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
@@ -774,7 +780,8 @@
     <MESSAGE value="print_trade_requirements" />
     <MESSAGE value="Equipitem and Tradeiteminventory" />
     <MESSAGE value="Add stat boost application for equipped items in TradeItemInventory" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add stat boost application for equipped items in TradeItemInventory" />
+    <MESSAGE value="Add equipped item display in Game.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add equipped item display in Game.py" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Game$Game.coverage" NAME="Game Coverage Results" MODIFIED="1742662836083" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
