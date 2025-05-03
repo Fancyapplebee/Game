@@ -2,7 +2,7 @@ from string import punctuation
 import json
 import os
 from math import sqrt, log as ln
-from random import random, randint
+from random import random, randint, uniform
 from string import punctuation
 from time import time
 import cppyy
@@ -47,8 +47,6 @@ def Defense(Def):
         # items do more/less damage depending on distance traveled.
     # Make some equips boost stats depending on how much/little health the player has
         # e.g. more boost for health below some threshold
-
-
 
 # figure out use case of items not attainable through mining
 # implement a save function
@@ -2303,7 +2301,6 @@ def search(setting, role):
     role.searchTime = time()
     return setting.places[optionNumber]
 
-#TODO: Add health and exp bars for health and exp!
 def Stats(RoleHero):
     global X, Y, screen
     screen.fill(white)
@@ -2316,7 +2313,13 @@ def Stats(RoleHero):
     pygame_print(f"Quest Level = {RoleHero.questLevel}", int(0.44*Y))
     pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", int(0.4933*Y))
     pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", int(0.5467*Y))
-    pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.8*Y))
+    pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.635*Y))
+    pygame.draw.rect(screen, black, (0.275*X, 0.575*Y, 0.45*X, 0.02667*Y)) #left, top, width, height
+    pygame.draw.rect(screen, green, (0.275*X, 0.575*Y, 0.45*X*RoleHero.health/RoleHero.base_health, 0.02667*Y)) #Health bar
+    font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
+    font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
+    pygame.draw.rect(screen, black, (0.275*X, 0.665*Y, 0.45*X, 0.01333*Y)) #left, top, width, height
+    pygame.draw.rect(screen, cyan, (0.275*X, 0.665*Y, 0.45*X*RoleHero.currExp/RoleHero.LevelExp, 0.01333*Y)) #Exp bar
     pygame.display.update()
     while True:
         for event in pygame.event.get():  # update the option number if necessary
@@ -2335,26 +2338,26 @@ def Stats(RoleHero):
                 pygame_print(f"Quest Level = {RoleHero.questLevel}", int(0.44*Y))
                 pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", int(0.4933*Y))
                 pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", int(0.5467*Y))
-                pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.7*Y))
+                pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.635*Y))
+                pygame.draw.rect(screen, black, (0.275*X, 0.575*Y, 0.45*X, 0.02667*Y)) #left, top, width, height
+                pygame.draw.rect(screen, green, (0.275*X, 0.575*Y, 0.45*X*RoleHero.health/RoleHero.base_health, 0.02667*Y)) #Health bar
+                font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
+                font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
+                pygame.draw.rect(screen, black, (0.275*X, 0.665*Y, 0.45*X, 0.01333*Y)) #left, top, width, height
+                pygame.draw.rect(screen, cyan, (0.275*X, 0.665*Y, 0.45*X*RoleHero.currExp/RoleHero.LevelExp, 0.01333*Y)) #Exp bar
                 pygame.display.update()
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_RETURN:
                     print("exiting menu")
                     return
 
-#        pygame.draw.rect(screen, white, (0.25*X, 0.53*Y, 0.5*X, 0.16*Y))
+#        pygame.draw.rect(screen, white, (0.25*X, 0.55*Y, 0.5*X, 0.16*Y)) #left, top, width, height
 #        font = pygame.font.Font('freesansbold.ttf', int(0.029333333333333333*Y))
 #        pygame_print(cppStringConvert(role.name), loc_y = 0.2*Y, offset_x=-0.1875*X)
 #        font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
 #        pygame_print("Lv. = "+ str(role.currLevel), loc_y=0.233*Y, offset_x=-0.14375*X)
 #        font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
-#        pygame.draw.rect(screen, black, (0.275*X, 0.76*Y, 0.45*X, 0.02667*Y)) #165 -> 165/800*X, 195 -> 195/750*Y
-#        pygame.draw.rect(screen, green, (0.275*X, 0.76*Y, 0.45*X*role.health/role.base_health, 0.02667*Y)) #Health bar
-#        font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
-#        pygame_print(f"{role.health:.0f} / {role.base_health:.0f}", loc_y=0.30667*Y, offset_x=-0.15625*X)
-#        font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
-#        pygame.draw.rect(screen, black, (0.20625*X, 0.32266*Y, 0.2125*X, 0.01333*Y))
-#        pygame.draw.rect(screen, cyan, (0.20625*X, 0.32266*Y, 0.2125*X*role.currExp/role.LevelExp, 0.01333*Y)) #Exp bar
+
 
 # prints a long pygame message
 def long_pygame_print(message, count=0, line_break=24, color=black, background_color=white, offset_x=0, start_height=int(0.12*Y), thresh = 0.9):
@@ -3361,6 +3364,7 @@ def get_role_rect(role_rect, role, buffer_width = int(.025*X), buffer_height = i
 
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red, screen
+    NumRounds = 10
     role.health = role.base_health  # TODO: delete!
     money = 0
     role_image_name = role.name.lower().replace(" jackson", "") + "-start.png"
@@ -3371,6 +3375,11 @@ def QuestGames(Setting, role):
     buffer_width, buffer_height = int(.05*X), int(0.05334*Y)
     beam_height = buffer_height / 4
     beam_width = buffer_width / 2
+    num_enemies = [1+role.questLevel+randint(0, 2) for i in range(NumRounds)] #number of enemies for each round
+#    0 : 1-3
+#    1 : 2-4
+#    2 : 3-5
+#    3 : 4-6
 
     '''
     🤺            ⬬            ⬬                 👹
@@ -3384,12 +3393,14 @@ def QuestGames(Setting, role):
     
     '''
 
-    start_x, start_y, curr_y, enemy_x, enemy_y, curr_enemy_y = int(0.125*X), int(0.8*Y), int(0.8*Y), int(0.875*X) - buffer_width, int(0.8*Y), int(0.8*Y)
+    start_x, start_y, curr_y, enemy_x, enemy_y, curr_enemy_y = int(0.125*X), int(0.8*Y), int(0.8*Y)
+    enemy_x, enemy_y, curr_enemy_y = [int(uniform(.775, 0.885)*X) - buffer_width for i in range(num_enemies)], [int(0.8*Y)]*num_enemies, [int(0.8*Y)]*num_enemies #TODO: Make lists of length NumRounds with each list of length num_enemies[i] for i in range(numRounds)
+    
     ground_y = int(0.8*Y)
 
-    role_jump_t, enemy_jump_t = -1, -1
+    role_jump_t, enemy_jump_t = -1, [-1]*num_enemies
 
-    role_rect, enemy_rect = None, None
+    role_rect, enemy_rect = None, [None]*num_enemies
     print(Setting := Setting.name.upper())
 
     '''
@@ -3494,7 +3505,7 @@ def QuestGames(Setting, role):
                 enemy.statboost(role)
                 return enemy
 
-    enemies = [spawnBadNPC() for i in range(10)]
+    enemies = [spawnBadNPC() for i in range(NumRounds)]
     enemy = enemies[0]
     getEnemyHealth = lambda: sum(i.health for i in enemies)
     getEnemyBaseHealth = lambda: sum(i.base_health for i in enemies)
@@ -3824,9 +3835,9 @@ def QuestGames(Setting, role):
                     increaseExp(role, enemy.expYield)
                     NumberDefeated += 1
                     renderRole()
-                    if NumberDefeated < 10:
+                    if NumberDefeated < NumRounds:
                         enemy = enemies[NumberDefeated]  # spawnBadNPC()
-                        pygame_print(f"Spawning enemy #{NumberDefeated + 1}/10: {enemy.name}", loc_y=int(0.4*Y))
+                        pygame_print(f"Spawning enemy #{NumberDefeated + 1}/{NumRounds}: {enemy.name}", loc_y=int(0.4*Y))
                         start_msg_time = time()
                     else:
                         role.questLevel += 1
@@ -3860,12 +3871,12 @@ def QuestGames(Setting, role):
 
         if role.health <= 0:
             pygame_print("You died!", loc_y=int(0.4*Y))
-        elif time() - start_msg_time < start_msg_interval and NumberDefeated < 10:
-            pygame_print(f"Spawning enemy #{NumberDefeated + 1}/10: {enemy.name}", loc_y=int(0.4*Y))
+        elif time() - start_msg_time < start_msg_interval and NumberDefeated < NumRounds:
+            pygame_print(f"Spawning enemy #{NumberDefeated + 1}/{NumRounds}: {enemy.name}", loc_y=int(0.4*Y))
 
         pygame.display.update()
 
-        if NumberDefeated >= 10 or role.health <= 0:
+        if NumberDefeated >= NumRounds or role.health <= 0:
             # Do stuff
             #pygame.time.delay(1000)
             
