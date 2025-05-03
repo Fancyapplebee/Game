@@ -3367,7 +3367,7 @@ def QuestGames(Setting, role):
     NumRounds = 10
     role.health = role.base_health  # TODO: delete!
     money = 0
-    role_image_name = role.name.lower().replace(" jackson", "") + "-start.png"
+    role_image_name = role.name.lower().replace(" jackson", "") + "-start.png" #TODO: Later the role image will have to be adjusted to load the specific image corresponding to the speficic role and current item equipped
     role_image_name_flipped = role_image_name.replace(".png", "flip.png")
     enemy_image_names = {"NINJA": "ninja.png", "OGRE": "ogre.png", "DEMON": "demon.png"}
     enemy_image_names_flipped = {"NINJA": "ninjaflip.png", "OGRE": "ogreflip.png", "DEMON": "demonflip.png"}
@@ -3376,10 +3376,12 @@ def QuestGames(Setting, role):
     beam_height = buffer_height / 4
     beam_width = buffer_width / 2
     num_enemies = [1+role.questLevel+randint(0, 2) for i in range(NumRounds)] #number of enemies for each round
-#    0 : 1-3
-#    1 : 2-4
-#    2 : 3-5
-#    3 : 4-6
+#   Quest Level : Range of Possible Enemies for each round
+#   ------------------------------------------------------
+#    0          : 1-3
+#    1          : 2-4
+#    2          : 3-5
+#    3          : 4-6
 
     '''
     🤺            ⬬            ⬬                 👹
@@ -3392,16 +3394,26 @@ def QuestGames(Setting, role):
     
     
     '''
-
-    start_x, start_y, curr_y, enemy_x, enemy_y, curr_enemy_y = int(0.125*X), int(0.8*Y), int(0.8*Y)
-    enemy_x, enemy_y, curr_enemy_y = [int(uniform(.775, 0.885)*X) - buffer_width for i in range(num_enemies)], [int(0.8*Y)]*num_enemies, [int(0.8*Y)]*num_enemies #TODO: Make lists of length NumRounds with each list of length num_enemies[i] for i in range(numRounds)
+    
+    start_x = int(0.125*X) #Starting x-coordinate for Role
+    start_y = int(0.8*Y)   #Starting y-coordinate for Role
+    curr_y = start_y       #Current y-coordinate for Role
+    
+    enemy_x = [[int(uniform(.775, 0.885)*X) - buffer_width for i in range(j)] for j in num_enemies] #Starting x-coordinates for NumRounds rounds of enemies
+    enemy_y = [ [int(0.8*Y)]*num_enemies[i] for i in range(len(num_enemies))] #Starting y-coordinates for NumRounds rounds of enemies
+    curr_enemy_y = deepcopy(enemy_y) #Current y-coordinates for NumRounds rounds of enemies
     
     ground_y = int(0.8*Y)
 
-    role_jump_t, enemy_jump_t = -1, [-1]*num_enemies
+    role_jump_t = -1
+    enemy_jump_t = [[-1]*num_enemies[i] for i in range(len(num_enemies))] #Starting times for when the enemy can jump
 
-    role_rect, enemy_rect = None, [None]*num_enemies
+    role_rect = None
+    enemy_rect = [[None]*num_enemies[i] for i in range(len(num_enemies))]
+    
+    print(enemy_jump_t,enemy_rect,sep='\n')
     print(Setting := Setting.name.upper())
+    exit() #TODO: Continue migrating code to numRounds of num_enemies[i], where num_enemies[i] is the number of enemies in a given round
 
     '''
     Goal: To develop a reinforcement learning agent to learn the best moves at each step/iteration
