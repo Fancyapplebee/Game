@@ -3396,15 +3396,15 @@ def QuestGames(Setting, role):
     
     '''
     
-    start_x = int(0.125*X) #Starting x-coordinate for Role
-    start_y = int(0.8*Y)   #Starting y-coordinate for Role
+    start_x = int(0.2*X) #Starting x-coordinate for Role
+    ground_y = int(0.6667 * Y)
+    start_y = ground_y     #Starting y-coordinate for Role
     curr_y = start_y       #Current y-coordinate for Role
     
     enemy_x = [[int(uniform(.775, 0.885)*X) - buffer_width for i in range(j)] for j in num_enemies] #Starting x-coordinates for NumRounds rounds of enemies
-    enemy_y = [ [int(0.8*Y)]*num_enemies[i] for i in range(len(num_enemies))] #Starting y-coordinates for NumRounds rounds of enemies
+    enemy_y = [ [ground_y]*num_enemies[i] for i in range(len(num_enemies))] #Starting y-coordinates for NumRounds rounds of enemies
     curr_enemy_y = deepcopy(enemy_y) #Current y-coordinates for NumRounds rounds of enemies
     
-    ground_y = int(0.8*Y)
 
     role_jump_t = -1
     enemy_jump_t = [[-1]*num_enemies[i] for i in range(len(num_enemies))] #Starting times for when the enemy can jump
@@ -3414,7 +3414,6 @@ def QuestGames(Setting, role):
     
     print(enemy_jump_t,enemy_rect,sep='\n')
     print(Setting := Setting.name.upper())
-    exit() #TODO: Continue migrating code to numRounds of num_enemies[i], where num_enemies[i] is the number of enemies in a given round
 
     '''
     Goal: To develop a reinforcement learning agent to learn the best moves at each step/iteration
@@ -3518,12 +3517,20 @@ def QuestGames(Setting, role):
                 enemy.statboost(role)
                 return enemy
 
-    enemies = [spawnBadNPC() for i in range(NumRounds)]
-    enemy = enemies[0]
-    getEnemyHealth = lambda: sum(i.health for i in enemies)
-    getEnemyBaseHealth = lambda: sum(i.base_health for i in enemies)
+    enemies = [[spawnBadNPC() for i in range(j)] for j in num_enemies]
+    
+    enemy = enemies[0] #We start on the first round, enemy functions as a pointer to the list of enemies we need for a given round
+    getEnemyHealth = lambda: sum(sum(enemy_.health for enemy_ in enemy_list) for enemy_list in enemies)
+    getEnemyBaseHealth = lambda: sum(sum(enemy_.base_health for enemy_ in enemy_list) for enemy_list in enemies)
     TotalEnemyBaseHealth = getEnemyBaseHealth()
     
+    print(*enemies, f"\nTotalEnemyBaseHealth = {TotalEnemyBaseHealth}\nnum_enemies={num_enemies}", sep='\n')
+    assert(getEnemyHealth() == TotalEnemyBaseHealth)
+    for enemy_list in enemies:
+        for enemy_ in enemy_list:
+            print(f'[{enemy_.name}, {enemy_.health}, {enemy_.speed}]')
+        print("\n")
+
     def renderRole():
         global font
         if Setting == "DESERT":
@@ -3562,6 +3569,11 @@ def QuestGames(Setting, role):
         
         # Enemy Health Bar
         #min(Y) = 170, min(X) = 485, max(Y) = 230, max(X) = 635
+        for enemy_val in enemy:
+            #Render each enemy!
+            #TODO: For next time finish this!
+            pygame.draw.rect(screen, white, (0.58125*X, 0.18667*Y, buffer_width, 0.25*buffer_width))
+        
         pygame.draw.rect(screen, white, (0.58125*X, 0.18667*Y, 0.2375*X, 0.16*Y))
 
         pygame_print(cppStringConvert(enemy.name), loc_y = 0.22667*Y, offset_x=0.1875*X)
@@ -3576,10 +3588,34 @@ def QuestGames(Setting, role):
         enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
         screen.blit(enemy_image, enemy_rect.topleft)
         font = pygame.font.Font('freesansbold.ttf', int(0.04266*Y))
+        
+        
 
     role_rect = get_role_rect(pygame.Rect(start_x, start_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
-    enemy_rect = pygame.Rect(enemy_x, enemy_y, buffer_width, buffer_width)
+        
+    print(f"zip(enemy_x, enemy_y) = {tuple(zip(enemy_x, enemy_y))}")
+    
+    enemy_rect = []
+    
+    for (x_val, y_val) in zip(enemy_x, enemy_y):
+        enemy_round_i_rects = []
+        for (enemy_x_coord, enemy_y_coord) in zip(x_val, y_val):
+            enemy_round_i_rects.append(pygame.Rect(enemy_x_coord, enemy_y_coord, buffer_width, buffer_width))
+        enemy_rect.append(enemy_round_i_rects)
+    
+    for enemy_rect_list in enemy_rect:
+        for enemy_rect_val in enemy_rect_list:
+            print(enemy_rect_val.x, enemy_rect_val.y, enemy_rect_val.width, enemy_rect_val.height)
+        print("\n")
+    
+    assert(all([len(enemy_rect[i]) == num_enemies[i] for i in range(NumRounds)]))
+        
+    exit() #TODO: Continue migrating code to numRounds of num_enemies[i], where num_enemies[i] is the number of enemies in a given round
+
+    
     renderRole()
+    
+
 
     shotsFired = []
     shotsEnemyFired = []
@@ -3590,6 +3626,8 @@ def QuestGames(Setting, role):
 
     start_msg_time = time()
     start_msg_interval = 2  # At the beginning of each round, a message saying 'spawning new enemy' will appear for 2 seconds
+
+
 
     def generateMove(temp_state):
         '''
