@@ -3376,6 +3376,7 @@ def QuestGames(Setting, role):
     beam_height = buffer_height / 4
     beam_width = buffer_width / 2
     num_enemies = [1+role.questLevel+randint(0, 2) for i in range(NumRounds)] #number of enemies for each round
+    enemies = []
 #   Quest Level : Range of Possible Enemies for each round
 #   ------------------------------------------------------
 #    0          : 1-3

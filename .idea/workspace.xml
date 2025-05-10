@@ -5,9 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="Add equipped item display in Game.py">
-      <change afterPath="$PROJECT_DIR$/Game/Assets/zelda/39860b91-8d97-48e7-9961-05e8c56ed74e.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Game/Assets/zelda/ALTZELDA.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Game/Assets/zelda/ZeldaBaseArmor.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Game/Assets/zelda/ZeldaGreen.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Game/Assets/zelda/ZeldaPointySword.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Game/Assets/zelda/ZeldaRing.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Game/Assets/zelda/ZeldaSpikyArmor.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Game/Assets/zelda/ZeldaSwordOfStrength.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Game/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Game.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,26 +87,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Python.Game.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/andre/OneDrive/Documents/GitHub/Game/Game/Assets&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python.Game.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/andre/OneDrive/Documents/GitHub/Game/Game/Assets",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "ml.llm.LLMConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Game\Assets" />
@@ -109,8 +114,8 @@
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Game\Assets\zelda" />
-      <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Game\Assets" />
       <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Game" />
+      <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Game\Assets" />
       <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game" />
       <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Assets" />
     </key>
@@ -118,8 +123,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-f27c65a3e318-JavaScript-PY-251.23774.444" />
-        <option value="bundled-python-sdk-890ed5b35930-d9c5bdb153f4-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.23774.444" />
+        <option value="bundled-js-predefined-d6986cc7102b-6a121458b545-JavaScript-PY-251.25410.122" />
+        <option value="bundled-python-sdk-880ecab49056-36ea0e71a18c-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.25410.122" />
       </set>
     </attachedChunks>
   </component>
@@ -343,7 +348,9 @@
       <workItem from="1745265265756" duration="15000" />
       <workItem from="1745265380405" duration="32000" />
       <workItem from="1746304367988" duration="10000" />
-      <workItem from="1746305386170" duration="375000" />
+      <workItem from="1746305386170" duration="1018000" />
+      <workItem from="1746892880077" duration="27000" />
+      <workItem from="1746893165174" duration="3174000" />
     </task>
     <task id="LOCAL-00001" summary="it works">
       <created>1657430290327</created>
@@ -456,14 +463,6 @@
       <option name="presentableId" value="LOCAL-00016" />
       <option name="project" value="LOCAL" />
       <updated>1687021377997</updated>
-    </task>
-    <task id="LOCAL-00047" summary="New game file&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
-      <option name="closed" value="true" />
-      <created>1709962476876</created>
-      <option name="number" value="00047" />
-      <option name="presentableId" value="LOCAL-00047" />
-      <option name="project" value="LOCAL" />
-      <updated>1709962476876</updated>
     </task>
     <task id="LOCAL-00048" summary="New game file&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
       <option name="closed" value="true" />
@@ -721,7 +720,15 @@
       <option name="project" value="LOCAL" />
       <updated>1742663161717</updated>
     </task>
-    <option name="localTasksCounter" value="80" />
+    <task id="LOCAL-00080" summary="Add equipped item display in Game.py">
+      <option name="closed" value="true" />
+      <created>1746306033362</created>
+      <option name="number" value="00080" />
+      <option name="presentableId" value="LOCAL-00080" />
+      <option name="project" value="LOCAL" />
+      <updated>1746306033362</updated>
+    </task>
+    <option name="localTasksCounter" value="81" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
