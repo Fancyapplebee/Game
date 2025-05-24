@@ -3363,7 +3363,7 @@ def get_role_rect(role_rect, role, buffer_width = int(.025*X), buffer_height = i
     return role_rect
 
 def QuestGames(Setting, role):
-    global font, white, black, orange, X, Y, red, screen
+    global font, white, black, orange, X, Y, red, screen, enemy, enemy_rect
     NumRounds = 10
     role.health = role.base_health  # TODO: delete!
     money = 0
@@ -3532,7 +3532,7 @@ def QuestGames(Setting, role):
         print("\n")
 
     def renderRole():
-        global font
+        global font, enemy, enemy_rect, NumberDefeated, curr_enemy_y
         if Setting == "DESERT":
             displayImage("StartDesert.png", p=1, update=False)
         elif Setting == "FOREST":
@@ -3543,30 +3543,60 @@ def QuestGames(Setting, role):
             displayImage("StartBeach.png", p=1, update=False)
         elif Setting == "HOUSE":
             displayImage("StartHouse.png", p=1, update=False)
-        pygame_print(f"Quest #{role.questLevel + 1}", loc_y=0.08*Y)
-       
-        # Role Health Bar Health Bar
-        #min(Y) = 150, min(X) = 165, max(Y) = 252, max(X) = 335
-        pygame.draw.rect(screen, white, (0.1875*X, 0.18266*Y, 0.25*X, 0.16*Y))
-        font = pygame.font.Font('freesansbold.ttf', int(0.029333333333333333*Y))
-        pygame_print(cppStringConvert(role.name), loc_y = 0.2*Y, offset_x=-0.1875*X)
-        font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
-        pygame_print("Lv. = "+ str(role.currLevel), loc_y=0.233*Y, offset_x=-0.14375*X)
-        font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
-        pygame.draw.rect(screen, black, (0.20625*X, 0.26*Y, 0.1875*X, 0.02667*Y)) #165 -> 165/800*X, 195 -> 195/750*Y
-        pygame.draw.rect(screen, green, (0.20625*X, 0.26*Y, 0.1875*X*role.health/role.base_health, 0.02667*Y)) #Health bar
-        font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
-        pygame_print(f"{role.health:.0f} / {role.base_health:.0f}", loc_y=0.30667*Y, offset_x=-0.15625*X)
-        font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
-        pygame.draw.rect(screen, black, (0.20625*X, 0.32266*Y, 0.2125*X, 0.01333*Y))
-        pygame.draw.rect(screen, cyan, (0.20625*X, 0.32266*Y, 0.2125*X*role.currExp/role.LevelExp, 0.01333*Y)) #Exp bar
-        
+        pygame_print(f"Quest #{role.questLevel + 1}", loc_y=0.08 * Y)
+
+        # role Health Bar
+        pygame.draw.rect(screen, white, (0.1875 * X, 0.18266 * Y, 0.25 * X, 0.16 * Y))
+        font = pygame.font.Font('freesansbold.ttf', int(0.029333333333333333 * Y))
+        pygame_print(cppStringConvert(role.name), loc_y=0.2 * Y, offset_x=-0.1875 * X)
+        font = pygame.font.Font('freesansbold.ttf', int(0.02667 * Y))
+        pygame_print("Lv. = " + str(role.currLevel), loc_y=0.233 * Y, offset_x=-0.14375 * X)
+        font = pygame.font.Font('freesansbold.ttf', int(0.02933 * Y))
+        pygame.draw.rect(screen, black, (0.20625 * X, 0.26 * Y, 0.1875 * X, 0.02667 * Y))
+        pygame.draw.rect(screen, green,
+                         (0.20625 * X, 0.26 * Y, 0.1875 * X * role.health / role.base_health, 0.02667 * Y))
+        font = pygame.font.Font('freesansbold.ttf', int(0.02667 * Y))
+        pygame_print(f"{role.health:.0f} / {role.base_health:.0f}", loc_y=0.30667 * Y, offset_x=-0.15625 * X)
+        font = pygame.font.Font('freesansbold.ttf', int(0.02933 * Y))
+        pygame.draw.rect(screen, black, (0.20625 * X, 0.32266 * Y, 0.2125 * X, 0.01333 * Y))
+        pygame.draw.rect(screen, cyan,
+                         (0.20625 * X, 0.32266 * Y, 0.2125 * X * role.currExp / role.LevelExp, 0.01333 * Y))
+
+        # Render role sprite
         role_image = pygame.image.load(
             f"Assets/{role_image_name}" if not role.flipped else f"Assets/{role_image_name_flipped}")
         role_image = pygame.transform.scale(role_image, (buffer_width, buffer_width))
         screen.blit(role_image, role_rect.topleft)
-        get_role_rect(role_rect, role, buffer_width = int(.025*X), buffer_height = int(.025*X))
-        
+        get_role_rect(role_rect, role, buffer_width=int(.025 * X), buffer_height=int(.025 * X))
+
+        total_enemy_health = sum(e.health for e in enemy)
+        total_enemy_base_health = sum(e.base_health for e in enemy)
+
+        pygame.draw.rect(screen, white, (0.58125 * X, 0.18667 * Y, 0.2375 * X, 0.16 * Y))
+
+        if len(enemy) > 1:
+            pygame_print(f"Enemies ({len(enemy)})", loc_y=0.22667 * Y, offset_x=0.1875 * X)
+        else:
+            pygame_print(cppStringConvert(enemy[0].name), loc_y=0.22667 * Y, offset_x=0.1875 * X)
+
+        pygame.draw.rect(screen, black, (0.60625 * X, 0.26 * Y, 0.1875 * X, 0.02667 * Y))
+        if total_enemy_base_health > 0:
+            pygame.draw.rect(screen, red,
+                             (0.60625 * X, 0.26 * Y, 0.1875 * X * total_enemy_health / total_enemy_base_health,
+                              0.02667 * Y))
+        font = pygame.font.Font('freesansbold.ttf', int(0.02667 * Y))
+        pygame_print(f"{total_enemy_health:.0f} / {total_enemy_base_health:.0f}", loc_y=0.306667 * Y,
+                     offset_x=0.23375 * X)
+        font = pygame.font.Font('freesansbold.ttf', int(0.02933 * Y))
+
+        for i, (enemy_val, rect) in enumerate(zip(enemy, enemy_rect[NumberDefeated])):
+            enemy_image = pygame.image.load(
+                f"Assets/{enemy_image_names[enemy_val.name]}" if not enemy_val.flipped else f"Assets/{enemy_image_names_flipped[enemy_val.name]}")
+            enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
+            screen.blit(enemy_image, rect.topleft)
+
+        font = pygame.font.Font('freesansbold.ttf', int(0.04266 * Y))
+        '''
         # Enemy Health Bar
         #min(Y) = 170, min(X) = 485, max(Y) = 230, max(X) = 635
         for enemy_val in enemy:
@@ -3588,7 +3618,7 @@ def QuestGames(Setting, role):
         enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
         screen.blit(enemy_image, enemy_rect.topleft)
         font = pygame.font.Font('freesansbold.ttf', int(0.04266*Y))
-        
+        '''
         
 
     role_rect = get_role_rect(pygame.Rect(start_x, start_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
@@ -3610,9 +3640,9 @@ def QuestGames(Setting, role):
     
     assert(all([len(enemy_rect[i]) == num_enemies[i] for i in range(NumRounds)]))
         
-    exit() #TODO: Continue migrating code to numRounds of num_enemies[i], where num_enemies[i] is the number of enemies in a given round
+    #exit() #TODO: Continue migrating code to numRounds of num_enemies[i], where num_enemies[i] is the number of enemies in a given round
 
-    
+    NumberDefeated = 0
     renderRole()
     
 
@@ -3622,7 +3652,7 @@ def QuestGames(Setting, role):
     K = 10  # Constant factor for gravity
 
     global badNPCs  # we're saying that we will be using the global variable badNPCs
-    NumberDefeated = 0
+
 
     start_msg_time = time()
     start_msg_interval = 2  # At the beginning of each round, a message saying 'spawning new enemy' will appear for 2 seconds
