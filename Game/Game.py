@@ -3733,11 +3733,29 @@ def QuestGames(Setting, role):
         
 #        temp_state = f"agent_x = {enemy_x:0.0f}, agent_y = {curr_enemy_y:0.0f}, role_x = {start_x:0.0f}, role_y = {curr_y:0.0f}, agent_health = {last_agent_health / TotalEnemyBaseHealth:0.0f}, agent_flipped = {enemy.flipped}, shotsFired = {shotsFired}" #last_agent_health / TotalEnemyBaseHealth
     
-        DangerShotVal = [(abs(enemy_x[NumberDefeated][i] - start_x) if curr_y - beam_height <= enemy_y[NumberDefeated][i] <= curr_y + beam_height else max(X - enemy_x[NumberDefeated][i], enemy_x[NumberDefeated][i])) for i in range(num_enemies[NumberDefeated])]
-        
+#        DangerShotVal = [(abs(enemy_x[NumberDefeated][i] - start_x) if curr_y - beam_height <= enemy_y[NumberDefeated][i] <= curr_y + beam_height else max(X - enemy_x[NumberDefeated][i], enemy_x[NumberDefeated][i])) for i in range(num_enemies[NumberDefeated])]
+        DangerShotVal = []
+        for i in range(len(enemy)):
+            # Check if enemy is at same height as player (more dangerous)
+            if curr_y - beam_height <= curr_enemy_y[NumberDefeated][i] <= curr_y + buffer_height:
+                danger_val = abs(enemy_x[NumberDefeated][i] - start_x)
+            else:
+                danger_val = max(X - enemy_x[NumberDefeated][i], enemy_x[NumberDefeated][i])
+
+            # Check for danger from player shots
+            if len(shotsFired):
+                DangerShots = [shot for shot in shotsFired if
+                               overlaps(shot.beam_y - beam_height, shot.beam_y + beam_height,
+                                        curr_enemy_y[NumberDefeated][i], curr_enemy_y[NumberDefeated][i] + buffer_width)
+                               and not shot.hit_target]
+                if len(DangerShots):
+                    DangerShot = min(DangerShots, key=lambda shot: abs(enemy_x[NumberDefeated][i] - shot.beam_x))
+                    danger_val = min(abs(enemy_x[NumberDefeated][i] - DangerShot.beam_x), danger_val)
+
+            DangerShotVal.append(danger_val)
         print(DangerShotVal) #a list of num_enemies[NumberDefeated] integers
         assert(len(DangerShotVal) == num_enemies[NumberDefeated])
-        exit() #TODO: Continue migrating code to numRounds of num_enemies[i], where num_enemies[i] is the number of enemies in a given round
+
 
         
         '''
@@ -3746,14 +3764,14 @@ def QuestGames(Setting, role):
 
         (0,0)     (350,0)       (800,0)  --> DangerShotVal = 450
         (0,0)         (450,0)   (800,0)  --> DangerShotVal = 450
-        '''
+        
         if len(shotsFired):
-            '''
+            
             We want to check if the range (shot.beam_y - beam_height, shot.beam_y + beam_height) intersects with the range (enemy_y, enemy_y + buffer_width)
             [620, 640], [600, 640]
             
             [420, 440], [500, 540]
-            '''
+            
             
             DangerShots = [shot for shot in shotsFired if overlaps(shot.beam_y - beam_height, shot.beam_y + beam_height, enemy_y, enemy_y + buffer_width) and not shot.hit_target]
             if len(DangerShots):
@@ -3763,11 +3781,16 @@ def QuestGames(Setting, role):
             for enemy_val_y in enemy_y[NumberDefeated]:
                 DangerShots = [shot for shot in shotsFired if overlaps(shot.beam_y - beam_height, shot.beam_y + beam_height, enemy_val_y, enemy_val_y + buffer_width) and not shot.hit_target]
                 #TODO: Finish this
-            
-                
+    temp_state = f"agent_x = {enemy_x[NumberDefeated]:0.0f}, agent_y = {curr_enemy_y[NumberDefeated][0]:0.0f}, role_x = {start_x:0.0f}, role_y = {curr_y:0.0f}, agent_health = {last_agent_health / TotalEnemyBaseHealth:0.2f}, agent_flipped = {enemy.flipped}, shotsFired = {DangerShotVal}"
+            '''
+
         temp_state = [int(i) for i in DangerShotVal]
-            
-        enemyMove = generateMove(temp_state)
+
+        enemyMoves = []
+        for i in range(len(enemy)):
+            # Create a state string that includes this enemy's danger value and position
+            temp_state = f"enemy_{i}_danger_{int(DangerShotVal[i])}_pos_{int(enemy_x[NumberDefeated][i])}_{int(curr_enemy_y[NumberDefeated][i])}_player_{int(start_x)}_{int(curr_y)}_health_{int(enemy[i].health / enemy[i].base_health * 100)}"
+            enemyMoves.append(generateMove(temp_state))
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.VIDEORESIZE:
                 old_X, old_Y = X, Y
@@ -3831,7 +3854,32 @@ def QuestGames(Setting, role):
                             role.update_wait_time()
                         else:
                             role.numInv[role.InputMapDict[event.key]]["Number"] += 1
+        for i in range(len(enemy)):
+            enemyMove = enemyMoves[i]
 
+            if enemy_options[enemyMove] == "jump" and enemy_y[NumberDefeated][i] + int(0.2666 * Y) >= ground_y:
+                curr_enemy_y[NumberDefeated][i] -= 0.006666666666666667 * Y
+                enemy_y[NumberDefeated][i] = curr_enemy_y[NumberDefeated][i]
+                enemy_jump_t[NumberDefeated][i] = time()
+
+            if enemy_options[enemyMove] == "attack" and enemy[i].can_attack():
+                beam_x = enemy_x[NumberDefeated][i] + (0 if not enemy[i].flipped else buffer_width)
+                beam_y = curr_enemy_y[NumberDefeated][i] + buffer_width / 2
+                shotsEnemyFired[i].append(Shot(beam_x, beam_y, False, enemy[i].flipped))
+                enemy[i].update_wait_time()
+
+            if enemy_options[enemyMove] == "right":
+                if enemy_x[NumberDefeated][i] < X - buffer_width:
+                    enemy_x[NumberDefeated][i] += enemy[i].speed * 10
+                enemy[i].flipped = True
+
+            if enemy_options[enemyMove] == "left":
+                if enemy_x[NumberDefeated][i] > 0:
+                    enemy_x[NumberDefeated][i] -= enemy[i].speed * 10
+                enemy[i].flipped = False
+
+        keys = pygame.key.get_pressed()
+        '''
         if enemy_options[enemyMove] == "jump" and enemy_y + int(0.2666*Y) >= ground_y:  # Holding down jump makes it bigger
             curr_enemy_y -= 0.006666666666666667*Y
             enemy_y = curr_enemy_y
@@ -3843,7 +3891,7 @@ def QuestGames(Setting, role):
             shotsEnemyFired.append(Shot(beam_x, beam_y, False,
                                         enemy.flipped))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
             enemy.update_wait_time()
-
+        '''
         keys = pygame.key.get_pressed()
         # -> means 0.01 s, the below example shows how our position changes ever 0.01 seconds when falling
         '''
