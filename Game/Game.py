@@ -3363,11 +3363,11 @@ def get_role_rect(role_rect, role, buffer_width = int(.025*X), buffer_height = i
     return role_rect
 
 def QuestGames(Setting, role):
-    global font, white, black, orange, X, Y, red, screen, enemy, enemy_rect
+    global font, white, black, orange, X, Y, red, screen
     NumRounds = 10
     role.health = role.base_health  # TODO: delete!
     money = 0
-    role_image_name = role.name.lower().replace(" jackson", "") + "-start.png" #TODO: Later the role image will have to be adjusted to load the specific image corresponding to the speficic role and current item equipped
+    role_image_name = role.name.lower().replace(" jackson", "") + "-start.png" #TODO: Later the role image will have to be adjusted to load the specific image corresponding to the specific role and current item equipped
     role_image_name_flipped = role_image_name.replace(".png", "flip.png")
     enemy_image_names = {"NINJA": "ninja.png", "OGRE": "ogre.png", "DEMON": "demon.png"}
     enemy_image_names_flipped = {"NINJA": "ninjaflip.png", "OGRE": "ogreflip.png", "DEMON": "demonflip.png"}
@@ -3532,7 +3532,9 @@ def QuestGames(Setting, role):
         print("\n")
 
     def renderRole():
-        global font, enemy, enemy_rect, NumberDefeated, curr_enemy_y
+        global font
+        nonlocal NumberDefeated
+        
         if Setting == "DESERT":
             displayImage("StartDesert.png", p=1, update=False)
         elif Setting == "FOREST":
@@ -3569,8 +3571,8 @@ def QuestGames(Setting, role):
         screen.blit(role_image, role_rect.topleft)
         get_role_rect(role_rect, role, buffer_width=int(.025 * X), buffer_height=int(.025 * X))
 
-        total_enemy_health = sum(e.health for e in enemy)
-        total_enemy_base_health = sum(e.base_health for e in enemy)
+        total_enemy_health = sum(e.health for e in enemy) #Health for current enemy
+        total_enemy_base_health = sum(e.base_health for e in enemy) #Base health for current enemy
 
         pygame.draw.rect(screen, white, (0.58125 * X, 0.18667 * Y, 0.2375 * X, 0.16 * Y))
 
@@ -3639,16 +3641,12 @@ def QuestGames(Setting, role):
         print("\n")
     
     assert(all([len(enemy_rect[i]) == num_enemies[i] for i in range(NumRounds)]))
-        
-    #exit() #TODO: Continue migrating code to numRounds of num_enemies[i], where num_enemies[i] is the number of enemies in a given round
 
     NumberDefeated = 0
     renderRole()
     
-
-
-    shotsFired = []
-    shotsEnemyFired = []
+    shotsFired = [] #role container for shots
+    shotsEnemyFired = [] #[] #enemy container for shots: consisting of `NumRounds` lists of lengths num_enemies[0], num_enemies[1], ..., num_enemies[NumRounds-1]
     K = 10  # Constant factor for gravity
 
     global badNPCs  # we're saying that we will be using the global variable badNPCs
@@ -3735,7 +3733,13 @@ def QuestGames(Setting, role):
         
 #        temp_state = f"agent_x = {enemy_x:0.0f}, agent_y = {curr_enemy_y:0.0f}, role_x = {start_x:0.0f}, role_y = {curr_y:0.0f}, agent_health = {last_agent_health / TotalEnemyBaseHealth:0.0f}, agent_flipped = {enemy.flipped}, shotsFired = {shotsFired}" #last_agent_health / TotalEnemyBaseHealth
     
-        DangerShotVal = abs(enemy_x - start_x) if curr_y - beam_height <= enemy_y <= curr_y + beam_height else max(X - enemy_x, enemy_x)
+        DangerShotVal = [(abs(enemy_x[NumberDefeated][i] - start_x) if curr_y - beam_height <= enemy_y[NumberDefeated][i] <= curr_y + beam_height else max(X - enemy_x[NumberDefeated][i], enemy_x[NumberDefeated][i])) for i in range(num_enemies[NumberDefeated])]
+        
+        print(DangerShotVal) #a list of num_enemies[NumberDefeated] integers
+        assert(len(DangerShotVal) == num_enemies[NumberDefeated])
+        exit() #TODO: Continue migrating code to numRounds of num_enemies[i], where num_enemies[i] is the number of enemies in a given round
+
+        
         '''
         E.g. enemy_x = 450 -> DangerShotVal = max(800-450, 450) = max(350, 450) = 450
              enemy_x = 350 -> DangerShotVal = max(800-350, 350) = max(450, 350) = 450
@@ -3755,8 +3759,13 @@ def QuestGames(Setting, role):
             if len(DangerShots):
                 DangerShot = min(DangerShots, key = lambda shot: abs(enemy_x - shot.beam_x)) #The closest danger shot to the enemy (agent)
                 DangerShotVal = min(abs(enemy_x - DangerShot.beam_x), DangerShotVal)
+            
+            for enemy_val_y in enemy_y[NumberDefeated]:
+                DangerShots = [shot for shot in shotsFired if overlaps(shot.beam_y - beam_height, shot.beam_y + beam_height, enemy_val_y, enemy_val_y + buffer_width) and not shot.hit_target]
+                #TODO: Finish this
+            
                 
-        temp_state = int(DangerShotVal)
+        temp_state = [int(i) for i in DangerShotVal]
             
         enemyMove = generateMove(temp_state)
         for event in pygame.event.get():  # update the option number if necessary
