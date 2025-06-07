@@ -3646,7 +3646,9 @@ def QuestGames(Setting, role):
     renderRole()
     
     shotsFired = [] #role container for shots
-    shotsEnemyFired = [] #[] #enemy container for shots: consisting of `NumRounds` lists of lengths num_enemies[0], num_enemies[1], ..., num_enemies[NumRounds-1]
+    shotsEnemyFired = [[[] for i in range(j)] for j in num_enemies] #[] #enemy container for shots: consisting of `NumRounds` lists of lengths num_enemies[0], num_enemies[1], ..., num_enemies[NumRounds-1]
+        
+    
     K = 10  # Constant factor for gravity
 
     global badNPCs  # we're saying that we will be using the global variable badNPCs
@@ -3793,6 +3795,7 @@ def QuestGames(Setting, role):
             enemyMoves.append(generateMove(temp_state))
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.VIDEORESIZE:
+                #TODO: After multi-enemy works, come here
                 old_X, old_Y = X, Y
                 X, Y = screen.get_width(), screen.get_height()
                 X = 410 if X < 410 else X
@@ -3827,7 +3830,7 @@ def QuestGames(Setting, role):
                 renderRole()
 
             elif event.type == pygame.KEYDOWN:  # checking if any key was selected
-                if event.key == pygame.K_RETURN:
+                if event.key == pygame.K_RETURN: #exit the quest game
                     save_stats()
                     return
                 elif event.key == pygame.K_SPACE:  # Checking if the role hero fired a shot
@@ -3908,7 +3911,7 @@ def QuestGames(Setting, role):
 
         if curr_y != ground_y:  # if the hero is in free-fall
             fall_time = time() - role_jump_t
-            s = ((K * 0.5 * 9.81 * fall_time ** 2)/750)*Y  # The absolute value the hero has fallen since role_jump_t
+            s = ((K * 0.5 * 9.81 * fall_time * fall_time)/750)*Y  # The absolute value the hero has fallen since role_jump_t
 
             '''
             Example: You fell from a cliff 2 km above sea-level at 10:00:00.
@@ -3922,15 +3925,26 @@ def QuestGames(Setting, role):
             else:  # Here, they have landed
                 curr_y = ground_y
                 start_y = ground_y
-        if curr_enemy_y != ground_y:
-            fall_time = time() - enemy_jump_t
-            s = ((K * 0.5 * 9.81 * fall_time ** 2)/750)*Y
-            position = enemy_y + s
-            if position <= ground_y:
-                curr_enemy_y = position
-            else:
-                curr_enemy_y = ground_y
-                enemy_y = ground_y
+#        if curr_enemy_y != ground_y:
+#            fall_time = time() - enemy_jump_t
+#            s = ((K * 0.5 * 9.81 * fall_time * fall_time)/750)*Y
+#            position = enemy_y + s
+#            if position <= ground_y:
+#                curr_enemy_y = position
+#            else:
+#                curr_enemy_y = ground_y
+#                enemy_y = ground_y
+#        
+        for i in range(len(enemy)):
+            if curr_enemy_y[NumberDefeated][i] != ground_y:
+                fall_time = time() - enemy_jump_t[NumberDefeated][i]
+                s = ((K * 0.5 * 9.81 * fall_time * fall_time)/750)*Y
+                position = enemy_y[NumberDefeated][i] + s
+                if position <= ground_y:
+                    curr_enemy_y[NumberDefeated][i] = position
+                else:
+                    curr_enemy_y[NumberDefeated][i] = ground_y
+                    enemy_y[NumberDefeated][i] = ground_y
 
         # If the role moves across the screen (left or right)
         # ===================================================
