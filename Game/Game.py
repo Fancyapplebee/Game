@@ -3513,13 +3513,16 @@ def QuestGames(Setting, role):
         for b in badNPCs:
             end += int(b.second * 100)  # probability of spawning
             if start <= randnum <= end:
-                enemy = BadNPC(cppStringConvert(b.first))  # we are spawning an enemy here
-                enemy.statboost(role)
-                return enemy
+                enemy_temp = BadNPC(cppStringConvert(b.first))  # we are spawning an enemy here
+                enemy_temp.statboost(role)
+                return enemy_temp
 
     enemies = [[spawnBadNPC() for i in range(j)] for j in num_enemies]
     
-    enemy = enemies[0] #We start on the first round, enemy functions as a pointer to the list of enemies we need for a given round
+    NumberDefeated = 0 #Number of rounds of enemies we've defeated
+    number_defeated = 0 #Number of enemies we've defeated in the current round
+    enemy = enemies[NumberDefeated] #We start on the first round, `enemy` functions as a pointer to the list of enemies we need for a given round
+    numberToDefeat = len(enemy) #Number of enemies we need to defeat to advance to the next round
     getEnemyHealth = lambda: sum(sum(enemy_.health for enemy_ in enemy_list) for enemy_list in enemies)
     getEnemyBaseHealth = lambda: sum(sum(enemy_.base_health for enemy_ in enemy_list) for enemy_list in enemies)
     TotalEnemyBaseHealth = getEnemyBaseHealth()
@@ -3592,10 +3595,11 @@ def QuestGames(Setting, role):
         font = pygame.font.Font('freesansbold.ttf', int(0.02933 * Y))
 
         for i, (enemy_val, rect) in enumerate(zip(enemy, enemy_rect[NumberDefeated])):
-            enemy_image = pygame.image.load(
-                f"Assets/{enemy_image_names[enemy_val.name]}" if not enemy_val.flipped else f"Assets/{enemy_image_names_flipped[enemy_val.name]}")
-            enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
-            screen.blit(enemy_image, rect.topleft)
+            if enemy_val.health > 0:
+                enemy_image = pygame.image.load(
+                    f"Assets/{enemy_image_names[enemy_val.name]}" if not enemy_val.flipped else f"Assets/{enemy_image_names_flipped[enemy_val.name]}")
+                enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
+                screen.blit(enemy_image, rect.topleft)
 
         font = pygame.font.Font('freesansbold.ttf', int(0.04266 * Y))
         '''
@@ -3622,11 +3626,10 @@ def QuestGames(Setting, role):
         font = pygame.font.Font('freesansbold.ttf', int(0.04266*Y))
         '''
         
+#    print(f"zip(enemy_x, enemy_y) = {tuple(zip(enemy_x, enemy_y))}")
 
     role_rect = get_role_rect(pygame.Rect(start_x, start_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
         
-    print(f"zip(enemy_x, enemy_y) = {tuple(zip(enemy_x, enemy_y))}")
-    
     enemy_rect = []
     
     for (x_val, y_val) in zip(enemy_x, enemy_y):
@@ -3635,14 +3638,13 @@ def QuestGames(Setting, role):
             enemy_round_i_rects.append(pygame.Rect(enemy_x_coord, enemy_y_coord, buffer_width, buffer_width))
         enemy_rect.append(enemy_round_i_rects)
     
-    for enemy_rect_list in enemy_rect:
-        for enemy_rect_val in enemy_rect_list:
-            print(enemy_rect_val.x, enemy_rect_val.y, enemy_rect_val.width, enemy_rect_val.height)
-        print("\n")
+#    for enemy_rect_list in enemy_rect:
+#        for enemy_rect_val in enemy_rect_list:
+#            print(enemy_rect_val.x, enemy_rect_val.y, enemy_rect_val.width, enemy_rect_val.height)
+#        print("\n")
     
     assert(all([len(enemy_rect[i]) == num_enemies[i] for i in range(NumRounds)]))
 
-    NumberDefeated = 0
     renderRole()
     
     shotsFired = [] #role container for shots
@@ -3755,7 +3757,7 @@ def QuestGames(Setting, role):
                     danger_val = min(abs(enemy_x[NumberDefeated][i] - DangerShot.beam_x), danger_val)
 
             DangerShotVal.append(danger_val)
-        print(DangerShotVal) #a list of num_enemies[NumberDefeated] integers
+        print(f"DangerShotVal = {DangerShotVal}") #a list of num_enemies[NumberDefeated] integers
         assert(len(DangerShotVal) == num_enemies[NumberDefeated])
 
 
@@ -3962,42 +3964,67 @@ def QuestGames(Setting, role):
                 start_y = curr_y  # Set the start jumping position to the current position
                 role_jump_t = time()
 
-        if enemy_options[enemyMove] == "right":
-            if enemy_x < X - buffer_width:
-                enemy_x += enemy.speed * 10
-            enemy.flipped = True
-        if enemy_options[enemyMove] == "left":
-            if enemy_x > 0:
-                enemy_x -= enemy.speed * 10
-            enemy.flipped = False
+        for i in range(len(enemy)):
+            enemyMove = enemyMoves[i]
+            if enemy_options[enemyMove] == "right":
+                if enemy_x[NumberDefeated][i] < X - buffer_width:
+                    enemy_x[NumberDefeated][i] += enemy[i].speed * 10
+                enemy[i].flipped = True
+            if enemy_options[enemyMove] == "left":
+                if enemy_x[NumberDefeated][i] > 0:
+                    enemy_x[NumberDefeated][i] -= enemy[i].speed * 10
+                enemy[i].flipped = False
 
         role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
-        enemy_rect = pygame.Rect(enemy_x, curr_enemy_y, buffer_width, buffer_width)
+        enemy_rect = []
+        assert(len(enemy_x) == len(curr_enemy_y) and len(enemy_x) == NumRounds)
+        for i, (x_val, y_val) in enumerate(zip(enemy_x, curr_enemy_y)): #for each round
+            enemy_round_i_rects = []
+            assert(len(x_val) == len(y_val))
+            for (enemy_x_coord, enemy_y_coord) in zip(x_val, y_val): #for each enemy in the current round
+                enemy_round_i_rects.append(pygame.Rect(enemy_x_coord, enemy_y_coord, buffer_width, buffer_width))
+            enemy_rect.append(enemy_round_i_rects)
+
+        assert(len(enemy) == enemy_rect[NumberDefeated])
         renderRole()
-
-        for shot in shotsFired:
-            shot.beam_x = shot.beam_x + role.shot_speed if not shot.is_flipped else shot.beam_x - role.shot_speed
-            beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width, beam_height)  # beam object
-            if beam_rect.colliderect(
-                    enemy_rect) and not shot.hit_target:  # Enemy was hit and this is not a repeat of the same shot
-                role.attack(enemy, multiplier = 1 if not shot.is_special_shot else role.specialShotMultipliers[role.specialShotImage])
-                pygame.draw.rect(screen, red, enemy_rect, 2)
-                if enemy.health == 0:
-                    money += enemy.expYield*10
-                    increaseExp(role, enemy.expYield)
-                    NumberDefeated += 1
-                    renderRole()
-                    if NumberDefeated < NumRounds:
-                        enemy = enemies[NumberDefeated]  # spawnBadNPC()
-                        pygame_print(f"Spawning enemy #{NumberDefeated + 1}/{NumRounds}: {enemy.name}", loc_y=int(0.4*Y))
-                        start_msg_time = time()
-                    else:
-                        role.questLevel += 1
-                        role.money += money
-                        beam_rect = pygame.Rect(shot.beam_x + role.shot_speed if not shot.is_flipped else shot.beam_x - role.shot_speed, shot.beam_y, beam_width, beam_height)
-                        pygame_print(f"You Won!!", loc_y=int(0.4*Y))
-
-                shot.hit_target = True
+        assert(len(enemy_x[NumberDefeated]) == len(enemy))
+        assert(len(curr_enemy_y[NumberDefeated]) == len(enemy))
+        assert(len(enemy) == len(enemy_rect[NumberDefeated]))
+        
+        for shot in shotsFired: #For each shot that the role fired
+            shot.beam_x = shot.beam_x + role.shot_speed if not shot.is_flipped else shot.beam_x - role.shot_speed #calculating the new x-coordinate for the current role-shot
+            beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width, beam_height) # recreate the rectangle object storing the current shot on the screen
+            
+            for i in range(len(enemy)):
+                if beam_rect.colliderect(
+                        enemy_rect[NumberDefeated][i]) and not shot.hit_target:  # Enemy was hit and this is not a repeat of the same shot
+                    role.attack(enemy[i], multiplier = 1 if not shot.is_special_shot else role.specialShotMultipliers[role.specialShotImage])
+                    pygame.draw.rect(screen, red, enemy_rect[NumberDefeated][i], 2)
+                    if enemy[i].health == 0:
+                        money += enemy[i].expYield*10
+                        increaseExp(role, enemy[i].expYield)
+                        number_defeated += 1
+                        renderRole()
+                        if number_defeated == numberToDefeat:
+                            NumberDefeated += 1
+                            #renderRole()
+                            if NumberDefeated < NumRounds:
+                                enemy = enemies[NumberDefeated]  # spawnBadNPC()
+                                number_defeated = 0
+                                numberToDefeat = len(enemy)
+                                pygame_print(f"Spawning enemy #{NumberDefeated + 1}/{NumRounds}: {enemy.name}", loc_y=int(0.4*Y))
+                                start_msg_time = time()
+                            else:
+                                role.questLevel += 1
+                                role.money += money
+                                beam_rect = pygame.Rect(shot.beam_x + role.shot_speed if not shot.is_flipped else shot.beam_x - role.shot_speed, shot.beam_y, beam_width, beam_height)
+                                pygame_print(f"You Won!!", loc_y=int(0.4*Y))
+                            
+                            
+                    shot.hit_target = True
+            
+            #TODO: Update all the enemy lists to reflect the updated enemies that died...
+            
             if not shot.is_special_shot:
                 pygame.draw.ellipse(screen, orange, beam_rect)  # Drawing the beam
             else:
