@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="Add equipped item display in ZeldaImages">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Game/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Game.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -40,7 +39,7 @@
     <option name="PUSH_AUTO_UPDATE" value="true" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="PYCHARM" />
+        <entry key="$PROJECT_DIR$" value="c39d4a0ccddefa663e751faf00ed93878d1bea12" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -107,20 +106,12 @@
       <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Game" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Game\Assets\zelda" />
       <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Game" />
+      <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Game\Assets\zelda" />
       <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Game\Assets" />
       <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game" />
       <recent name="C:\Users\andre\OneDrive\Documents\GitHub\Game\Assets" />
     </key>
-  </component>
-  <component name="SharedIndexes">
-    <attachedChunks>
-      <set>
-        <option value="bundled-js-predefined-d6986cc7102b-6a121458b545-JavaScript-PY-251.25410.159" />
-        <option value="bundled-python-sdk-e0ed3721d81e-36ea0e71a18c-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.25410.159" />
-      </set>
-    </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -350,6 +341,7 @@
       <workItem from="1748104649949" duration="3731000" />
       <workItem from="1748710434392" duration="34000" />
       <workItem from="1748710553146" duration="697000" />
+      <workItem from="1750524834615" duration="2000" />
     </task>
     <task id="LOCAL-00001" summary="it works">
       <created>1657430290327</created>

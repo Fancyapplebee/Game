@@ -3395,7 +3395,7 @@ def QuestGames(Setting, role):
     
     
     '''
-    
+    '''
     def update_enemy_lists_after_death(enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t,
                                    enemy_rect, shotsEnemyFired, NumberDefeated, num_enemies):
         alive_x = [i for i, enemy_ in enumerate(enemies[NumberDefeated]) if enemy_.health > 0] #stores indices of enemies from the current round `NumberDefeated` that are alive (from the list `enemies[NumberDefeated]`)
@@ -3428,7 +3428,27 @@ def QuestGames(Setting, role):
 #        del shotsEnemyFired[NumberDefeated][index]
         
         return enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, num_enemies
-    
+    '''
+    def update_enemy_lists_after_death(enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t,
+                                       enemy_rect, shotsEnemyFired, NumberDefeated, num_enemies):
+        # Find indices of enemies that are still alive from the provided `enemy` list
+        alive_indices = [i for i, e in enumerate(enemy) if e.health > 0]
+        # Rebuild the master lists for the current round using only the alive enemies
+        enemies[NumberDefeated] = [enemy[i] for i in alive_indices]
+        enemy_x[NumberDefeated] = [enemy_x[NumberDefeated][i] for i in alive_indices]
+        enemy_y[NumberDefeated] = [enemy_y[NumberDefeated][i] for i in alive_indices]
+        curr_enemy_y[NumberDefeated] = [curr_enemy_y[NumberDefeated][i] for i in alive_indices]
+        enemy_jump_t[NumberDefeated] = [enemy_jump_t[NumberDefeated][i] for i in alive_indices]
+        enemy_rect[NumberDefeated] = [enemy_rect[NumberDefeated][i] for i in alive_indices]
+
+        if shotsEnemyFired and len(shotsEnemyFired) > NumberDefeated:
+            shotsEnemyFired[NumberDefeated] = [shotsEnemyFired[NumberDefeated][i] for i in alive_indices]
+
+        # Update the total number of enemies for the round
+        num_enemies[NumberDefeated] = len(enemies[NumberDefeated])
+        assert (len(enemy_rect[NumberDefeated]) == len(enemy))
+        return enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, num_enemies
+
     start_x = int(0.2*X) #Starting x-coordinate for Role
     ground_y = int(0.6667 * Y)
     start_y = ground_y     #Starting y-coordinate for Role
