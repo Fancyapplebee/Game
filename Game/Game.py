@@ -3440,11 +3440,12 @@ def QuestGames(Setting, role):
         curr_enemy_y[NumberDefeated] = [curr_enemy_y[NumberDefeated][i] for i in alive_indices]
         enemy_jump_t[NumberDefeated] = [enemy_jump_t[NumberDefeated][i] for i in alive_indices]
         enemy_rect[NumberDefeated] = [enemy_rect[NumberDefeated][i] for i in alive_indices]
-
-        if shotsEnemyFired and len(shotsEnemyFired) > NumberDefeated:
-            shotsEnemyFired[NumberDefeated] = [shotsEnemyFired[NumberDefeated][i] for i in alive_indices]
+        shotsEnemyFired[NumberDefeated] = [shotsEnemyFired[NumberDefeated][i] for i in alive_indices]
+#        if shotsEnemyFired and len(shotsEnemyFired) > NumberDefeated:
+#            shotsEnemyFired[NumberDefeated] = [shotsEnemyFired[NumberDefeated][i] for i in alive_indices]
 
         # Update the total number of enemies for the round
+        enemy = enemies[NumberDefeated]
         num_enemies[NumberDefeated] = len(enemies[NumberDefeated])
         assert (len(enemy_rect[NumberDefeated]) == len(enemy))
         return enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, num_enemies
@@ -3837,12 +3838,13 @@ def QuestGames(Setting, role):
     temp_state = f"agent_x = {enemy_x[NumberDefeated]:0.0f}, agent_y = {curr_enemy_y[NumberDefeated][0]:0.0f}, role_x = {start_x:0.0f}, role_y = {curr_y:0.0f}, agent_health = {last_agent_health / TotalEnemyBaseHealth:0.2f}, agent_flipped = {enemy.flipped}, shotsFired = {DangerShotVal}"
             '''
 
-        temp_state = [int(i) for i in DangerShotVal]
+#        temp_state = [int(i) for i in DangerShotVal]
 
         enemyMoves = []
         for i in range(len(enemy)):
             # Create a state string that includes this enemy's danger value and position
-            temp_state = f"enemy_{i}_danger_{int(DangerShotVal[i])}_pos_{int(enemy_x[NumberDefeated][i])}_{int(curr_enemy_y[NumberDefeated][i])}_player_{int(start_x)}_{int(curr_y)}_health_{int(enemy[i].health / enemy[i].base_health * 100)}"
+#            temp_state = f"enemy_{i}_danger_{int(DangerShotVal[i])}_pos_{int(enemy_x[NumberDefeated][i])}_{int(curr_enemy_y[NumberDefeated][i])}_player_{int(start_x)}_{int(curr_y)}_health_{int(enemy[i].health / enemy[i].base_health * 100)}"
+            temp_state = f"{DangerShotVal[i]:.0f}"
             enemyMoves.append(generateMove(temp_state))
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.VIDEORESIZE:
@@ -3868,16 +3870,34 @@ def QuestGames(Setting, role):
                 start_x = (start_x * X_ratio)
                 start_y = (start_y * Y_ratio)
                 curr_y = (curr_y * Y_ratio)
-                enemy_x = (enemy_x * X_ratio)
-                enemy_y = (enemy_y * Y_ratio)
-                curr_enemy_y = (curr_enemy_y * Y_ratio)
+                #enemy_x = (enemy_x * X_ratio)
+                #enemy_y = (enemy_y * Y_ratio)
+                #curr_enemy_y = (curr_enemy_y * Y_ratio)
+                enemy_x = [[X_ratio*i for i in j] for j in enemy_x]
+                enemy_y = [[Y_ratio*i for i in j] for j in enemy_y]
+                curr_enemy_y = [[Y_ratio*i for i in j] for j in curr_enemy_y]
                 ground_y = (ground_y * Y_ratio)
                 shotsFired = [Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in shotsFired]
-                shotsEnemyFired = [Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in shotsEnemyFired]
+                
+#                shotsEnemyFired = [Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in shotsEnemyFired]
+                shotsEnemyFired = [[[Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in i] for i in j] for j in shotsEnemyFired]
+
+                
 #                print(f"X = {old_X} -> X = {X}, Y = {old_Y} -> Y = {Y}, start_x = {start_x / X_ratio} -> start_x = {start_x}, curr_y = {curr_y / Y_ratio} -> curr_y = {curr_y}")
                 
                 role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
-                enemy_rect = pygame.Rect(enemy_x, curr_enemy_y, buffer_width, buffer_width)
+#                enemy_rect = pygame.Rect(enemy_x, curr_enemy_y, buffer_width, buffer_width)
+                
+                enemy_rect = []
+                assert(len(enemy_x) == len(curr_enemy_y) and len(enemy_x) == NumRounds)
+                for i, (x_val, y_val) in enumerate(zip(enemy_x, curr_enemy_y)): #for each round
+                    enemy_round_i_rects = []
+                    assert(len(x_val) == len(y_val))
+                    for (enemy_x_coord, enemy_y_coord) in zip(x_val, y_val): #for each enemy in the current round
+                        enemy_round_i_rects.append(pygame.Rect(enemy_x_coord, enemy_y_coord, buffer_width, buffer_width))
+                    enemy_rect.append(enemy_round_i_rects)
+                
+                
                 renderRole()
 
             elif event.type == pygame.KEYDOWN:  # checking if any key was selected
@@ -4043,39 +4063,41 @@ def QuestGames(Setting, role):
         for shot in shotsFired: #For each shot that the role fired
             shot.beam_x = shot.beam_x + role.shot_speed if not shot.is_flipped else shot.beam_x - role.shot_speed #calculating the new x-coordinate for the current role-shot
             beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width, beam_height) # recreate the rectangle object storing the current shot on the screen
+            enemy_resized = True
+            while enemy_resized:
+                enemy_resized = False
+                for i in range(len(enemy)): #Loop over each enemy and check if `shot` hit `enemy[i]`
+                    assert NumberDefeated < len(enemy_rect), f"NumberDefeated = {NumberDefeated} > len(enemy_rect) = {len(enemy_rect)}"
+                    assert i < len(enemy_rect[NumberDefeated]), f"i = {i} >= len(enemy_rect[NumberDefeated]) = {len(enemy_rect[NumberDefeated])}"
+                    if beam_rect.colliderect(
+                            enemy_rect[NumberDefeated][i]) and not shot.hit_target:  # Enemy was hit and this is not a repeat of the same shot
+                        role.attack(enemy[i], multiplier = 1 if not shot.is_special_shot else role.specialShotMultipliers[role.specialShotImage])
+                        pygame.draw.rect(screen, red, enemy_rect[NumberDefeated][i], 2)
+                        if enemy[i].health == 0:
+                            money += enemy[i].expYield*10
+                            increaseExp(role, enemy[i].expYield)
+                            number_defeated += 1 #Increasing the counter for enemies defeated in round `NumberDefeated`
+                            enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, num_enemies = update_enemy_lists_after_death(enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, NumberDefeated, num_enemies) #TODO: THIS IS DANGEROUS, enemy is updating here but we're still in the loop over range(len(enemy)) so there could definitely be a clash of indices between the old and new versions of `enemy`
+                            renderRole()
+                            if number_defeated == numberToDefeat:
+                                NumberDefeated += 1 #Increasing the counter for the number of rounds completed by the role
+                                #renderRole()
+                                if NumberDefeated < NumRounds:
+                                    enemy = enemies[NumberDefeated]  # spawnBadNPC()
+                                    number_defeated = 0
+                                    numberToDefeat = len(enemy)
+                                    pygame_print(f"Spawning enemy #{NumberDefeated + 1}/{NumRounds}: {[i.name for i in enemy]}", loc_y=int(0.4*Y))
+                                    start_msg_time = time()
+                                else:
+                                    role.questLevel += 1
+                                    role.money += money
+                                    beam_rect = pygame.Rect(shot.beam_x + role.shot_speed if not shot.is_flipped else shot.beam_x - role.shot_speed, shot.beam_y, beam_width, beam_height)
+                                    pygame_print(f"You Won!!", loc_y=int(0.4*Y))
+                            enemy_resized = True
+                            break
+                                
+                        shot.hit_target = True
             
-            for i in range(len(enemy)): #Loop over each enemy and check if `shot` hit `enemy[i]`
-                assert NumberDefeated < len(enemy_rect), f"NumberDefeated = {NumberDefeated} > len(enemy_rect) = {len(enemy_rect)}"
-                assert i < len(enemy_rect[NumberDefeated]), f"i = {i} >= len(enemy_rect[NumberDefeated]) = {len(enemy_rect[NumberDefeated])}"
-                if beam_rect.colliderect(
-                        enemy_rect[NumberDefeated][i]) and not shot.hit_target:  # Enemy was hit and this is not a repeat of the same shot
-                    role.attack(enemy[i], multiplier = 1 if not shot.is_special_shot else role.specialShotMultipliers[role.specialShotImage])
-                    pygame.draw.rect(screen, red, enemy_rect[NumberDefeated][i], 2)
-                    if enemy[i].health == 0:
-                        money += enemy[i].expYield*10
-                        increaseExp(role, enemy[i].expYield)
-                        number_defeated += 1 #Increasing the counter for enemies defeated in round `NumberDefeated`
-                        enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, num_enemies = update_enemy_lists_after_death(enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, NumberDefeated, num_enemies) #TODO: THIS IS DANGEROUS, enemy is updating here but we're still in the loop over range(len(enemy)) so there could definitely be a clash of indices between the old and new versions of `enemy`
-                        renderRole()
-                        if number_defeated == numberToDefeat:
-                            NumberDefeated += 1 #Increasing the counter for the number of rounds completed by the role
-                            #renderRole()
-                            if NumberDefeated < NumRounds:
-                                enemy = enemies[NumberDefeated]  # spawnBadNPC()
-                                number_defeated = 0
-                                numberToDefeat = len(enemy)
-                                pygame_print(f"Spawning enemy #{NumberDefeated + 1}/{NumRounds}: {[i.name for i in enemy]}", loc_y=int(0.4*Y))
-                                start_msg_time = time()
-                            else:
-                                role.questLevel += 1
-                                role.money += money
-                                beam_rect = pygame.Rect(shot.beam_x + role.shot_speed if not shot.is_flipped else shot.beam_x - role.shot_speed, shot.beam_y, beam_width, beam_height)
-                                pygame_print(f"You Won!!", loc_y=int(0.4*Y))
-                            
-                            
-                    shot.hit_target = True
-            
-            #TODO: Update all the enemy lists to reflect the updated enemies that died...
             if not shot.is_special_shot:
                 pygame.draw.ellipse(screen, orange, beam_rect)  # Drawing the beam
             else:
@@ -4084,7 +4106,7 @@ def QuestGames(Setting, role):
                 image = pygame.transform.scale(image, (beam_width, beam_height))
                 screen.blit(image, beam_rect.topleft)
         
-        for i, shot_list in enumerate(shotsEnemyFired[NumberDefeated]): #looping over each enemy[i]'s shot_list in the current round `NumberDefeated`
+        for i, shot_list in enumerate(shotsEnemyFired[min(NumberDefeated, NumRounds - 1)]): #looping over each enemy[i]'s shot_list in the current round `NumberDefeated`
             for shot in shot_list: #looping over each shot of enemy[i]'s shot_list
                 #print(f"shotsEnemyFired[NumberDefeated] = {shotsEnemyFired[NumberDefeated]}, shot = {shot}")
                 shot.beam_x = shot.beam_x - enemy[i].shot_speed if not shot.is_flipped else shot.beam_x + enemy[i].shot_speed
@@ -4101,8 +4123,8 @@ def QuestGames(Setting, role):
 #        exit()
         #Deleting shots that have trailed off the page
         shotsFired = [shot for shot in shotsFired if shot.beam_x >= 0 and shot.beam_x <= X]
-        
-        shotsEnemyFired[NumberDefeated] = [[shot for shot in shot_list if shot.beam_x >= 0 and shot.beam_x <= X]  for shot_list in shotsEnemyFired[NumberDefeated]]
+        temp_idx = min(NumberDefeated, NumRounds - 1) #clips NumberDefeated to NumRounds - 1 if NumberDefeated >= NumRounds (e.g. after the last round)
+        shotsEnemyFired[temp_idx] = [[shot for shot in shot_list if shot.beam_x >= 0 and shot.beam_x <= X]  for shot_list in shotsEnemyFired[temp_idx]]
 
         if role.health <= 0:
             pygame_print("You died!", loc_y=int(0.4*Y))
@@ -4129,7 +4151,7 @@ def QuestGames(Setting, role):
 
         damage_dealt = last_role_health - role.health
         damage_taken = last_agent_health - getEnemyHealth()  # enemy.health
-        dt = (getEnemyBaseHealth() - getEnemyHealth()) / getEnemyBaseHealth()
+        dt = (TotalEnemyBaseHealth - getEnemyHealth()) / TotalEnemyBaseHealth
         
         '''
         getEnemyBaseHealth()    getEnemyHealth()    dt
@@ -4141,7 +4163,7 @@ def QuestGames(Setting, role):
         
         '''
         
-        score = 0.05 + (dd * (damage_dealt / role.base_health) - dt * (damage_taken / getEnemyBaseHealth()) * 1.3)
+        score = 0.05 + (dd * (damage_dealt / role.base_health) - dt * (damage_taken / TotalEnemyBaseHealth) * 1.3)
         avg_score += score
 #        print(f"score = {score}, damage_dealt / role.base_health = {damage_dealt / role.base_health}, damage_dealt = {damage_dealt}")
 
