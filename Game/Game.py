@@ -1878,18 +1878,6 @@ def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset
     return textRect
     
 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
-#old_screen = screen
-#while True:
-#    pygame.event.pump()
-#    event = pygame.event.wait()
-#    if event.type == pygame.QUIT: pygame.display.quit()
-#    elif event.type == pygame.VIDEORESIZE:
-#        width, height = event.size
-#        if width < 400:
-#            width = 400
-#        if height < 300:
-#            height = 300
-#        screen = pygame.display.set_mode((width,height), pygame.RESIZABLE)
 def wait_til_enter():
     global X, Y, screen
     while True:
@@ -1909,15 +1897,6 @@ def wait_til_enter():
                 #                    screen.blit(old_screen, (0,0))
 #                pygame.display.update()
 
-#def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0):
-#    text = font.render(text, True, color, background_color)
-#    textRect = text.get_rect()
-#    textRect.center = (X // 2 + offset_x, loc_y)
-#    screen.blit(text, textRect)
-#    return textRect
-
-#def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = int(0.053*Y), height: float = 4,
-#               new_screen=True) -> None:
 def updateList(items: list, selectNumber: int, color: tuple = light_pink, inc: int = int(0.1*Y), height: float = 4,
                new_screen=True) -> None:
     global screen, old_screen, X, Y
@@ -1973,8 +1952,6 @@ def PlaceOption(optionNumber=None):
     pygame_print("Desert", int(0.413*Y), color=(orange if optionNumber == 4 else black))
     pygame.display.update()
 
-
-# Setting Types
 class Setting:
     def map(self):
         global font, white, black, X, Y, screen
@@ -2350,13 +2327,6 @@ def Stats(RoleHero):
                 if event.key == pygame.K_RETURN:
                     print("exiting menu")
                     return
-
-#        pygame.draw.rect(screen, white, (0.25*X, 0.55*Y, 0.5*X, 0.16*Y)) #left, top, width, height
-#        font = pygame.font.Font('freesansbold.ttf', int(0.029333333333333333*Y))
-#        pygame_print(cppStringConvert(role.name), loc_y = 0.2*Y, offset_x=-0.1875*X)
-#        font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
-#        pygame_print("Lv. = "+ str(role.currLevel), loc_y=0.233*Y, offset_x=-0.14375*X)
-#        font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
 
 
 # prints a long pygame message
@@ -3618,13 +3588,36 @@ def QuestGames(Setting, role):
                      offset_x=0.23375 * X)
         font = pygame.font.Font('freesansbold.ttf', int(0.02933 * Y))
 
+        # for i, (enemy_val, rect) in enumerate(zip(enemy, enemy_rect[NumberDefeated])):
+        #     if enemy_val.health > 0:
+        #         enemy_image = pygame.image.load(
+        #             f"Assets/{enemy_image_names[enemy_val.name]}" if not enemy_val.flipped else f"Assets/{enemy_image_names_flipped[enemy_val.name]}")
+        #         enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
+        #         screen.blit(enemy_image, rect.topleft)
+
         for i, (enemy_val, rect) in enumerate(zip(enemy, enemy_rect[NumberDefeated])):
             if enemy_val.health > 0:
-                enemy_image = pygame.image.load(
-                    f"Assets/{enemy_image_names[enemy_val.name]}" if not enemy_val.flipped else f"Assets/{enemy_image_names_flipped[enemy_val.name]}")
-                enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
+                # Render enemy sprite
+                enemy_name_str = cppStringConvert(enemy_val.name)
+                image_path = os.path.join(os.getcwd(), "Assets",
+                                          enemy_image_names_flipped[enemy_name_str] if enemy_val.flipped else
+                                          enemy_image_names[enemy_name_str])
+                enemy_image = pygame.image.load(image_path)
+                enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_height))
                 screen.blit(enemy_image, rect.topleft)
 
+                # Render individual enemy health bar
+                health_bar_width = buffer_width
+                health_bar_height = 5
+                health_bar_x = rect.x
+                health_bar_y = rect.y - health_bar_height - 5
+
+                # Background of health bar
+                pygame.draw.rect(screen, black, (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
+                # Health portion
+                health_percentage = enemy_val.health / enemy_val.base_health
+                pygame.draw.rect(screen, red,
+                                 (health_bar_x, health_bar_y, health_bar_width * health_percentage, health_bar_height))
         font = pygame.font.Font('freesansbold.ttf', int(0.04266 * Y))
         #TODO: Implement the individual enemy health bars!
         '''
