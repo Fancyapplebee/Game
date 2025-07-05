@@ -3375,60 +3375,33 @@ def QuestGames(Setting, role):
     buffer_width, buffer_height = int(.05*X), int(0.05334*Y)
     beam_height = buffer_height / 4
     beam_width = buffer_width / 2
+    '''
+    How `num_enemies` below is calculated:
+    
+        Quest Level : Range of Possible Enemies for each round
+        ------------------------------------------------------
+        0           : 1-3
+        1           : 2-4
+        2           : 3-5
+        3           : 4-6
+                    ...             
+    '''
     num_enemies = [1+role.questLevel+randint(0, 2) for i in range(NumRounds)] #number of enemies for each round
     enemies = []
-#   Quest Level : Range of Possible Enemies for each round
-#   ------------------------------------------------------
-#    0          : 1-3
-#    1          : 2-4
-#    2          : 3-5
-#    3          : 4-6
+
 
     '''
-    🤺            ⬬            ⬬                 👹
-    (100,600)   (300, 600)     (400, 600)         (660, 600)
+    Example Playing Field:
     
-                                              ⬬
-                                              (580, 670)
-    
-    Focus on beam closest to agent (in this case, the one at (400, 600))
-    
-    
+        🤺            ⬬            ⬬                 👹
+        (100,600)   (300, 600)     (400, 600)         (660, 600)
+        
+                                                  ⬬
+                                                  (580, 670)
+        
+    Heuristic of `DangerShot`: Focus on beam closest to agent within the line of fire (in the above case, the one at (400, 600))
     '''
-    '''
-    def update_enemy_lists_after_death(enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t,
-                                   enemy_rect, shotsEnemyFired, NumberDefeated, num_enemies):
-        alive_x = [i for i, enemy_ in enumerate(enemies[NumberDefeated]) if enemy_.health > 0] #stores indices of enemies from the current round `NumberDefeated` that are alive (from the list `enemies[NumberDefeated]`)
-        # Update the current round's enemy list to just keep the alive ones
-        enemies[NumberDefeated] = [enemies[NumberDefeated][i] for i in alive_x]
-        enemy = enemies[NumberDefeated]
-        num_enemies[NumberDefeated] = len(enemy)
-        
-        # Update position lists for current round
-        enemy_x[NumberDefeated] = [enemy_x[NumberDefeated][i] for i in alive_x]
-        enemy_y[NumberDefeated] = [enemy_y[NumberDefeated][i] for i in alive_x]
-        curr_enemy_y[NumberDefeated] = [curr_enemy_y[NumberDefeated][i] for i in alive_x]
-        
-        # Update jump time list for current round
-        enemy_jump_t[NumberDefeated] = [enemy_jump_t[NumberDefeated][i] for i in alive_x]
-        
-        # Update rectangle list for current round
-        enemy_rect[NumberDefeated] = [enemy_rect[NumberDefeated][i] for i in alive_x]
-        assert(len(enemy_rect[NumberDefeated]) == len(enemy))
-        # Update shots fired list for current round
-        # Only keep shots from enemies that are still alive
-        shotsEnemyFired[NumberDefeated] = [shotsEnemyFired[NumberDefeated][i] for i in alive_x]
-        
-#        del enemies[NumberDefeated][index]
-#        del enemy_x[NumberDefeated][index]
-#        del enemy_y[NumberDefeated][index]
-#        del curr_enemy_y[NumberDefeated][index]
-#        del enemy_jump_t[NumberDefeated][index]
-#        del enemy_rect[NumberDefeated][index]
-#        del shotsEnemyFired[NumberDefeated][index]
-        
-        return enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, num_enemies
-    '''
+
     def update_enemy_lists_after_death(enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t,
                                        enemy_rect, shotsEnemyFired, NumberDefeated, num_enemies):
         # Find indices of enemies that are still alive from the provided `enemy` list
@@ -3441,9 +3414,6 @@ def QuestGames(Setting, role):
         enemy_jump_t[NumberDefeated] = [enemy_jump_t[NumberDefeated][i] for i in alive_indices]
         enemy_rect[NumberDefeated] = [enemy_rect[NumberDefeated][i] for i in alive_indices]
         shotsEnemyFired[NumberDefeated] = [shotsEnemyFired[NumberDefeated][i] for i in alive_indices]
-#        if shotsEnemyFired and len(shotsEnemyFired) > NumberDefeated:
-#            shotsEnemyFired[NumberDefeated] = [shotsEnemyFired[NumberDefeated][i] for i in alive_indices]
-
         # Update the total number of enemies for the round
         enemy = enemies[NumberDefeated]
         num_enemies[NumberDefeated] = len(enemies[NumberDefeated])
@@ -3529,7 +3499,11 @@ def QuestGames(Setting, role):
     c = sqrt(2) is typical in literature, also 1 is common
 
     Q(s,a) <- max(Q(s,a), score)
-
+    
+    Example:
+         - First time vising (s, a): Q(s,a) = -oo, score(s, a) = 3 -> Q(s, a) = max(-oo, 3) = 3
+         - Second time vising (s, a): Q(s,a) = 3, score(s, a) = 5 -> Q(s, a) = max(3, 5) = 5
+         - Third time vising (s, a): Q(s,a) = 5, score(s, a) = 2 -> Q(s, a) = max(5, 2) = 5
     '''
     Qsa = {}
     Nsa = {}
@@ -3552,7 +3526,6 @@ def QuestGames(Setting, role):
             json.dump(Ns, outfile)
 
     c = sqrt(2)
-    #    State = namedtuple("State", "agent_x agent_y role_x role_y agent_health") #maybe include role_health as well?
     enemy_options = ("attack", "left", "right", "jump", "rest")
     max_score = -np.inf
     dd = 5
@@ -3653,7 +3626,9 @@ def QuestGames(Setting, role):
                 screen.blit(enemy_image, rect.topleft)
 
         font = pygame.font.Font('freesansbold.ttf', int(0.04266 * Y))
+        #TODO: Implement the individual enemy health bars!
         '''
+        
         # Enemy Health Bar
         #min(Y) = 170, min(X) = 485, max(Y) = 230, max(X) = 635
         for enemy_val in enemy:
@@ -3677,10 +3652,7 @@ def QuestGames(Setting, role):
         font = pygame.font.Font('freesansbold.ttf', int(0.04266*Y))
         '''
         
-#    print(f"zip(enemy_x, enemy_y) = {tuple(zip(enemy_x, enemy_y))}")
-
     role_rect = get_role_rect(pygame.Rect(start_x, start_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
-        
     enemy_rect = []
     
     for (x_val, y_val) in zip(enemy_x, enemy_y):
@@ -3689,31 +3661,20 @@ def QuestGames(Setting, role):
             enemy_round_i_rects.append(pygame.Rect(enemy_x_coord, enemy_y_coord, buffer_width, buffer_width))
         enemy_rect.append(enemy_round_i_rects)
     
-#    for enemy_rect_list in enemy_rect:
-#        for enemy_rect_val in enemy_rect_list:
-#            print(enemy_rect_val.x, enemy_rect_val.y, enemy_rect_val.width, enemy_rect_val.height)
-#        print("\n")
-    
     assert(all([len(enemy_rect[i]) == num_enemies[i] for i in range(NumRounds)]))
-
     renderRole()
     
     shotsFired = [] #role container for shots
     shotsEnemyFired = [[[] for i in range(j)] for j in num_enemies] #[] #enemy container for shots: consisting of `NumRounds` lists of lengths num_enemies[0], num_enemies[1], ..., num_enemies[NumRounds-1]
     
     K = 10  # Constant factor for gravity
-
     global badNPCs  # we're saying that we will be using the global variable badNPCs
-
-
     start_msg_time = time()
     start_msg_interval = 2  # At the beginning of each round, a message saying 'spawning new enemy' will appear for 2 seconds
 
-
-
     def generateMove(temp_state):
         '''
-        Generate a move that the agent should make based on the UCT   a:
+        Generate a move that the agent should make based on the UCT a:
             UCT = Q(s,a) + c*sqrt( ln(N(s)) / N(s,a) )
         
         Returns: index corresponding to element in enemy_options list that enemy should make
@@ -3753,16 +3714,13 @@ def QuestGames(Setting, role):
 
         return enemy_options.index(best_act)
 
-    #        return randint(0, 3)
-
     n_iter = 0
-
     max_score = -np.inf
     check_point_score = -np.inf
     score = 0
     avg_score = 0
     update_iter = 150
-    while True:  # pygame loop
+    while True:  # Main quest-loop
         if n_iter != 0 and n_iter % update_iter == 0:
             if check_point_score == max_score: #if no new max
                 score_ratio = avg_score/(update_iter*(max_score or max_score + np.finfo(float).eps))
@@ -3782,12 +3740,7 @@ def QuestGames(Setting, role):
 
         n_iter += 1
         last_role_health = role.health
-        last_agent_health = getEnemyHealth()  # enemy.health
-        #800*750*800*750*1000*2 = 7.2*10^14 possible states?
-        
-#        temp_state = f"agent_x = {enemy_x:0.0f}, agent_y = {curr_enemy_y:0.0f}, role_x = {start_x:0.0f}, role_y = {curr_y:0.0f}, agent_health = {last_agent_health / TotalEnemyBaseHealth:0.0f}, agent_flipped = {enemy.flipped}, shotsFired = {shotsFired}" #last_agent_health / TotalEnemyBaseHealth
-    
-#        DangerShotVal = [(abs(enemy_x[NumberDefeated][i] - start_x) if curr_y - beam_height <= enemy_y[NumberDefeated][i] <= curr_y + beam_height else max(X - enemy_x[NumberDefeated][i], enemy_x[NumberDefeated][i])) for i in range(num_enemies[NumberDefeated])]
+        last_agent_health = getEnemyHealth()
         DangerShotVal = []
         for i in range(len(enemy)):
             # Check if enemy is at same height as player (more dangerous)
@@ -3807,11 +3760,8 @@ def QuestGames(Setting, role):
                     danger_val = min(abs(enemy_x[NumberDefeated][i] - DangerShot.beam_x), danger_val)
 
             DangerShotVal.append(danger_val)
-        #print(f"DangerShotVal = {DangerShotVal}") #a list of num_enemies[NumberDefeated] integers
         assert(len(DangerShotVal) == num_enemies[NumberDefeated])
 
-
-        
         '''
         E.g. enemy_x = 450 -> DangerShotVal = max(800-450, 450) = max(350, 450) = 450
              enemy_x = 350 -> DangerShotVal = max(800-350, 350) = max(450, 350) = 450
@@ -3836,26 +3786,20 @@ def QuestGames(Setting, role):
                 DangerShots = [shot for shot in shotsFired if overlaps(shot.beam_y - beam_height, shot.beam_y + beam_height, enemy_val_y, enemy_val_y + buffer_width) and not shot.hit_target]
                 #TODO: Finish this
     temp_state = f"agent_x = {enemy_x[NumberDefeated]:0.0f}, agent_y = {curr_enemy_y[NumberDefeated][0]:0.0f}, role_x = {start_x:0.0f}, role_y = {curr_y:0.0f}, agent_health = {last_agent_health / TotalEnemyBaseHealth:0.2f}, agent_flipped = {enemy.flipped}, shotsFired = {DangerShotVal}"
-            '''
-
-#        temp_state = [int(i) for i in DangerShotVal]
-
+        '''
         enemyMoves = []
         for i in range(len(enemy)):
             # Create a state string that includes this enemy's danger value and position
-#            temp_state = f"enemy_{i}_danger_{int(DangerShotVal[i])}_pos_{int(enemy_x[NumberDefeated][i])}_{int(curr_enemy_y[NumberDefeated][i])}_player_{int(start_x)}_{int(curr_y)}_health_{int(enemy[i].health / enemy[i].base_health * 100)}"
             temp_state = f"{DangerShotVal[i]:.0f}"
             enemyMoves.append(generateMove(temp_state))
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.VIDEORESIZE:
-                #TODO: After multi-enemy works, come here
                 old_X, old_Y = X, Y
                 X, Y = screen.get_width(), screen.get_height()
                 X = 410 if X < 410 else X
                 buffer_width, buffer_height = int(.05*X), int(0.05334*Y)
                 beam_height = buffer_height / 4
                 beam_width = buffer_width / 2
-#                print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 screen.fill(white);
                 '''
@@ -3870,23 +3814,13 @@ def QuestGames(Setting, role):
                 start_x = (start_x * X_ratio)
                 start_y = (start_y * Y_ratio)
                 curr_y = (curr_y * Y_ratio)
-                #enemy_x = (enemy_x * X_ratio)
-                #enemy_y = (enemy_y * Y_ratio)
-                #curr_enemy_y = (curr_enemy_y * Y_ratio)
                 enemy_x = [[X_ratio*i for i in j] for j in enemy_x]
                 enemy_y = [[Y_ratio*i for i in j] for j in enemy_y]
                 curr_enemy_y = [[Y_ratio*i for i in j] for j in curr_enemy_y]
                 ground_y = (ground_y * Y_ratio)
                 shotsFired = [Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in shotsFired]
-                
-#                shotsEnemyFired = [Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in shotsEnemyFired]
                 shotsEnemyFired = [[[Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in i] for i in j] for j in shotsEnemyFired]
-
-                
-#                print(f"X = {old_X} -> X = {X}, Y = {old_Y} -> Y = {Y}, start_x = {start_x / X_ratio} -> start_x = {start_x}, curr_y = {curr_y / Y_ratio} -> curr_y = {curr_y}")
-                
                 role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
-#                enemy_rect = pygame.Rect(enemy_x, curr_enemy_y, buffer_width, buffer_width)
                 
                 enemy_rect = []
                 assert(len(enemy_x) == len(curr_enemy_y) and len(enemy_x) == NumRounds)
@@ -3896,7 +3830,6 @@ def QuestGames(Setting, role):
                     for (enemy_x_coord, enemy_y_coord) in zip(x_val, y_val): #for each enemy in the current round
                         enemy_round_i_rects.append(pygame.Rect(enemy_x_coord, enemy_y_coord, buffer_width, buffer_width))
                     enemy_rect.append(enemy_round_i_rects)
-                
                 
                 renderRole()
 
@@ -3928,10 +3861,10 @@ def QuestGames(Setting, role):
                             role.update_wait_time()
                         else:
                             role.numInv[role.InputMapDict[event.key]]["Number"] += 1
-        for i in range(len(enemy)):
-            enemyMove = enemyMoves[i]
+        for i in range(len(enemy)): #For each enemy in the current round
+            enemyMove = enemyMoves[i] #Get the index of the list `enemy_options` corresponding to the current enemy's move
 
-            if enemy_options[enemyMove] == "jump" and enemy_y[NumberDefeated][i] + int(0.2666 * Y) >= ground_y:
+            if enemy_options[enemyMove] == "jump" and enemy_y[NumberDefeated][i] + int(0.2666 * Y) >= ground_y: # Holding down jump makes it bigger
                 curr_enemy_y[NumberDefeated][i] -= 0.006666666666666667 * Y
                 enemy_y[NumberDefeated][i] = curr_enemy_y[NumberDefeated][i]
                 enemy_jump_t[NumberDefeated][i] = time()
@@ -3939,6 +3872,7 @@ def QuestGames(Setting, role):
             if enemy_options[enemyMove] == "attack" and enemy[i].can_attack():
                 beam_x = enemy_x[NumberDefeated][i] + (0 if not enemy[i].flipped else buffer_width)
                 beam_y = curr_enemy_y[NumberDefeated][i] + buffer_width / 2
+                # The arguments of Shot constructor below correspond to x-position of beam, y-position of beam, has it hit the target?, flipped?
                 shotsEnemyFired[NumberDefeated][i].append(Shot(beam_x, beam_y, False, enemy[i].flipped))
                 enemy[i].update_wait_time()
 
@@ -3953,31 +3887,25 @@ def QuestGames(Setting, role):
                 enemy[i].flipped = False
 
         keys = pygame.key.get_pressed()
-        '''
-        if enemy_options[enemyMove] == "jump" and enemy_y + int(0.2666*Y) >= ground_y:  # Holding down jump makes it bigger
-            curr_enemy_y -= 0.006666666666666667*Y
-            enemy_y = curr_enemy_y
-            enemy_jump_t = time()
-        if enemy_options[enemyMove] == "attack" and enemy.can_attack():
-            beam_x = enemy_x + (0 if not enemy.flipped else buffer_width)
-            beam_y = curr_enemy_y + buffer_width / 2
-            # Puts the coordinate of the shots fired on the screen
-            shotsEnemyFired.append(Shot(beam_x, beam_y, False,
-                                        enemy.flipped))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
-            enemy.update_wait_time()
-        '''
-        keys = pygame.key.get_pressed()
-        # -> means 0.01 s, the below example shows how our position changes ever 0.01 seconds when falling
-        '''
-        95 -> 95.004905 -> 95.01962 -> 95.044145 -> 95.07848 -> 95.122625 -> 95.17658 -> 95.240345 -> 95.31392 -> 95.397305 -> 95.4905 -> 95.593505 -> 95.70632 -> 95.828945 -> 95.96138 -> 96.103625 -> 96.25568 -> 96.417545 -> 96.58922 -> 96.770705 -> 96.962 -> 97.163105 -> 97.37402 -> 97.594745 -> 97.82528 -> 98.065625 -> 98.31578 -> 98.575745 -> 98.84552000000001 -> 99.125105 -> 99.4145 -> 99.713705 -> 100.02272 -> 100.34154500000001 -> 100.67018 -> 101.00862500000001 -> 101.35688 -> 101.714945 -> 102.08282000000001 -> 102.46050500000001 -> 102.84800000000001 -> 103.245305 -> 103.65242 -> 104.06934500000001 -> 104.49608 -> 104.93262500000002 -> 105.37898000000001 -> 105.83514500000001 -> 106.30112000000001 -> 106.77690500000001 -> 107.26250000000002 -> 107.75790500000001 -> 108.26312000000001 -> 108.77814500000001 -> 109.30298000000002 -> 109.83762500000002 -> 110.38208000000002 -> 110.93634500000002 -> 111.50042000000002 -> 112.07430500000002 -> 112.65800000000002 -> 113.25150500000002 -> 113.85482000000002 -> 114.46794500000001 -> 115.09088000000003 -> 115.72362500000003 -> 116.36618000000003 -> 117.01854500000003 -> 117.68072000000004 -> 118.35270500000003 -> 119.03450000000004 -> 119.72610500000003 -> 120.42752000000003 -> 121.13874500000003 -> 121.85978000000003 -> 122.59062500000003 -> 123.33128000000004 -> 124.08174500000004 -> 124.84202000000003 -> 125.61210500000004 -> 126.39200000000004 -> 127.18170500000005 -> 127.98122000000004 -> 128.79054500000004 -> 129.60968000000005 -> 130.43862500000006 -> 131.27738000000005 -> 132.12594500000006 -> 132.98432000000005 -> 133.85250500000006 -> 134.73050000000006 -> 135.61830500000005 -> 136.51592000000005 -> 137.42334500000007 -> 138.34058000000005 -> 139.26762500000007 -> 140.20448000000005 -> 141.15114500000007 -> 142.10762000000005 -> 143.07390500000008
 
-        orig_height = height = 95
-        s=lambda x: 5*9.81*x**2
-        count = 0
-        for i in range(1,101):
-            print(f"{height}", end = " -> ")
-            count += 0.01
-            height = s(count)+orig_height
+        '''
+        The `->` symbol in the example below means "0.01 seconds later". The below example shows how our position changes every 0.01 seconds when falling:
+        
+            ```
+            95 -> 95.004905 -> 95.01962 -> 95.044145 -> 95.07848 -> 95.122625 -> 95.17658 -> 95.240345 -> 95.31392 -> 95.397305 -> 95.4905 -> 95.593505 -> 95.70632 -> 95.828945 -> 95.96138 -> 96.103625 -> 96.25568 -> 96.417545 -> 96.58922 -> 96.770705 -> 96.962 -> 97.163105 -> 97.37402 -> 97.594745 -> 97.82528 -> 98.065625 -> 98.31578 -> 98.575745 -> 98.84552000000001 -> 99.125105 -> 99.4145 -> 99.713705 -> 100.02272 -> 100.34154500000001 -> 100.67018 -> 101.00862500000001 -> 101.35688 -> 101.714945 -> 102.08282000000001 -> 102.46050500000001 -> 102.84800000000001 -> 103.245305 -> 103.65242 -> 104.06934500000001 -> 104.49608 -> 104.93262500000002 -> 105.37898000000001 -> 105.83514500000001 -> 106.30112000000001 -> 106.77690500000001 -> 107.26250000000002 -> 107.75790500000001 -> 108.26312000000001 -> 108.77814500000001 -> 109.30298000000002 -> 109.83762500000002 -> 110.38208000000002 -> 110.93634500000002 -> 111.50042000000002 -> 112.07430500000002 -> 112.65800000000002 -> 113.25150500000002 -> 113.85482000000002 -> 114.46794500000001 -> 115.09088000000003 -> 115.72362500000003 -> 116.36618000000003 -> 117.01854500000003 -> 117.68072000000004 -> 118.35270500000003 -> 119.03450000000004 -> 119.72610500000003 -> 120.42752000000003 -> 121.13874500000003 -> 121.85978000000003 -> 122.59062500000003 -> 123.33128000000004 -> 124.08174500000004 -> 124.84202000000003 -> 125.61210500000004 -> 126.39200000000004 -> 127.18170500000005 -> 127.98122000000004 -> 128.79054500000004 -> 129.60968000000005 -> 130.43862500000006 -> 131.27738000000005 -> 132.12594500000006 -> 132.98432000000005 -> 133.85250500000006 -> 134.73050000000006 -> 135.61830500000005 -> 136.51592000000005 -> 137.42334500000007 -> 138.34058000000005 -> 139.26762500000007 -> 140.20448000000005 -> 141.15114500000007 -> 142.10762000000005 -> 143.07390500000008
+            ```
+            
+        Code to reproduce the above output:
+        
+            ```
+            orig_height = height = 95
+            s=lambda x: 5*9.81*x**2
+            count = 0
+            for i in range(1,101):
+                print(f"{height}", end = " -> ")
+                count += 0.01
+                height = s(count)+orig_height
+            ```
         '''
 
         if curr_y != ground_y:  # if the hero is in free-fall
@@ -3996,16 +3924,7 @@ def QuestGames(Setting, role):
             else:  # Here, they have landed
                 curr_y = ground_y
                 start_y = ground_y
-#        if curr_enemy_y != ground_y:
-#            fall_time = time() - enemy_jump_t
-#            s = ((K * 0.5 * 9.81 * fall_time * fall_time)/750)*Y
-#            position = enemy_y + s
-#            if position <= ground_y:
-#                curr_enemy_y = position
-#            else:
-#                curr_enemy_y = ground_y
-#                enemy_y = ground_y
-#        
+
         for i in range(len(enemy)):
             if curr_enemy_y[NumberDefeated][i] != ground_y:
                 fall_time = time() - enemy_jump_t[NumberDefeated][i]
@@ -4017,19 +3936,19 @@ def QuestGames(Setting, role):
                     curr_enemy_y[NumberDefeated][i] = ground_y
                     enemy_y[NumberDefeated][i] = ground_y
 
-        # If the role moves across the screen (left or right)
+        # If the role attempts to move (left, right, up)
         # ===================================================
-        if keys[pygame.K_RIGHT]:  # if right arrow was pressed, move right
+        if keys[pygame.K_RIGHT]:  # if right-arrow was pressed, move right
             if start_x < X - buffer_width:
                 start_x += role.speed * 20
             role.flipped = False
-        if keys[pygame.K_LEFT]:  # if left arrow was pressed, move left
+        if keys[pygame.K_LEFT]:  # if left-arrow was pressed, move left
             if start_x > 0:
                 start_x -= role.speed * 20
             role.flipped = True
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_UP]: # if up-arrow was pressed...
             if curr_y + int(0.2666*Y) >= ground_y:  # Check if they can keep going higher, curr_y must >= 400 atm (less than 200 elevation)
-                curr_y -= int(0.00666*Y)
+                curr_y -= int(0.00666*Y) # Increment the current height of the role
                 start_y = curr_y  # Set the start jumping position to the current position
                 role_jump_t = time()
 
@@ -4086,7 +4005,7 @@ def QuestGames(Setting, role):
                                     enemy = enemies[NumberDefeated]  # spawnBadNPC()
                                     number_defeated = 0
                                     numberToDefeat = len(enemy)
-                                    pygame_print(f"Spawning enemy #{NumberDefeated + 1}/{NumRounds}: {[i.name for i in enemy]}", loc_y=int(0.4*Y))
+                                    pygame_print(f"Round #{NumberDefeated + 1}/{NumRounds}: {', '.join([cppStringConvert(i.name).title() for i in enemy])}", loc_y=int(0.4*Y))
                                     start_msg_time = time()
                                 else:
                                     role.questLevel += 1
@@ -4129,7 +4048,7 @@ def QuestGames(Setting, role):
         if role.health <= 0:
             pygame_print("You died!", loc_y=int(0.4*Y))
         elif time() - start_msg_time < start_msg_interval and NumberDefeated < NumRounds:
-            pygame_print(f"Spawning enemy #{NumberDefeated + 1}/{NumRounds}: {[i.name for i in enemy]}", loc_y=int(0.4*Y))
+            pygame_print(f"Round #{NumberDefeated + 1}/{NumRounds}: {', '.join([cppStringConvert(i.name).title() for i in enemy])}", loc_y=int(0.4*Y))
 
         pygame.display.update()
 
