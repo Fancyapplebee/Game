@@ -63,6 +63,7 @@ def Defense(Def):
         - Assuming e.g. 10 instances per quest
 '''
 # Add a much more detailed README.md
+# Figure out how to compile cppyy code with optimizations (e.g. -O2)
 
 '''
 cS is NOT an input function!!!
@@ -1703,8 +1704,8 @@ class Elf(Role, IPBase):
         self.picture = "🧝"
         self.image_name = "elf-start.png"
         self.shot_speed = 10
-#        self.attackpower = 10 #TODO: Uncomment
-        self.attackpower = 1000 #TODO: Comment
+        self.attackpower = 10 #TODO: Uncomment
+#        self.attackpower = 1000 #TODO: Comment
         self.base_health = 50
         self.health = 50
         self.baseDefense = 200
@@ -1890,7 +1891,7 @@ def wait_til_enter():
                 #old_screen = screen
 #                screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 print(f"X, Y = {X}, {Y}")
                 return True #Resized
@@ -1972,7 +1973,7 @@ class Setting:
             for event in pygame.event.get():  # update the option number if necessary
                 if event.type == pygame.VIDEORESIZE:
                     X, Y = screen.get_width(), screen.get_height()
-                    X = 410 if X < 410 else X
+                    X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                     print(f"X, Y = {X}, {Y}")
                     screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                     screen.fill(white)
@@ -2049,7 +2050,7 @@ def search(setting, role):
             for event in pygame.event.get():  # update the option number if necessary
                 if event.type == pygame.VIDEORESIZE:
                     X, Y = screen.get_width(), screen.get_height()
-                    X = 410 if X < 410 else X
+                    X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                     print(f"X, Y = {X}, {Y}")
                     screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 elif event.type == pygame.KEYDOWN:  # checking if any key was selected
@@ -2088,7 +2089,7 @@ def search(setting, role):
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
@@ -2302,7 +2303,7 @@ def Stats(RoleHero):
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 screen.fill(white)
@@ -2467,7 +2468,7 @@ def Mine(role, setting):
                 if event.type == pygame.VIDEORESIZE:
                     temp_X, temp_Y = X, Y
                     X, Y = screen.get_width(), screen.get_height()
-                    X = 410 if X < 410 else X
+                    X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                     print(f"X, Y = {X}, {Y}")
                     screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                     screen.fill(white)
@@ -2576,7 +2577,7 @@ def Mine(role, setting):
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 screen.fill(white)
@@ -2628,7 +2629,7 @@ def printItem(role, item_name):
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 screen.fill(white)  # clear the screen
@@ -2723,7 +2724,7 @@ def tradeItem(role, item_name):
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
@@ -2850,7 +2851,7 @@ def EquipItemInterface(role, item_name):
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 image_width, image_height = int(0.8*X), int(0.55*Y)
                 image_left, image_top = int(0.1*X), int(0.15*Y)
                 print(f"X, Y = {X}, {Y}")
@@ -2955,7 +2956,7 @@ def TradeItemInventoryEquip(Role):
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
             elif event.type == pygame.KEYDOWN:
@@ -3016,7 +3017,7 @@ def sellItem(role, item_name):
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
@@ -3184,7 +3185,7 @@ def buyItem(role, item_name):
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
@@ -3260,7 +3261,7 @@ def print_no_items():
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 screen.fill(white)
@@ -3295,7 +3296,7 @@ def printInventory(role):
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
             elif event.type == pygame.KEYDOWN:  # checking if any key was selected
@@ -3545,48 +3546,49 @@ def QuestGames(Setting, role):
             displayImage("StartBeach.png", p=1, update=False)
         elif Setting == "HOUSE":
             displayImage("StartHouse.png", p=1, update=False)
-        pygame_print(f"Quest #{role.questLevel + 1}", loc_y=0.08 * Y)
-
-        # role Health Bar
-        pygame.draw.rect(screen, white, (0.1875 * X, 0.18266 * Y, 0.25 * X, 0.16 * Y))
-        font = pygame.font.Font('freesansbold.ttf', int(0.029333333333333333 * Y))
-        pygame_print(cppStringConvert(role.name), loc_y=0.2 * Y, offset_x=-0.1875 * X)
-        font = pygame.font.Font('freesansbold.ttf', int(0.02667 * Y))
-        pygame_print("Lv. = " + str(role.currLevel), loc_y=0.233 * Y, offset_x=-0.14375 * X)
-        font = pygame.font.Font('freesansbold.ttf', int(0.02933 * Y))
-        pygame.draw.rect(screen, black, (0.20625 * X, 0.26 * Y, 0.1875 * X, 0.02667 * Y))
-        pygame.draw.rect(screen, green,
-                         (0.20625 * X, 0.26 * Y, 0.1875 * X * role.health / role.base_health, 0.02667 * Y))
-        font = pygame.font.Font('freesansbold.ttf', int(0.02667 * Y))
-        pygame_print(f"{role.health:.0f} / {role.base_health:.0f}", loc_y=0.30667 * Y, offset_x=-0.15625 * X)
-        font = pygame.font.Font('freesansbold.ttf', int(0.02933 * Y))
-        pygame.draw.rect(screen, black, (0.20625 * X, 0.32266 * Y, 0.2125 * X, 0.01333 * Y))
-        pygame.draw.rect(screen, cyan,
-                         (0.20625 * X, 0.32266 * Y, 0.2125 * X * role.currExp / role.LevelExp, 0.01333 * Y))
+        pygame_print(f"Quest #{role.questLevel + 1}", loc_y=0.08 * Y, underline = True)
 
         # Render role sprite
         role_image = pygame.image.load(
             f"Assets/{role_image_name}" if not role.flipped else f"Assets/{role_image_name_flipped}")
-        role_image = pygame.transform.scale(role_image, (buffer_width, buffer_width))
+        role_image = pygame.transform.scale(role_image, (buffer_width, buffer_height))
         screen.blit(role_image, role_rect.topleft)
         get_role_rect(role_rect, role, buffer_width=int(.025 * X), buffer_height=int(.025 * X))
 
-        total_enemy_health = sum(e.health for e in enemy) #Health for current enemy
-        total_enemy_base_health = sum(e.base_health for e in enemy) #Base health for current enemy
-
-        pygame.draw.rect(screen, white, (0.58125 * X, 0.18667 * Y, 0.2375 * X, 0.16 * Y))
-
-        pygame_print(f"Enemies ({len(enemy)})", loc_y=0.22667 * Y, offset_x=0.1875 * X)
-        
-        pygame.draw.rect(screen, black, (0.60625 * X, 0.26 * Y, 0.1875 * X, 0.02667 * Y))
-        if total_enemy_base_health > 0:
-            pygame.draw.rect(screen, red,
-                             (0.60625 * X, 0.26 * Y, 0.1875 * X * total_enemy_health / total_enemy_base_health,
-                              0.02667 * Y))
-        font = pygame.font.Font('freesansbold.ttf', int(0.02667 * Y))
-        pygame_print(f"{total_enemy_health:.0f} / {total_enemy_base_health:.0f}", loc_y=0.306667 * Y,
-                     offset_x=0.23375 * X)
-        font = pygame.font.Font('freesansbold.ttf', int(0.02933 * Y))
+        # TODO: See if you can get the Role to have an individual floating health-bar like the enmies do right now stacked with the blue exp bar. If adding a Lv # doesn't seem to cluttered maybe add that as well.
+        # role Health Bar
+#        pygame.draw.rect(screen, white, (0.1875 * X, 0.18266 * Y, 0.25 * X, 0.16 * Y)) #entire role health bar box
+#        font = pygame.font.Font('freesansbold.ttf', int(0.029333333333333333 * Y))
+#        pygame_print(cppStringConvert(role.name), loc_y=0.2 * Y, offset_x=-0.1875 * X)
+#        font = pygame.font.Font('freesansbold.ttf', int(0.02667 * Y))
+#        pygame_print("Lv. = " + str(role.currLevel), loc_y=0.233 * Y, offset_x=-0.14375 * X)
+#        font = pygame.font.Font('freesansbold.ttf', int(0.02933 * Y))
+#        pygame.draw.rect(screen, black, (0.20625 * X, 0.26 * Y, 0.1875 * X, 0.02667 * Y)) #role health bar rectangle
+#        pygame.draw.rect(screen, green,
+#                         (0.20625 * X, 0.26 * Y, 0.1875 * X * role.health / role.base_health, 0.02667 * Y)) #health percentage (green) in role health bar rectangle
+#        font = pygame.font.Font('freesansbold.ttf', int(0.02667 * Y))
+#        pygame_print(f"{role.health:.0f} / {role.base_health:.0f}", loc_y=0.30667 * Y, offset_x=-0.15625 * X)
+#        font = pygame.font.Font('freesansbold.ttf', int(0.02933 * Y))
+#        pygame.draw.rect(screen, black, (0.20625 * X, 0.32266 * Y, 0.2125 * X, 0.01333 * Y)) #role exp rectangle
+#        pygame.draw.rect(screen, cyan,
+#                         (0.20625 * X, 0.32266 * Y, 0.2125 * X * role.currExp / role.LevelExp, 0.01333 * Y)) #exp percentage (cyan) in role exp rectangle
+#
+#        total_enemy_health = sum(e.health for e in enemy) #Health for current enemy
+#        total_enemy_base_health = sum(e.base_health for e in enemy) #Base health for current enemy
+#
+#        pygame.draw.rect(screen, white, (0.58125 * X, 0.18667 * Y, 0.2375 * X, 0.16 * Y))
+#
+#        pygame_print(f"Enemies ({len(enemy)})", loc_y=0.22667 * Y, offset_x=0.1875 * X)
+#        
+#        pygame.draw.rect(screen, black, (0.60625 * X, 0.26 * Y, 0.1875 * X, 0.02667 * Y))
+#        if total_enemy_base_health > 0:
+#            pygame.draw.rect(screen, red,
+#                             (0.60625 * X, 0.26 * Y, 0.1875 * X * total_enemy_health / total_enemy_base_health,
+#                              0.02667 * Y))
+#        font = pygame.font.Font('freesansbold.ttf', int(0.02667 * Y))
+#        pygame_print(f"{total_enemy_health:.0f} / {total_enemy_base_health:.0f}", loc_y=0.306667 * Y,
+#                     offset_x=0.23375 * X)
+#        font = pygame.font.Font('freesansbold.ttf', int(0.02933 * Y))
 
         # for i, (enemy_val, rect) in enumerate(zip(enemy, enemy_rect[NumberDefeated])):
         #     if enemy_val.health > 0:
@@ -3608,9 +3610,11 @@ def QuestGames(Setting, role):
 
                 # Render individual enemy health bar
                 health_bar_width = buffer_width
-                health_bar_height = 5
+                
+                temp_bar_val = int(0.00625*Y)
+                health_bar_height = temp_bar_val
                 health_bar_x = rect.x
-                health_bar_y = rect.y - health_bar_height - 5
+                health_bar_y = rect.y - health_bar_height - temp_bar_val
 
                 # Background of health bar
                 pygame.draw.rect(screen, black, (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
@@ -3619,31 +3623,6 @@ def QuestGames(Setting, role):
                 pygame.draw.rect(screen, red,
                                  (health_bar_x, health_bar_y, health_bar_width * health_percentage, health_bar_height))
         font = pygame.font.Font('freesansbold.ttf', int(0.04266 * Y))
-        #TODO: Implement the individual enemy health bars!
-        '''
-        
-        # Enemy Health Bar
-        #min(Y) = 170, min(X) = 485, max(Y) = 230, max(X) = 635
-        for enemy_val in enemy:
-            #Render each enemy!
-            #TODO: For next time finish this!
-            pygame.draw.rect(screen, white, (0.58125*X, 0.18667*Y, buffer_width, 0.25*buffer_width))
-        
-        pygame.draw.rect(screen, white, (0.58125*X, 0.18667*Y, 0.2375*X, 0.16*Y))
-
-        pygame_print(cppStringConvert(enemy.name), loc_y = 0.22667*Y, offset_x=0.1875*X)
-        pygame.draw.rect(screen, black, (0.60625*X, 0.26*Y, 0.1875*X, 0.02667*Y))
-        pygame.draw.rect(screen, red, (0.60625*X, 0.26*Y, 0.1875*X*enemy.health/enemy.base_health, 0.02667*Y)) #Health bar
-        font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
-        pygame_print(f"{enemy.health:.0f} / {enemy.base_health:.0f}", loc_y=0.306667*Y, offset_x=0.23375*X)
-        font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
-        
-        enemy_image = pygame.image.load(
-            f"Assets/{enemy_image_names[enemy.name]}" if not enemy.flipped else f"Assets/{enemy_image_names_flipped[enemy.name]}")
-        enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
-        screen.blit(enemy_image, enemy_rect.topleft)
-        font = pygame.font.Font('freesansbold.ttf', int(0.04266*Y))
-        '''
         
     role_rect = get_role_rect(pygame.Rect(start_x, start_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
     enemy_rect = []
@@ -3740,10 +3719,18 @@ def QuestGames(Setting, role):
             if curr_y - beam_height <= curr_enemy_y[NumberDefeated][i] <= curr_y + buffer_height:
                 danger_val = abs(enemy_x[NumberDefeated][i] - start_x)
             else:
+                '''
+                Some examples of what we are doing in the line below:
+                 - enemy_x[NumberDefeated][i] = 450 -> danger_val = max(800-450, 450) = max(350, 450) = 450
+                    * (0,0)     (350,0)       (800,0)  --> danger_val = 450
+                 - enemy_x[NumberDefeated][i] = 350 -> danger_val = max(800-350, 350) = max(450, 350) = 450
+                    * (0,0)         (450,0)   (800,0)  --> danger_val = 450
+                '''
                 danger_val = max(X - enemy_x[NumberDefeated][i], enemy_x[NumberDefeated][i])
 
             # Check for danger from player shots
             if len(shotsFired):
+                #Below, we check if the range (shot.beam_y - beam_height, shot.beam_y + beam_height) intersects with the range (curr_enemy_y[NumberDefeated][i], curr_enemy_y[NumberDefeated][i] + buffer_width)
                 DangerShots = [shot for shot in shotsFired if
                                overlaps(shot.beam_y - beam_height, shot.beam_y + beam_height,
                                         curr_enemy_y[NumberDefeated][i], curr_enemy_y[NumberDefeated][i] + buffer_width)
@@ -3754,32 +3741,6 @@ def QuestGames(Setting, role):
 
             DangerShotVal.append(danger_val)
         assert(len(DangerShotVal) == num_enemies[NumberDefeated])
-
-        '''
-        E.g. enemy_x = 450 -> DangerShotVal = max(800-450, 450) = max(350, 450) = 450
-             enemy_x = 350 -> DangerShotVal = max(800-350, 350) = max(450, 350) = 450
-
-        (0,0)     (350,0)       (800,0)  --> DangerShotVal = 450
-        (0,0)         (450,0)   (800,0)  --> DangerShotVal = 450
-        
-        if len(shotsFired):
-            
-            We want to check if the range (shot.beam_y - beam_height, shot.beam_y + beam_height) intersects with the range (enemy_y, enemy_y + buffer_width)
-            [620, 640], [600, 640]
-            
-            [420, 440], [500, 540]
-            
-            
-            DangerShots = [shot for shot in shotsFired if overlaps(shot.beam_y - beam_height, shot.beam_y + beam_height, enemy_y, enemy_y + buffer_width) and not shot.hit_target]
-            if len(DangerShots):
-                DangerShot = min(DangerShots, key = lambda shot: abs(enemy_x - shot.beam_x)) #The closest danger shot to the enemy (agent)
-                DangerShotVal = min(abs(enemy_x - DangerShot.beam_x), DangerShotVal)
-            
-            for enemy_val_y in enemy_y[NumberDefeated]:
-                DangerShots = [shot for shot in shotsFired if overlaps(shot.beam_y - beam_height, shot.beam_y + beam_height, enemy_val_y, enemy_val_y + buffer_width) and not shot.hit_target]
-                #TODO: Finish this
-    temp_state = f"agent_x = {enemy_x[NumberDefeated]:0.0f}, agent_y = {curr_enemy_y[NumberDefeated][0]:0.0f}, role_x = {start_x:0.0f}, role_y = {curr_y:0.0f}, agent_health = {last_agent_health / TotalEnemyBaseHealth:0.2f}, agent_flipped = {enemy.flipped}, shotsFired = {DangerShotVal}"
-        '''
         enemyMoves = []
         for i in range(len(enemy)):
             # Create a state string that includes this enemy's danger value and position
@@ -3789,7 +3750,8 @@ def QuestGames(Setting, role):
             if event.type == pygame.VIDEORESIZE:
                 old_X, old_Y = X, Y
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
+                
                 buffer_width, buffer_height = int(.05*X), int(0.05334*Y)
                 beam_height = buffer_height / 4
                 beam_width = buffer_width / 2
@@ -3799,7 +3761,6 @@ def QuestGames(Setting, role):
                 old_X          start_x
                 -----   =    -----------    ->  new_start_x * old_X = start_x * X   ->  new_start_x  =  (start_x * X) / old_X
                   X          new_start_x
-                
                 '''
                 X_ratio = X / old_X
                 Y_ratio = Y / old_Y
@@ -3940,10 +3901,17 @@ def QuestGames(Setting, role):
                 start_x -= role.speed * 20
             role.flipped = True
         if keys[pygame.K_UP]: # if up-arrow was pressed...
-            if curr_y + int(0.2666*Y) >= ground_y:  # Check if they can keep going higher, curr_y must >= 400 atm (less than 200 elevation)
+            if start_y + int(0.2666*Y) >= ground_y:  # Check if they can keep going higher, curr_y must >= 400 atm (less than 200 elevation)
                 curr_y -= int(0.00666*Y) # Increment the current height of the role
                 start_y = curr_y  # Set the start jumping position to the current position
                 role_jump_t = time()
+        
+        
+#            if enemy_options[enemyMove] == "jump" and enemy_y[NumberDefeated][i] + int(0.2666 * Y) >= ground_y: # Holding down jump makes it bigger
+#                curr_enemy_y[NumberDefeated][i] -= 0.006666666666666667 * Y
+#                enemy_y[NumberDefeated][i] = curr_enemy_y[NumberDefeated][i]
+#                enemy_jump_t[NumberDefeated][i] = time()
+        
 
         for i in range(len(enemy)):
             enemyMove = enemyMoves[i]
@@ -3989,7 +3957,7 @@ def QuestGames(Setting, role):
                             money += enemy[i].expYield*10
                             increaseExp(role, enemy[i].expYield)
                             number_defeated += 1 #Increasing the counter for enemies defeated in round `NumberDefeated`
-                            enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, num_enemies = update_enemy_lists_after_death(enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, NumberDefeated, num_enemies) #TODO: THIS IS DANGEROUS, enemy is updating here but we're still in the loop over range(len(enemy)) so there could definitely be a clash of indices between the old and new versions of `enemy`
+                            enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, num_enemies = update_enemy_lists_after_death(enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, NumberDefeated, num_enemies)
                             renderRole()
                             if number_defeated == numberToDefeat:
                                 NumberDefeated += 1 #Increasing the counter for the number of rounds completed by the role
@@ -4161,7 +4129,7 @@ def TradeOption(Role):
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
             elif event.type == pygame.KEYDOWN:
@@ -4239,7 +4207,7 @@ def SellOption(Role):
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
             elif event.type == pygame.KEYDOWN:
@@ -4328,7 +4296,7 @@ def BuyOption(Role):
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
             elif event.type == pygame.KEYDOWN:
@@ -4379,7 +4347,7 @@ def Shop(Role):
         for event in pygame.event.get():  # update the option number if necessary for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
             if event.type == pygame.KEYDOWN:  # checking if any key was selected
@@ -4434,7 +4402,7 @@ def DeleteInputMapKey(role):
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 screen.fill(white)  # clear the screen
@@ -4519,7 +4487,7 @@ def ViewInputMapKey(role):
             for event in pygame.event.get():
                 if event.type == pygame.VIDEORESIZE:
                     X, Y = screen.get_width(), screen.get_height()
-                    X = 410 if X < 410 else X
+                    X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                     print(f"X, Y = {X}, {Y}")
                     screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                     screen.fill(white)  # clear the screen
@@ -4553,7 +4521,7 @@ def ViewInputMapKey(role):
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 screen.fill(white)  # clear the screen
@@ -4618,7 +4586,7 @@ def AddInputMapKey(role):
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 screen.fill(white)
@@ -4667,7 +4635,7 @@ def AddInputMapKey(role):
         for event in pygame.event.get():  # update the option number if necessaryfor event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 screen.fill(white)  # clear the screen
@@ -4756,7 +4724,7 @@ def InputMap(role):
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 screen.fill(white)
@@ -4827,7 +4795,7 @@ def Menu(role, setting):
             for event in pygame.event.get():  # update the option number if necessary
                 if event.type == pygame.VIDEORESIZE:
                     X, Y = screen.get_width(), screen.get_height()
-                    X = 410 if X < 410 else X
+                    X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                     print(f"X, Y = {X}, {Y}")
                     screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                     screen.fill(white)
@@ -4883,7 +4851,7 @@ def Menu(role, setting):
             for event in pygame.event.get():  # update the option number if necessary
                 if event.type == pygame.VIDEORESIZE:
                     X, Y = screen.get_width(), screen.get_height()
-                    X = 410 if X < 410 else X
+                    X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                     print(f"X, Y = {X}, {Y}")
                     screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                     printMenuOptions(optionNumber)
@@ -4945,7 +4913,7 @@ def game():
             for event in pygame.event.get():  # Can only call pygame.event.get() once per iteration
                 if event.type == pygame.VIDEORESIZE:
                     X, Y = screen.get_width(), screen.get_height()
-                    X = 410 if X < 410 else X
+                    X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                     print(f"X, Y = {X}, {Y}")
                     screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                     if displayedHeroes and not dispayedChest:
