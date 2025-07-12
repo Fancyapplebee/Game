@@ -3554,6 +3554,15 @@ def QuestGames(Setting, role):
         role_image = pygame.transform.scale(role_image, (buffer_width, buffer_height))
         screen.blit(role_image, role_rect.topleft)
         get_role_rect(role_rect, role, buffer_width=int(.025 * X), buffer_height=int(.025 * X))
+        if role.health > 0:
+            health_bar_width = buffer_width
+            health_bar_height = 5
+            health_bar_x = role_rect.x
+            health_bar_y = role_rect.y - health_bar_height - 5
+            health_percentage = role.health / role.base_health
+            pygame.draw.rect(screen, black, (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
+            pygame.draw.rect(screen, green,
+                             (health_bar_x, health_bar_y, health_bar_width * health_percentage, health_bar_height))
 
         # TODO: See if you can get the Role to have an individual floating health-bar like the enmies do right now stacked with the blue exp bar. If adding a Lv # doesn't seem to cluttered maybe add that as well.
         # role Health Bar
