@@ -1812,7 +1812,19 @@ underlined_font.set_underline(True)
 #print(scaled_font_size)
 base_font_height = font.size("hi")[1]
 
-def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0, scale = True, thresh = 0.9, underline = False, letter_spacing = 0):
+#color_dict_list = [(first_num_characters, first_color), (next_num_characters, next_color), ..., (last_num_characters, last_color)]
+#text = "hello, how are you today?" #len(text) = 25
+#color_dict_list = [(5, black), (10, cyan), (10, blue)]
+##Inside the function
+#color_values = []
+#for color_pair in color_dict_list:
+#    color_values += [color_pair[1]]*color_pair[0]
+## Now, color_values is the same length as text
+##...
+#for (char, color_val) in zip(text, color_values):
+#    #...
+
+def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0, scale = True, thresh = 0.9, underline = False, letter_spacing = False, color_dict_list = []):
     global X, Y, font, font_size, base_screen_height, base_font_height, base_font_size, underlined_font
     font_size = base_font_size
     font = pygame.font.Font('freesansbold.ttf', font_size)
@@ -1831,21 +1843,27 @@ def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset
         underlined_font = pygame.font.Font('freesansbold.ttf', font_size)
         underlined_font.set_underline(True)
         if letter_spacing:
+            color_values = []
+            if color_dict_list:
+                for color_pair in color_dict_list:
+                    color_values += [color_pair[1]]*color_pair[0]
+            else:
+                color_values = [color]*len(text)
             # First get width of text
             text_width = 0
-            for char in text:
-                char_surface = underlined_font.render(char, True, color)
-                text_width += char_surface.get_width() + letter_spacing
+            for (char, color_val) in zip(text, color_values):
+                char_surface = underlined_font.render(char, True, color_val)
+                text_width += char_surface.get_width()
         
             loc_x = (X//2)+offset_x-(text_width//2)
-            for char in text:
-                char_surface = underlined_font.render(char, True, color)
+            for (char, color_val) in zip(text, color_values):
+                char_surface = underlined_font.render(char, True, color_val)
                 charRect = char_surface.get_rect()
                 #charRect.center = (loc_x, loc_y)
                 charRect.left = loc_x
                 charRect.centery = loc_y
                 screen.blit(char_surface, charRect)
-                loc_x += char_surface.get_width() + letter_spacing
+                loc_x += char_surface.get_width()
         else:
             text = underlined_font.render(text, True, color, background_color)
             textRect = text.get_rect()
@@ -1854,21 +1872,27 @@ def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset
     else:
         font = pygame.font.Font('freesansbold.ttf', font_size)
         if letter_spacing:
+            color_values = []
+            if color_dict_list:
+                for color_pair in color_dict_list:
+                    color_values += [color_pair[1]]*color_pair[0]
+            else:
+                color_values = [color]*len(text)
             # First get width of text
             text_width = 0
-            for char in text:
-                char_surface = font.render(char, True, color)
-                text_width += char_surface.get_width() + letter_spacing
+            for (char, color_val) in zip(text, color_values):
+                char_surface = font.render(char, True, color_val)
+                text_width += char_surface.get_width()
         
             loc_x = (X//2)+offset_x-(text_width//2)
-            for char in text:
-                char_surface = font.render(char, True, color)
+            for (char, color_val) in zip(text, color_values):
+                char_surface = font.render(char, True, color_val)
                 charRect = char_surface.get_rect()
 #                charRect.center = (loc_x, loc_y)
                 charRect.left = loc_x
                 charRect.centery = loc_y
                 screen.blit(char_surface, charRect)
-                loc_x += char_surface.get_width() + letter_spacing
+                loc_x += char_surface.get_width()
         else:
             text = font.render(text, True, color, background_color)
             textRect = text.get_rect()
@@ -2678,7 +2702,7 @@ def print_trade_requirements(role, item_name):
     pygame_print(f"Requirements to trade for '{item_name}'",offset_x=int(0.25*X), loc_y=int(start_y), thresh=0.45, underline=True)
     i = inc_y
     for item_and_quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded:
-        print(f"{item_and_quantity_needed.first}, {item_and_quantity_needed.second}, item_and_quantity_needed.first.size() = {item_and_quantity_needed.first.size()}") #item_and_quantity_needed.first not printing (empty atm)
+#        print(f"{item_and_quantity_needed.first}, {item_and_quantity_needed.second}, item_and_quantity_needed.first.size() = {item_and_quantity_needed.first.size()}") #item_and_quantity_needed.first not printing (empty atm)
         pygame_print(f"  - {item_and_quantity_needed.first}: {item_and_quantity_needed.second}", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45)
         i += inc_y
         
@@ -2687,7 +2711,13 @@ def print_trade_requirements(role, item_name):
     for item_and_quantity_needed in role.tradeDict[item_name].itemsAndQuantityNeeded:
         quantity_have = role.numInv[item_and_quantity_needed.first]["Number"] if role.numInv.find(item_and_quantity_needed.first) != role.numInv.end() else role.tradeDict[item_and_quantity_needed.first].number
 #        print(f"{item_and_quantity_needed.first}")
-        pygame_print(f"  - {item_and_quantity_needed.first}: {quantity_have}", offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45)
+        user_item_info_str = f"  - {item_and_quantity_needed.first}: {quantity_have}"
+        colon_idx = user_item_info_str.index(":")
+        num_black = colon_idx + 2
+        num_colored = len(user_item_info_str) - num_black
+        color_dict_list = [(num_black, black), (num_colored, (dark_green if quantity_have >= item_and_quantity_needed.second else red))]
+        
+        pygame_print(user_item_info_str, offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45, letter_spacing = True, color_dict_list = color_dict_list)
         i += inc_y
 
 def tradeItem(role, item_name):
@@ -2919,7 +2949,6 @@ def TradeItemInventoryEquip(Role):
     last_move_time = pygame.time.get_ticks()
     while True:
         screen.fill(white)  # clear the screen
-#        pygame_print(f"What would you like to equip or dequip?", (0.08*Y), color=black, background_color=white, letter_spacing=1.5)
         pygame_print(f"What would you like to equip or dequip?", (0.08*Y), color=black, background_color=white)
         pygame_print("=================================", (0.134*Y), color=black, background_color=white)
         text_y = (0.1867*Y)
@@ -3556,55 +3585,22 @@ def QuestGames(Setting, role):
         get_role_rect(role_rect, role, buffer_width=int(.025 * X), buffer_height=int(.025 * X))
         if role.health > 0:
             health_bar_width = buffer_width
-            health_bar_height = 5
+            health_bar_height = int(0.00825*Y)
             health_bar_x = role_rect.x
-            health_bar_y = role_rect.y - health_bar_height - 5
+            health_bar_y = role_rect.y - health_bar_height - health_bar_height
             health_percentage = role.health / role.base_health
             pygame.draw.rect(screen, black, (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
-            pygame.draw.rect(screen, green,
+            pygame.draw.rect(screen, dark_green,
                              (health_bar_x, health_bar_y, health_bar_width * health_percentage, health_bar_height))
-
-        # TODO: See if you can get the Role to have an individual floating health-bar like the enmies do right now stacked with the blue exp bar. If adding a Lv # doesn't seem to cluttered maybe add that as well.
-        # role Health Bar
-#        pygame.draw.rect(screen, white, (0.1875 * X, 0.18266 * Y, 0.25 * X, 0.16 * Y)) #entire role health bar box
-#        font = pygame.font.Font('freesansbold.ttf', int(0.029333333333333333 * Y))
-#        pygame_print(cppStringConvert(role.name), loc_y=0.2 * Y, offset_x=-0.1875 * X)
-#        font = pygame.font.Font('freesansbold.ttf', int(0.02667 * Y))
-#        pygame_print("Lv. = " + str(role.currLevel), loc_y=0.233 * Y, offset_x=-0.14375 * X)
-#        font = pygame.font.Font('freesansbold.ttf', int(0.02933 * Y))
-#        pygame.draw.rect(screen, black, (0.20625 * X, 0.26 * Y, 0.1875 * X, 0.02667 * Y)) #role health bar rectangle
-#        pygame.draw.rect(screen, green,
-#                         (0.20625 * X, 0.26 * Y, 0.1875 * X * role.health / role.base_health, 0.02667 * Y)) #health percentage (green) in role health bar rectangle
-#        font = pygame.font.Font('freesansbold.ttf', int(0.02667 * Y))
-#        pygame_print(f"{role.health:.0f} / {role.base_health:.0f}", loc_y=0.30667 * Y, offset_x=-0.15625 * X)
-#        font = pygame.font.Font('freesansbold.ttf', int(0.02933 * Y))
-#        pygame.draw.rect(screen, black, (0.20625 * X, 0.32266 * Y, 0.2125 * X, 0.01333 * Y)) #role exp rectangle
-#        pygame.draw.rect(screen, cyan,
-#                         (0.20625 * X, 0.32266 * Y, 0.2125 * X * role.currExp / role.LevelExp, 0.01333 * Y)) #exp percentage (cyan) in role exp rectangle
-#
-#        total_enemy_health = sum(e.health for e in enemy) #Health for current enemy
-#        total_enemy_base_health = sum(e.base_health for e in enemy) #Base health for current enemy
-#
-#        pygame.draw.rect(screen, white, (0.58125 * X, 0.18667 * Y, 0.2375 * X, 0.16 * Y))
-#
-#        pygame_print(f"Enemies ({len(enemy)})", loc_y=0.22667 * Y, offset_x=0.1875 * X)
-#        
-#        pygame.draw.rect(screen, black, (0.60625 * X, 0.26 * Y, 0.1875 * X, 0.02667 * Y))
-#        if total_enemy_base_health > 0:
-#            pygame.draw.rect(screen, red,
-#                             (0.60625 * X, 0.26 * Y, 0.1875 * X * total_enemy_health / total_enemy_base_health,
-#                              0.02667 * Y))
-#        font = pygame.font.Font('freesansbold.ttf', int(0.02667 * Y))
-#        pygame_print(f"{total_enemy_health:.0f} / {total_enemy_base_health:.0f}", loc_y=0.306667 * Y,
-#                     offset_x=0.23375 * X)
-#        font = pygame.font.Font('freesansbold.ttf', int(0.02933 * Y))
-
-        # for i, (enemy_val, rect) in enumerate(zip(enemy, enemy_rect[NumberDefeated])):
-        #     if enemy_val.health > 0:
-        #         enemy_image = pygame.image.load(
-        #             f"Assets/{enemy_image_names[enemy_val.name]}" if not enemy_val.flipped else f"Assets/{enemy_image_names_flipped[enemy_val.name]}")
-        #         enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_width))
-        #         screen.blit(enemy_image, rect.topleft)
+            
+            exp_bar_width = buffer_width
+            exp_bar_height = int(0.004875*Y)
+            exp_bar_x = health_bar_x
+            exp_bar_y = role_rect.y - 1.5*exp_bar_height #directly below health bar
+            exp_percentage = role.currExp / role.LevelExp
+            pygame.draw.rect(screen, black, (exp_bar_x, exp_bar_y, exp_bar_width, exp_bar_height))
+            pygame.draw.rect(screen, cyan,
+                             (exp_bar_x, exp_bar_y, exp_bar_width * exp_percentage, exp_bar_height))
 
         for i, (enemy_val, rect) in enumerate(zip(enemy, enemy_rect[NumberDefeated])):
             if enemy_val.health > 0:
