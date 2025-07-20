@@ -4892,6 +4892,89 @@ def Menu(role, setting):
                             InputMap(role)
                         return
 
+def save_game(role, filename="savegame.json"):
+    """Saves the game state to a JSON file."""
+    data_to_save = {
+        "name": role.name,
+        "type": role.__class__.__name__,
+        "health": role.health,
+        "base_health": role.base_health,
+        "attackpower": role.attackpower,
+        "defense": role.defense,
+        "baseDefense": role.baseDefense,
+        "speed": role.speed,
+        "attackStamina": role.attackStamina,
+        "defenseStamina": role.defenseStamina,
+        "money": role.money,
+        "questLevel": role.questLevel,
+        "currLevel": role.currLevel,
+        "currExp": role.currExp,
+        "LevelExp": role.LevelExp,
+        "searchTime": role.searchTime,
+        "inventory": {item: role.numInv[item]['Number'] for item in role.getInventoryKeys()},
+        "equipped_item": role.equipped_item,
+        "InputMapDict": {k: v for k, v in role.InputMapDict.items()},
+        "trade_items_unlocked": list(role.trade_items_unlocked)
+    }
+    with open(filename, 'w') as f:
+        json.dump(data_to_save, f, indent=4)
+    print(f"Game saved to {filename}")
+
+def load_game(filename="savegame.json"):
+    if not os.path.exists(filename):
+        print(f"Save file {filename} not found.")
+        return None
+    with open(filename, 'r') as f:
+        data = json.load(f)
+
+    hero_class_name = data.get("type")
+    if hero_class_name in globals():
+        hero_class = globals()[hero_class_name]
+        role = hero_class()
+    else:
+        print(f"Error: Class '{hero_class_name}' not found.")
+        return None
+
+    # Restore attributes
+    role.name = data.get("name", role.name)
+    role.health = data.get("health", role.health)
+    role.base_health = data.get("base_health", role.base_health)
+    role.attackpower = data.get("attackpower", role.attackpower)
+    role.defense = data.get("defense", role.defense)
+    role.baseDefense = data.get("baseDefense", role.baseDefense)
+    role.speed = data.get("speed", role.speed)
+    role.attackStamina = data.get("attackStamina", role.attackStamina)
+    role.defenseStamina = data.get("defenseStamina", role.defenseStamina)
+    role.money = data.get("money", role.money)
+    role.questLevel = data.get("questLevel", role.questLevel)
+    role.currLevel = data.get("currLevel", role.currLevel)
+    role.currExp = data.get("currExp", role.currExp)
+    role.LevelExp = data.get("LevelExp", role.LevelExp)
+    role.searchTime = data.get("searchTime", role.searchTime)
+    role.equipped_item = data.get("equipped_item", role.equipped_item)
+
+    # Restore inventory
+    inventory_data = data.get("inventory", {})
+    for item_name, quantity in inventory_data.items():
+        if item_name in role.numInv:
+            role.numInv[item_name]['Number'] = quantity
+
+    # Restore Input Map
+    input_map_data = data.get("InputMapDict", {})
+    role.InputMapDict.clear()
+    for key, value in input_map_data.items():
+        role.InputMapDict[int(key)] = value
+
+    # Restore unlocked trade items
+    trade_items_data = data.get("trade_items_unlocked", [])
+    role.trade_items_unlocked.clear()
+    for item in trade_items_data:
+        role.trade_items_unlocked.insert(item)
+
+
+    print(f"Game loaded from {filename}")
+    return role
+
 def game():
     global font, Quests, screen, old_screen, X, Y
     try:
