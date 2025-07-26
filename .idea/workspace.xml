@@ -4,8 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="Inviual enemy health bars">
+    <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="Add save and load game functionality with JSON support">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Game/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Game.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Game/savegame.json" beforeDir="false" afterPath="$PROJECT_DIR$/Game/savegame.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,7 +47,6 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="SIGN_OFF_COMMIT" value="true" />
     <option name="SWAP_SIDES_IN_COMPARE_BRANCHES" value="true" />
-    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -357,7 +358,9 @@
       <workItem from="1751689829418" duration="5994000" />
       <workItem from="1752296473242" duration="174000" />
       <workItem from="1752337357801" duration="2215000" />
-      <workItem from="1753036622545" duration="879000" />
+      <workItem from="1753036622545" duration="2611000" />
+      <workItem from="1753041857895" duration="1296000" />
+      <workItem from="1753545621861" duration="1493000" />
     </task>
     <task id="LOCAL-00001" summary="it works">
       <created>1657430290327</created>
@@ -470,14 +473,6 @@
       <option name="presentableId" value="LOCAL-00016" />
       <option name="project" value="LOCAL" />
       <updated>1687021377997</updated>
-    </task>
-    <task id="LOCAL-00054" summary="JSON&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
-      <option name="closed" value="true" />
-      <created>1711818528977</created>
-      <option name="number" value="00054" />
-      <option name="presentableId" value="LOCAL-00054" />
-      <option name="project" value="LOCAL" />
-      <updated>1711818528977</updated>
     </task>
     <task id="LOCAL-00055" summary="JSON+bar stylezation&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
       <option name="closed" value="true" />
@@ -735,7 +730,15 @@
       <option name="project" value="LOCAL" />
       <updated>1752339585198</updated>
     </task>
-    <option name="localTasksCounter" value="87" />
+    <task id="LOCAL-00087" summary="Add save and load game functionality with JSON support">
+      <option name="closed" value="true" />
+      <created>1753041608383</created>
+      <option name="number" value="00087" />
+      <option name="presentableId" value="LOCAL-00087" />
+      <option name="project" value="LOCAL" />
+      <updated>1753041608383</updated>
+    </task>
+    <option name="localTasksCounter" value="88" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -770,7 +773,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="Ammended JSON files&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <MESSAGE value="Updated game files//GAME&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <MESSAGE value="&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
     <MESSAGE value="New game file&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;" />
@@ -795,10 +797,11 @@
     <MESSAGE value="Add equipped item display in ZeldaImages" />
     <MESSAGE value="7/4/25" />
     <MESSAGE value="Inviual enemy health bars" />
-    <option name="LAST_COMMIT_MESSAGE" value="Inviual enemy health bars" />
+    <MESSAGE value="Add save and load game functionality with JSON support" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add save and load game functionality with JSON support" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Game$Game_.coverage" NAME="Game` Coverage Results" MODIFIED="1660411554438" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
-    <SUITE FILE_PATH="coverage/Game$Game.coverage" NAME="Game Coverage Results" MODIFIED="1752338978523" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
+    <SUITE FILE_PATH="coverage/Game$Game.coverage" NAME="Game Coverage Results" MODIFIED="1753547880632" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
   </component>
 </project>

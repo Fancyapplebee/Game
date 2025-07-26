@@ -4945,13 +4945,28 @@ def load_game(filename="savegame.json"):
             return None
 
     hero_class_name = data.get("type")
-    exec(f"globals()['hero_class_name_is_a_Role'] = isinstance({hero_class_name}(), Role)")
-    if globals()['hero_class_name_is_a_Role']:
-        hero_class = globals()[hero_class_name]
-        role = hero_class()
-    else:
-        print(f"Error: Class '{hero_class_name}' not a 'Role'.")
+    if not hero_class_name:
+        print("Error: Role type not found in save data.")
         return None
+
+    try:
+        # Dynamically get the class from globals
+        hero_class = globals().get(hero_class_name)
+        if hero_class and issubclass(hero_class, Role):
+            role = hero_class()
+        else:
+            print(f"Error: Invalid role type '{hero_class_name}' in save data.")
+            return None
+    except Exception as e:
+        print(f"Error instantiating role '{hero_class_name}': {e}")
+        return None
+    # exec(f"globals()['hero_class_name_is_a_Role'] = isinstance({hero_class_name}(), Role)")
+    # if globals()['hero_class_name_is_a_Role']:
+    #     hero_class = globals()[hero_class_name]
+    #     role = hero_class()
+    # else:
+    #     print(f"Error: Class '{hero_class_name}' not a 'Role'.")
+    #     return None
 
     # Restore attributes
     role.name = data.get("name", role.name)
@@ -5261,8 +5276,32 @@ def game():
         # TODO: Save Here
         save_game(RoleHero)
 
+# if __name__ == "__main__":
+#     game()
 if __name__ == "__main__":
-    game()
+    role = None
+    Place = None
+
+    # Check if a save file exists and attempt to load it
+    if os.path.exists("Game/savegame.json"):
+        print("Save file found. Attempting to load game...")
+        try:
+            role = load_game("Game/savegame.json")
+            if role:
+                # The global Place should be set by load_game
+                print("Load successful. Starting game.")
+                Menu(role, Place)
+            else:
+                # load_game returned None, indicating an issue
+                print("Failed to load game from save file. Starting a new game.")
+                game()
+        except Exception as e:
+            print(f"Error loading save file: {e}. Starting a new game.")
+            game()
+    else:
+        # No save file found, start a new game
+        print("No save file found. Starting a new game.")
+        game()
 
 
 #import pygame_menu
