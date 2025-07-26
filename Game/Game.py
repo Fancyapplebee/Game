@@ -12,7 +12,6 @@ from PIL import Image
 from copy import deepcopy
 
 Quests = False
-Shop = False
 # Roles
 heroes = ("PERCY JACKSON", "ELF", "ZELDA")
 goodNPCs = ("HEALER",)
@@ -1967,7 +1966,6 @@ def openChestOption(optionNumber=None):
     pygame_print("Yes", Y // 1.5 + int(0.11*Y), color=(orange if optionNumber == 0 else black))
     pygame_print("No", Y // 1.5 + int(0.22*Y), color=(orange if optionNumber == 1 else black))
     pygame.display.update()
-
 
 def PlaceOption(optionNumber=None):
     pygame_print("House", int(0.2*Y), color=(orange if optionNumber == 0 else black))
@@ -4842,7 +4840,7 @@ def Menu(role, setting):
                     
 
     # Will go on until user enters "Quests"
-    elif Quests == True or Shop == True:
+    elif Quests:
         '''
         Enter one of the following options
         ==================================
@@ -4894,45 +4892,65 @@ def Menu(role, setting):
 
 def save_game(role, filename="savegame.json"):
     """Saves the game state to a JSON file."""
-    data_to_save = {
-        "name": role.name,
-        "type": role.__class__.__name__,
-        "health": role.health,
-        "base_health": role.base_health,
-        "attackpower": role.attackpower,
-        "defense": role.defense,
-        "baseDefense": role.baseDefense,
-        "speed": role.speed,
-        "attackStamina": role.attackStamina,
-        "defenseStamina": role.defenseStamina,
-        "money": role.money,
-        "questLevel": role.questLevel,
-        "currLevel": role.currLevel,
-        "currExp": role.currExp,
-        "LevelExp": role.LevelExp,
-        "searchTime": role.searchTime,
-        "inventory": {item: role.numInv[item]['Number'] for item in role.getInventoryKeys()},
-        "equipped_item": role.equipped_item,
-        "InputMapDict": {k: v for k, v in role.InputMapDict.items()},
-        "trade_items_unlocked": list(role.trade_items_unlocked)
-    }
-    with open(filename, 'w') as f:
-        json.dump(data_to_save, f, indent=4)
-    print(f"Game saved to {filename}")
+    global Quests, Place
+    if isinstance(role, Role):
+        data_to_save = {
+            "name": role.name,
+            "type": role.__class__.__name__,
+            "health": role.health,
+            "base_health": role.base_health,
+            "attackpower": role.attackpower,
+            "defense": role.defense,
+            "baseDefense": role.baseDefense,
+            "speed": role.speed,
+            "attackStamina": role.attackStamina,
+            "defenseStamina": role.defenseStamina,
+            "money": role.money,
+            "questLevel": role.questLevel,
+            "currLevel": role.currLevel,
+            "currExp": role.currExp,
+            "LevelExp": role.LevelExp,
+            "searchTime": role.searchTime,
+            "inventory": {item: role.numInv[item]['Number'] for item in role.getInventoryKeys()},
+            "equipped_item": role.equipped_item,
+            "InputMapDict": {k: v for k, v in role.InputMapDict.items()},
+            "trade_items_unlocked": list(role.trade_items_unlocked),
+            "Quests": Quests,
+            "Place": Place
+        }
+        with open(filename, 'w') as f:
+            json.dump(data_to_save, f, indent=4)
+        print(f"Game saved to {filename}")
 
 def load_game(filename="savegame.json"):
+    global Quests, Place, white
     if not os.path.exists(filename):
         print(f"Save file {filename} not found.")
         return None
+    data = None
     with open(filename, 'r') as f:
-        data = json.load(f)
+        try:
+            data = json.load(f)
+        except json.decoder.JSONDecodeError:
+            screen.fill(white)
+            pygame_print(f"Error, {filename} invalid, starting new game.")
+            pygame.display.update()
+            wait_til_enter()
+            return None
+        except Exception as e:
+            screen.fill(white)
+            pygame_print(f"Error opening {filename}: {e}")
+            pygame.display.update()
+            wait_til_enter()
+            return None
 
     hero_class_name = data.get("type")
-    if hero_class_name in globals():
+    exec(f"globals()['hero_class_name_is_a_Role'] = isinstance({hero_class_name}(), Role)")
+    if globals()['hero_class_name_is_a_Role']:
         hero_class = globals()[hero_class_name]
         role = hero_class()
     else:
-        print(f"Error: Class '{hero_class_name}' not found.")
+        print(f"Error: Class '{hero_class_name}' not a 'Role'.")
         return None
 
     # Restore attributes
@@ -4952,7 +4970,16 @@ def load_game(filename="savegame.json"):
     role.LevelExp = data.get("LevelExp", role.LevelExp)
     role.searchTime = data.get("searchTime", role.searchTime)
     role.equipped_item = data.get("equipped_item", role.equipped_item)
-
+    Quests = data.get("Quests", False)
+    try:
+        Place = data["Place"]
+    except IndexError:
+        screen.fill(white)
+        pygame_print(f"Error: Place not found in {filename}")
+        pygame.display.update()
+        wait_til_enter()
+        return
+    
     # Restore inventory
     inventory_data = data.get("inventory", {})
     for item_name, quantity in inventory_data.items():
@@ -4975,9 +5002,53 @@ def load_game(filename="savegame.json"):
     print(f"Game loaded from {filename}")
     return role
 
+def start_game(optionNumber):
+    pygame_print("Continue Game", Y // 1.5 + int(0.11*Y), color=(orange if optionNumber == 0 else black))
+    pygame_print("New Game", Y // 1.5 + int(0.22*Y), color=(orange if optionNumber == 1 else black))
+    pygame.display.update()
+
 def game():
-    global font, Quests, screen, old_screen, X, Y
+    global font, Quests, screen, old_screen, X, Y, Place
     try:
+        optionNumber = 0
+        start_game(optionNumber)
+        breakFlag = False
+        while True:
+            
+            for event in pygame.event.get():  # Can only call pygame.event.get() once per iteration
+                if event.type == pygame.VIDEORESIZE:
+                    X, Y = screen.get_width(), screen.get_height()
+                    X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
+                    print(f"X, Y = {X}, {Y}")
+                    screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                    start_game(optionNumber)
+                    
+                if event.type == pygame.KEYDOWN:  # checking if any key was selected
+                    if event.key == pygame.K_DOWN:
+                        optionNumber = optionNumber + 1 if optionNumber != 1 else 0
+                        start_game(optionNumber)
+
+                    elif event.key == pygame.K_UP:
+                        optionNumber = optionNumber - 1 if optionNumber != 0 else 1
+                        start_game(optionNumber)
+
+                    elif event.key == pygame.K_RETURN:
+                        if optionNumber == 0:
+                            role = load_game()
+                            if role:
+                                Menu(role, Place)
+                            else:
+                                breakFlag = True
+                        else:
+                            breakFlag = True
+            if breakFlag:
+                break
+    
+    
+    
+    
+    
+    
         pygame.display.set_caption('Game Window')
         text = font.render('Welcome to the Game!', True, black, light_pink)
         textRect = text.get_rect()
@@ -5179,7 +5250,6 @@ def game():
 #                            pygame.event.clear(eventtype=pygame.KEYDOWN)  # Clear any keys that were pressed in this if-block
                 elif Quests:
                     while True:
-                        print("hello menu")
                         Menu(RoleHero, Place)
 
         # Animation
@@ -5189,9 +5259,10 @@ def game():
     except KeyboardInterrupt:
         print("\nBye")
         # TODO: Save Here
+        save_game(RoleHero)
 
-
-game()
+if __name__ == "__main__":
+    game()
 
 
 #import pygame_menu
