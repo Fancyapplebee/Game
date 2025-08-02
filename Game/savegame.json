@@ -1,5 +1,6 @@
 {
     "role_type": "PercyJackson",
+    "Place": "House",
     "name": "Percy",
     "attackpower": 55,
     "base_health": 120,
@@ -16,17 +17,17 @@
     "questLevel": 3,
     "searchTime": 1678886400.0,
     "numInv": {
-        "Health Potion": {
+        "Potion": {
             "Number": 5,
             "BuyValue": 50,
             "SellValue": 25,
-            "QuestLevel": 1
+            "Questlevel": 1
         },
-        "Rock": {
+        "Rocks": {
             "Number": 20,
             "BuyValue": 2,
             "SellValue": 1,
-            "QuestLevel": 0
+            "Questlevel": 0
         }
     },
     "stringInv": {
