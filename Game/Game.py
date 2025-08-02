@@ -4894,7 +4894,7 @@ def save_game(role, filename="savegame.json"):
         num_inv_py = {{x: dict(y) for x, y in role.numInv.items()}}
         trade_dict_py = {}
         for x, y in role.tradeDict.items():
-            items_needed = [[item.first, item.second] for item in v.itemsAndQuantityNeeded]
+            items_needed = [[item.first, item.second] for item in y.itemsAndQuantityNeeded]
             trade_dict_py[x] = {
                 "number": y.number,
                 "equipped": y.equipped(),
