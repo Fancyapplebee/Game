@@ -7,7 +7,6 @@
     <list default="true" id="14993945-a117-427f-ab80-4842b33cf211" name="Changes" comment="Add save and load game functionality with JSON support">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Game/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Game/Game.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Game/savegame.json" beforeDir="false" afterPath="$PROJECT_DIR$/Game/savegame.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -361,6 +360,8 @@
       <workItem from="1753036622545" duration="2611000" />
       <workItem from="1753041857895" duration="1296000" />
       <workItem from="1753545621861" duration="1493000" />
+      <workItem from="1753548810668" duration="146000" />
+      <workItem from="1754153694685" duration="295000" />
     </task>
     <task id="LOCAL-00001" summary="it works">
       <created>1657430290327</created>
@@ -473,14 +474,6 @@
       <option name="presentableId" value="LOCAL-00016" />
       <option name="project" value="LOCAL" />
       <updated>1687021377997</updated>
-    </task>
-    <task id="LOCAL-00055" summary="JSON+bar stylezation&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
-      <option name="closed" value="true" />
-      <created>1712421140444</created>
-      <option name="number" value="00055" />
-      <option name="presentableId" value="LOCAL-00055" />
-      <option name="project" value="LOCAL" />
-      <updated>1712421140444</updated>
     </task>
     <task id="LOCAL-00056" summary="JSON+bar stylezation&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
       <option name="closed" value="true" />
@@ -738,7 +731,15 @@
       <option name="project" value="LOCAL" />
       <updated>1753041608383</updated>
     </task>
-    <option name="localTasksCounter" value="88" />
+    <task id="LOCAL-00088" summary="Add save and load game functionality with JSON support">
+      <option name="closed" value="true" />
+      <created>1753548949495</created>
+      <option name="number" value="00088" />
+      <option name="presentableId" value="LOCAL-00088" />
+      <option name="project" value="LOCAL" />
+      <updated>1753548949495</updated>
+    </task>
+    <option name="localTasksCounter" value="89" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -799,6 +800,17 @@
     <MESSAGE value="Inviual enemy health bars" />
     <MESSAGE value="Add save and load game functionality with JSON support" />
     <option name="LAST_COMMIT_MESSAGE" value="Add save and load game functionality with JSON support" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Game/Game.py</url>
+          <line>4889</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Game$Game_.coverage" NAME="Game` Coverage Results" MODIFIED="1660411554438" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />

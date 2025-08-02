@@ -4891,6 +4891,17 @@ def save_game(role, filename="savegame.json"):
     """Saves the game state to a JSON file."""
     global Quests, Place
     if isinstance(role, Role):
+        num_inv_py = {{x: dict(y) for x, y in role.numInv.items()}}
+        trade_dict_py = {}
+        for x, y in role.tradeDict.items():
+            items_needed = [[item.first, item.second] for item in v.itemsAndQuantityNeeded]
+            trade_dict_py[x] = {
+                "number": y.number,
+                "equipped": y.equipped(),
+                "description": cppStringConvert(y.description),
+                "image_path": cppStringConvert(y.image_path),
+                "itemsAndQuantityNeeded": items_needed
+            }
         data_to_save = {
             "name": role.name,
             "type": role.__class__.__name__,
@@ -4913,7 +4924,9 @@ def save_game(role, filename="savegame.json"):
             "InputMapDict": {k: v for k, v in role.InputMapDict.items()},
             "trade_items_unlocked": list(role.trade_items_unlocked),
             "Quests": Quests,
-            "Place": Place
+            "Place": Place,
+            "numInv": num_inv_py,
+            "tradeDict": trade_dict_py
         }
         with open(filename, 'w') as f:
             json.dump(data_to_save, f, indent=4)
