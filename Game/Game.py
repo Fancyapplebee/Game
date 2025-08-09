@@ -12,6 +12,7 @@ from PIL import Image
 from copy import deepcopy
 
 Quests = False
+QUEST_ITEMS_VEC = None
 # Roles
 heroes = ("PERCY JACKSON", "ELF", "ZELDA")
 goodNPCs = ("HEALER",)
@@ -268,7 +269,7 @@ cppyy.cppdef(
         
         double AttackLevelFunc(int level)
         {
-            return 20*pow((1-0.05),level);
+            return 20*pow(0.95,level);
         }
         double HealthLevelFunc(int level)
         {
@@ -330,7 +331,9 @@ cppyy.cppdef(
     //The current has to be at least 'waitTime' further in the future than when the role last attacked 'moveTime'
     bool Role::can_attack()
     {
-        return ((!moved) || (time() - waitTime >= moveTime));
+        bool role_can_attack = ((!moved) || (time() - waitTime >= moveTime));
+        std::cout << "Role can attack = " << std::boolalpha << role_can_attack << '\n';
+        return role_can_attack;
     }
 
     //The current BadNPC has to be at least 'waitTime' further in the future than when the BadNPC last attacked 'moveTime'
@@ -3361,6 +3364,7 @@ def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red, screen
     NumRounds = 10
     role.health = role.base_health  # TODO: delete!
+    role.attackpower = 20 #TODO: delete!
     money = 0
     role_image_name = role.name.lower().replace(" jackson", "") + "-start.png" #TODO: Later the role image will have to be adjusted to load the specific image corresponding to the specific role and current item equipped
     role_image_name_flipped = role_image_name.replace(".png", "flip.png")
@@ -3616,9 +3620,9 @@ def QuestGames(Setting, role):
                 health_bar_x = rect.x
                 health_bar_y = rect.y - health_bar_height - temp_bar_val
 
-                # Background of health bar
+                # Background of health bar for enemies
                 pygame.draw.rect(screen, black, (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
-                # Health portion
+                # Health portion for enemies
                 health_percentage = enemy_val.health / enemy_val.base_health
                 pygame.draw.rect(screen, red,
                                  (health_bar_x, health_bar_y, health_bar_width * health_percentage, health_bar_height))
@@ -3692,6 +3696,9 @@ def QuestGames(Setting, role):
     score = 0
     avg_score = 0
     update_iter = 150
+    AvatarSpeedFactor = 1 #TODO: Change to 15 or something between 10 and 20
+    ShotSpeedFactor = 0.1 #TODO: Change to 1
+    
     while True:  # Main quest-loop
         if n_iter != 0 and n_iter % update_iter == 0:
             if check_point_score == max_score: #if no new max
@@ -3894,11 +3901,11 @@ def QuestGames(Setting, role):
         # ===================================================
         if keys[pygame.K_RIGHT]:  # if right-arrow was pressed, move right
             if start_x < X - buffer_width:
-                start_x += role.speed * 20
+                start_x += role.speed * AvatarSpeedFactor
             role.flipped = False
         if keys[pygame.K_LEFT]:  # if left-arrow was pressed, move left
             if start_x > 0:
-                start_x -= role.speed * 20
+                start_x -= role.speed * AvatarSpeedFactor
             role.flipped = True
         if keys[pygame.K_UP]: # if up-arrow was pressed...
             if start_y + int(0.2666*Y) >= ground_y:  # Check if they can keep going higher, curr_y must >= 400 atm (less than 200 elevation)
@@ -3917,11 +3924,11 @@ def QuestGames(Setting, role):
             enemyMove = enemyMoves[i]
             if enemy_options[enemyMove] == "right":
                 if enemy_x[NumberDefeated][i] < X - buffer_width:
-                    enemy_x[NumberDefeated][i] += enemy[i].speed * 10
+                    enemy_x[NumberDefeated][i] += enemy[i].speed * AvatarSpeedFactor
                 enemy[i].flipped = True
             if enemy_options[enemyMove] == "left":
                 if enemy_x[NumberDefeated][i] > 0:
-                    enemy_x[NumberDefeated][i] -= enemy[i].speed * 10
+                    enemy_x[NumberDefeated][i] -= enemy[i].speed * AvatarSpeedFactor
                 enemy[i].flipped = False
 
         role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
@@ -3941,7 +3948,7 @@ def QuestGames(Setting, role):
         assert(len(enemy) == len(enemy_rect[NumberDefeated]))
         
         for shot in shotsFired: #For each shot that the role fired
-            shot.beam_x = shot.beam_x + role.shot_speed if not shot.is_flipped else shot.beam_x - role.shot_speed #calculating the new x-coordinate for the current role-shot
+            shot.beam_x = shot.beam_x + role.shot_speed*ShotSpeedFactor if not shot.is_flipped else shot.beam_x - role.shot_speed*ShotSpeedFactor #calculating the new x-coordinate for the current role-shot
             beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width, beam_height) # recreate the rectangle object storing the current shot on the screen
             enemy_resized = True
             while enemy_resized:
@@ -3952,7 +3959,7 @@ def QuestGames(Setting, role):
                     if beam_rect.colliderect(
                             enemy_rect[NumberDefeated][i]) and not shot.hit_target:  # Enemy was hit and this is not a repeat of the same shot
                         role.attack(enemy[i], multiplier = 1 if not shot.is_special_shot else role.specialShotMultipliers[role.specialShotImage])
-                        pygame.draw.rect(screen, red, enemy_rect[NumberDefeated][i], 2)
+                        pygame.draw.rect(screen, red, enemy_rect[NumberDefeated][i], 2) # Drawing the red-swuare around the enemy to denote that the enemy was hit
                         if enemy[i].health == 0:
                             money += enemy[i].expYield*10
                             increaseExp(role, enemy[i].expYield)
@@ -3989,7 +3996,7 @@ def QuestGames(Setting, role):
         for i, shot_list in enumerate(shotsEnemyFired[min(NumberDefeated, NumRounds - 1)]): #looping over each enemy[i]'s shot_list in the current round `NumberDefeated`
             for shot in shot_list: #looping over each shot of enemy[i]'s shot_list
                 #print(f"shotsEnemyFired[NumberDefeated] = {shotsEnemyFired[NumberDefeated]}, shot = {shot}")
-                shot.beam_x = shot.beam_x - enemy[i].shot_speed if not shot.is_flipped else shot.beam_x + enemy[i].shot_speed
+                shot.beam_x = shot.beam_x - enemy[i].shot_speed*ShotSpeedFactor if not shot.is_flipped else shot.beam_x + enemy[i].shot_speed*ShotSpeedFactor
                 beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width, beam_height)  # beam object
                 if beam_rect.colliderect(
                         role_rect) and not shot.hit_target:  # Role was hit and this is not a repeat of the same shot
@@ -4383,10 +4390,10 @@ def DeleteInputMapKey(role):
     maxItems = 3
 
     # Convert dict keys to a list for stable ordering and indexing
-    input_map_keys = list(role.InputMapDict.keys())
+    role.InputMapDictKeys = list(role.InputMapDict.keys())
 
     startIdx = 0
-    endIdx = min(len(input_map_keys), maxItems)
+    endIdx = min(len(role.InputMapDictKeys), maxItems)
 
     clock = pygame.time.Clock()
     move_delay = 200
@@ -4400,8 +4407,8 @@ def DeleteInputMapKey(role):
 
         # Display current page of items
         for i in range(startIdx, endIdx):
-            key_name = pygame.key.name(input_map_keys[i]).upper()
-            value_name = role.InputMapDict[input_map_keys[i]]
+            key_name = pygame.key.name(role.InputMapDictKeys[i]).upper()
+            value_name = role.InputMapDict[role.InputMapDictKeys[i]]
             display_text = f"{key_name} -> {value_name}"
             display_color = orange if i == optionNumber else black
             pygame_print(display_text, text_y + (i - startIdx) * (0.0533*Y), color=display_color, background_color=white)
@@ -4414,7 +4421,7 @@ def DeleteInputMapKey(role):
 
         if keys[pygame.K_DOWN] and current_time - last_move_time > move_delay:
             last_move_time = current_time
-            if optionNumber < len(input_map_keys) - 1:
+            if optionNumber < len(role.InputMapDictKeys) - 1:
                 optionNumber += 1
                 if optionNumber >= endIdx:
                     startIdx += 1
@@ -4437,17 +4444,17 @@ def DeleteInputMapKey(role):
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    if not input_map_keys:
+                    if not role.InputMapDictKeys:
                         return
 
 
-                    key_to_del = input_map_keys[optionNumber]
+                    key_to_del = role.InputMapDictKeys[optionNumber]
                     del role.InputMapDict[key_to_del]
 
                     # Resync after deletion
-                    input_map_keys = list(role.InputMapDict.keys())
+                    role.InputMapDictKeys = list(role.InputMapDict.keys())
 
-                    if not input_map_keys:
+                    if not role.InputMapDictKeys:
                         # No items left, exit the screen
                         screen.fill(white)
                         pygame_print("No keys have been mapped yet!", Y // 2, color=black, background_color=white)
@@ -4456,11 +4463,11 @@ def DeleteInputMapKey(role):
                         return
 
                     # Adjust optionNumber to be within the new valid range
-                    optionNumber = min(optionNumber, len(input_map_keys) - 1)
+                    optionNumber = min(optionNumber, len(role.InputMapDictKeys) - 1)
 
 
-                    startIdx = max(0, min(optionNumber - maxItems + 1, len(input_map_keys) - maxItems))
-                    endIdx = min(len(input_map_keys), startIdx + maxItems)
+                    startIdx = max(0, min(optionNumber - maxItems + 1, len(role.InputMapDictKeys) - maxItems))
+                    endIdx = min(len(role.InputMapDictKeys), startIdx + maxItems)
 
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(pygame.mouse.get_pos()):
                 return
@@ -4594,6 +4601,10 @@ def ViewInputMapKey(role):
 
     optionNumber = 0
     maxItems = 3
+    
+    # Convert dict keys to a list for stable ordering and indexing
+    role.InputMapDictKeys = list(role.InputMapDict.keys())
+    
     startIdx = 0
     endIdx = min(len(role.InputMapDict), maxItems)
 
@@ -4605,8 +4616,9 @@ def ViewInputMapKey(role):
     pygame_print("===============================", (0.1334*Y), color=black, background_color=white)
     text_y = (0.1867*Y)
     for i in range(startIdx, endIdx):
-        #TODO: Investigate error `IndexError: list index out of range` caused probably by lengths of `role.InputMapDict` and `role.InputMapDictKeys` being inconsistent presumably as a consequence of something happening while loading the game
-        pygame_print(f"{pygame.key.name(role.InputMapDictKeys[i])}: {role.InputMapDict[role.InputMapDictKeys[i]]}", text_y, color=(orange if optionNumber == i else black), background_color=white)
+        key_name = pygame.key.name(role.InputMapDictKeys[i]).upper()
+        value_name = role.InputMapDict[role.InputMapDictKeys[i]]
+        pygame_print(f"{key_name} -> {value_name}", text_y, color=(orange if optionNumber == i else black), background_color=white)
         text_y += 0.05334*Y
 
     stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 0.10667*Y, background_color=red)
@@ -4626,7 +4638,9 @@ def ViewInputMapKey(role):
                 pygame_print("===============================", (0.1334*Y), color=black, background_color=white)
                 text_y = (0.1867*Y)
                 for i in range(startIdx, endIdx):
-                    pygame_print(f"{pygame.key.name(role.InputMapDictKeys[i])}: {role.InputMapDict[role.InputMapDictKeys[i]]}", text_y, color=(orange if optionNumber == i else black), background_color=white)
+                    key_name = pygame.key.name(role.InputMapDictKeys[i]).upper()
+                    value_name = role.InputMapDict[role.InputMapDictKeys[i]]
+                    pygame_print(f"{key_name} -> {value_name}", text_y, color=(orange if optionNumber == i else black), background_color=white)
                     text_y += 0.05334*Y
                 stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 0.10667*Y, background_color=red)
                 pygame.display.update()
@@ -4654,7 +4668,9 @@ def ViewInputMapKey(role):
                 pygame_print("===============================", (0.1334*Y), color=black, background_color=white)
                 text_y = (0.1867*Y)
                 for i in range(startIdx, endIdx):
-                    pygame_print(f"{pygame.key.name(role.InputMapDictKeys[i])}: {role.InputMapDict[role.InputMapDictKeys[i]]}", text_y, color=(orange if optionNumber == i else black), background_color=white)
+                    key_name = pygame.key.name(role.InputMapDictKeys[i]).upper()
+                    value_name = role.InputMapDict[role.InputMapDictKeys[i]]
+                    pygame_print(f"{key_name} -> {value_name}", text_y, color=(orange if optionNumber == i else black), background_color=white)
                     text_y += 0.05334*Y
                 stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 0.10667*Y, background_color=red)
                 pygame.display.update()
@@ -4708,12 +4724,10 @@ def AddInputMapKey(role):
                 return
         if breakFlag:
             break
-    if QUEST_ITEMS_VEC is None:
+    if QUEST_ITEMS_VEC is None: #Only set it if it hasn't been set yet
         QUEST_ITEMS_VEC = role.QuestItemsVec()
     questItems = QUEST_ITEMS_VEC
                 
-#    questItems = role.QuestItemsVec() #TODO: make this a constant vector instead of recomputing every time since `stringInv` appears to not change...?
-    
     optionNumber = 0
     maxItems = 3
     startIdx = 0
@@ -4992,7 +5006,10 @@ def save_game(role, filename="savegame.json"):
     """Saves the game state to a JSON file."""
     global Quests, Place
     if isinstance(role, Role):
-        num_inv_py = {{x: dict(y) for x, y in role.numInv.items()}} #TODO: Fix because role.numInv is a cpp unordered_map and doesn't have an `items` method
+        num_inv_py = {key_val_pair.first: key_val_pair.second for key_val_pair in role.numInv}
+        print(f"num_inv_py = {num_inv_py}")
+        #TODO: Correctly convert num_inv_py to python dict!!!
+        exit()
         trade_dict_py = {}
         for x, y in role.tradeDict.items():
             items_needed = [[item.first, item.second] for item in y.itemsAndQuantityNeeded]
