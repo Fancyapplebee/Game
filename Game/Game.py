@@ -4509,6 +4509,7 @@ def ViewInputMapKey(role):
     pygame_print("===============================", (0.1334*Y), color=black, background_color=white)
     text_y = (0.1867*Y)
     for i in range(startIdx, endIdx):
+        #TODO: Investigate error `IndexError: list index out of range` caused probably by lengths of `role.InputMapDict` and `role.InputMapDictKeys` being inconsistent presumably as a consequence of something happening while loading the game
         pygame_print(f"{pygame.key.name(role.InputMapDictKeys[i])}: {role.InputMapDict[role.InputMapDictKeys[i]]}", text_y, color=(orange if optionNumber == i else black), background_color=white)
         text_y += 0.05334*Y
 
@@ -4612,7 +4613,7 @@ def AddInputMapKey(role):
         if breakFlag:
             break
                 
-    questItems = role.QuestItemsVec()
+    questItems = role.QuestItemsVec() #TODO: make this a constant vector instead of recomputing every time since `stringInv` appears to not change...?
     
     optionNumber = 0
     maxItems = 3
@@ -4683,6 +4684,7 @@ def AddInputMapKey(role):
                     endIdx = startIdx + min(questItems.size(), maxItems)
                     
                 elif event.key == pygame.K_RETURN:
+                    #Below: mapping the key the user hit from the keyboard to the item that the user selected to map that key to
                     role.InputMapDict[key] = cppStringConvert(questItems[optionNumber])
 #                    print(f"Key Value Pair: key = {chr(key)}, value = {role.InputMapDict[key]}"
                     if key not in role.InputMapDictKeys:
@@ -4891,7 +4893,7 @@ def save_game(role, filename="savegame.json"):
     """Saves the game state to a JSON file."""
     global Quests, Place
     if isinstance(role, Role):
-        num_inv_py = {{x: dict(y) for x, y in role.numInv.items()}}
+        num_inv_py = {{x: dict(y) for x, y in role.numInv.items()}} #TODO: Fix because role.numInv is a cpp unordered_map and doesn't have an `items` method
         trade_dict_py = {}
         for x, y in role.tradeDict.items():
             items_needed = [[item.first, item.second] for item in y.itemsAndQuantityNeeded]
@@ -4941,6 +4943,7 @@ def load_game(filename="savegame.json"):
     with open(filename, 'r') as f:
         try:
             data = json.load(f)
+            print("Data loaded successfully 🎉")
         except json.decoder.JSONDecodeError:
             screen.fill(white)
             pygame_print(f"Error, {filename} invalid, starting new game.")
@@ -4958,13 +4961,16 @@ def load_game(filename="savegame.json"):
     if not hero_class_name:
         print("Error: Role type not found in save data.")
         return None
-
+    else:
+        print(f"Role type {hero_class_name} found 🎉")
+    
     try:
         # Dynamically get the class from globals
         hero_class = globals().get(hero_class_name)
         if hero_class and issubclass(hero_class, Role):
             assert(isinstance(hero_class_name, str))
             role = hero_class(hero_class_name) #This calls the derived `Role`-type constructor that in turn calls the `Role` class constructor.
+            print(f"Role type {hero_class_name} successfully loaded 🎉")
         else:
             print(f"Error: Invalid role type '{hero_class_name}' in save data.")
             return None
@@ -4996,10 +5002,16 @@ def load_game(filename="savegame.json"):
     role.LevelExp = data.get("LevelExp", role.LevelExp)
     role.searchTime = data.get("searchTime", role.searchTime)
     role.equipped_item = data.get("equipped_item", role.equipped_item)
+    print("Role\n====")
+    for attribute, value in role.__dict__.items():
+        print(f"role {attribute} = {value}")
+    print("====")
     Quests = data.get("Quests", False)
+    print(f"Quests = {Quests}")
     try:
         Place = data["Place"]
         Place = globals().get(Place)()
+        print(f"Place successfully initialized with {data['Place']} 🎉")
     except IndexError:
         screen.fill(white)
         pygame_print(f"Error: Place not found in {filename}")
@@ -5020,26 +5032,31 @@ def load_game(filename="savegame.json"):
     input_map_data = data.get("InputMapDict", {})
     role.InputMapDict.clear()
     for key, value in input_map_data.items():
-        role.InputMapDict[int(key)] = value
+        try:
+            role.InputMapDict[int(key)] = value
+            print(f"Loaded the `InputMapDict` key-value pair `{key}: {value}` 🎉")
+        except ValueError:
+            print(f"Error, invalid key in `InputMapDict`: {key}.\nContinuing...")
 
     #Now to get numInv from the `filename` .json file
     #std::unordered_map<std::string, std::unordered_map<std::string,double>>
     numInvTemp = data.get("numInv", None)
     if numInvTemp:
+        print("numInv found in data 🎉")
         try: #we'll try to iterate over `numInvTemp`
             for role_item in numInvTemp:
                 #Check if `role_item` is in `role.numInv`
                 if role_item in role.numInv:
-                    print(f"{role_item} found in `role.numInv` 🎉")
+                    print(f"\t{role_item} found in `role.numInv` 🎉")
                     for role_item_attr in numInvTemp[role_item]:
                         #Check if the key is in role.numInv
                         if role_item_attr in role.numInv[role_item]:
-                            print(f"{role_item_attr} found in `role.numInv[{role_item}]` 🎉")
+                            print(f"\t\t{role_item_attr} found in `role.numInv[{role_item}]` 🎉")
                             role.numInv[role_item][role_item_attr] = numInvTemp[role_item][role_item_attr]
                         else:
-                            print(f"{role_item_attr} not found in `role.numInv[{role_item}]` ❌")
+                            print(f"\t\t{role_item_attr} not found in `role.numInv[{role_item}]` ❌")
                 else:
-                    print(f"{role_item} not found in `role.numInv` ❌")
+                    print(f"\t{role_item} not found in `role.numInv` ❌")
                             
                     
         except Exception as e:
@@ -5061,12 +5078,14 @@ def start_game(optionNumber):
     pygame_print("New Game", Y // 1.5 + int(0.22*Y), color=(orange if optionNumber == 1 else black))
     pygame.display.update()
 
-def game():
+def game(filename = 'savegame.json'):
     global font, Quests, screen, old_screen, X, Y, Place
     try:
         optionNumber = 0
         start_game(optionNumber)
         breakFlag = False
+        gameLoaded = False
+        RoleHero = None
         while True:
             
             for event in pygame.event.get():  # Can only call pygame.event.get() once per iteration
@@ -5087,16 +5106,24 @@ def game():
                         start_game(optionNumber)
 
                     elif event.key == pygame.K_RETURN:
-                        if optionNumber == 0:
-                            role = load_game()
-                            if role:
-                                Menu(role, Place)
+                        if optionNumber == 0: #"Continue Game"
+                            if not gameLoaded:
+                                RoleHero = load_game(filename) #Try to load the game
+                            if RoleHero: #if successfully loaded the game
+                                gameLoaded = True #So the game has been successfully loaded
                             else:
-                                breakFlag = True
-                        else:
-                            breakFlag = True
+                                gameLoaded = False #game loading failed
+                        breakFlag = True
             if breakFlag:
                 break
+
+        if optionNumber == 0 and gameLoaded: #If the user wants to continue the game and the game was successfully loaded
+            Menu(RoleHero, Place)
+            if not Quests:
+                Quests = True
+            while True:
+                Menu(RoleHero, Place) #TODO: Maybe add a `isFinished` variable so we can maybe break and then the user can finish the game without being welcomed to the game again down below erroneously.
+
 
         pygame.display.set_caption('Game Window')
         text = font.render('Welcome to the Game!', True, black, light_pink)
@@ -5315,23 +5342,29 @@ def game():
 if __name__ == "__main__":
     role = None
     Place = None
+    filename = 'savegame.json' #TODO: Maybe get the file name from the user from pygame window (not the terminal)?
+    game(filename = filename)
 
     # Check if a save file exists and attempt to load it
-    if os.path.exists("savegame.json"):
-        print("Save file found. Attempting to load game...")
-        role = load_game("savegame.json")
-        if role:
-            # The global Place should be set by load_game
-            print("Load successful. Starting game.")
-            Menu(role, Place)
-        else:
-            # load_game returned None, indicating an issue
-            print("Failed to load game from save file. Starting a new game.")
-            game()
-    else:
-        # No save file found, start a new game
-        print("No save file found. Starting a new game.")
-        game()
+#    if os.path.exists("savegame.json"):
+#        print("Save file found. Attempting to load game...")
+#        role = load_game("savegame.json")
+#        if role:
+#            # The global Place should be set by load_game
+#            print("Load successful. Starting game.")
+#            Menu(role, Place)
+#            if not Quests:
+#                Quests = True
+#                while True:
+#                    Menu(role, Place)
+#        else:
+#            # load_game returned None, indicating an issue
+#            print("Failed to load game from save file. Starting a new game.")
+#            game()
+#    else:
+#        # No save file found, start a new game
+#        print("No save file found. Starting a new game.")
+#        game()
 
 #import pygame_menu
 #import pygame
