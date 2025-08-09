@@ -117,8 +117,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-09060db00ec0-JavaScript-PY-251.26927.90" />
-        <option value="bundled-python-sdk-41e8cd69c857-64d779b69b7a-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.26927.90" />
+        <option value="bundled-js-predefined-d6986cc7102b-e03c56caf84a-JavaScript-PY-252.23892.439" />
+        <option value="bundled-python-sdk-b3ae9b5d7125-f0eec537fc84-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.23892.439" />
       </set>
     </attachedChunks>
   </component>
@@ -361,7 +361,9 @@
       <workItem from="1753041857895" duration="1296000" />
       <workItem from="1753545621861" duration="1493000" />
       <workItem from="1753548810668" duration="146000" />
-      <workItem from="1754153694685" duration="295000" />
+      <workItem from="1754153694685" duration="1160000" />
+      <workItem from="1754723647627" duration="85000" />
+      <workItem from="1754758384397" duration="475000" />
     </task>
     <task id="LOCAL-00001" summary="it works">
       <created>1657430290327</created>
@@ -474,22 +476,6 @@
       <option name="presentableId" value="LOCAL-00016" />
       <option name="project" value="LOCAL" />
       <updated>1687021377997</updated>
-    </task>
-    <task id="LOCAL-00056" summary="JSON+bar stylezation&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
-      <option name="closed" value="true" />
-      <created>1713027632536</created>
-      <option name="number" value="00056" />
-      <option name="presentableId" value="LOCAL-00056" />
-      <option name="project" value="LOCAL" />
-      <updated>1713027632537</updated>
-    </task>
-    <task id="LOCAL-00057" summary="inputmap starting implementation&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
-      <option name="closed" value="true" />
-      <created>1715443946121</created>
-      <option name="number" value="00057" />
-      <option name="presentableId" value="LOCAL-00057" />
-      <option name="project" value="LOCAL" />
-      <updated>1715443946122</updated>
     </task>
     <task id="LOCAL-00058" summary="inputmap starting implementation&#10;Signed-off-by: Fancyapplebee &lt;andrew.fancyapplebee@gmail.com&gt;">
       <option name="closed" value="true" />
@@ -739,7 +725,23 @@
       <option name="project" value="LOCAL" />
       <updated>1753548949495</updated>
     </task>
-    <option name="localTasksCounter" value="89" />
+    <task id="LOCAL-00089" summary="Add save and load game functionality with JSON support">
+      <option name="closed" value="true" />
+      <created>1754154237924</created>
+      <option name="number" value="00089" />
+      <option name="presentableId" value="LOCAL-00089" />
+      <option name="project" value="LOCAL" />
+      <updated>1754154237925</updated>
+    </task>
+    <task id="LOCAL-00090" summary="Add save and load game functionality with JSON support">
+      <option name="closed" value="true" />
+      <created>1754154355855</created>
+      <option name="number" value="00090" />
+      <option name="presentableId" value="LOCAL-00090" />
+      <option name="project" value="LOCAL" />
+      <updated>1754154355855</updated>
+    </task>
+    <option name="localTasksCounter" value="91" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -806,7 +808,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Game/Game.py</url>
-          <line>4889</line>
+          <line>4990</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>
