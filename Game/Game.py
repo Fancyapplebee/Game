@@ -5010,6 +5010,10 @@ def save_game(role, filename="savegame.json"):
         print(f"num_inv_py = {num_inv_py}")
         #TODO: Correctly convert num_inv_py to python dict!!!
         exit()
+        num_inv_py = {
+            outer_pair.first: {inner_pair.first: inner_pair.second for inner_pair in outer_pair.second}
+            for outer_pair in role.numInv
+        }
         trade_dict_py = {}
         for x, y in role.tradeDict.items():
             items_needed = [[item.first, item.second] for item in y.itemsAndQuantityNeeded]
