@@ -5006,24 +5006,44 @@ def save_game(role, filename="savegame.json"):
     """Saves the game state to a JSON file."""
     global Quests, Place
     if isinstance(role, Role):
-        num_inv_py = {key_val_pair.first: key_val_pair.second for key_val_pair in role.numInv}
-        print(f"num_inv_py = {num_inv_py}")
-        #TODO: Correctly convert num_inv_py to python dict!!!
-        exit()
         num_inv_py = {
-            outer_pair.first: {inner_pair.first: inner_pair.second for inner_pair in outer_pair.second}
+            outer_pair.first.decode("utf-8") : {inner_pair.first.decode("utf-8"): inner_pair.second for inner_pair in outer_pair.second}
             for outer_pair in role.numInv
         }
-        trade_dict_py = {}
-        for x, y in role.tradeDict.items():
-            items_needed = [[item.first, item.second] for item in y.itemsAndQuantityNeeded]
-            trade_dict_py[x] = {
-                "number": y.number,
-                "equipped": y.equipped(),
-                "description": cppStringConvert(y.description),
-                "image_path": cppStringConvert(y.image_path),
-                "itemsAndQuantityNeeded": items_needed
-            }
+        print(f"num_inv_py = {num_inv_py}")
+        #TODO: Correctly convert num_inv_py to python dict!!!
+        #std::unordered_map<std::string, std::unordered_map<std::string,double>> numInv;
+        #std::unordered_map<std::string, TradeDictValue> tradeDict;
+        #        struct TradeDictValue
+        #        {
+        #            std::unordered_map<std::string, int> itemsAndQuantityNeeded;
+        #            std::string description;
+        #            int number;
+        #            std::string image_path;
+        #            CustomBool equipped;
+        #            std::unordered_map<std::string, float> stat_boost;
+        #        };
+        #        struct CustomBool
+        #        {
+        #            bool value;
+        #            std::string item;
+        #            Role* r;
+        #            // Assignment operator overload
+        #            CustomBool() {value=false;}
+        #            CustomBool& operator=(bool);
+        #            bool operator()();
+        #        };
+        trade_dict_py = {
+            outer_pair.first.decode("utf-8") : {"itemsAndQuantityNeeded": {inner_pair.first.decode("utf-8"): inner_pair.second for inner_pair in outer_pair.second.itemsAndQuantityNeeded},
+                "description": outer_pair.second.description.decode("utf-8"),
+                "number": outer_pair.second.number,
+                "image_path": outer_pair.second.image_path.decode("utf-8"),
+                "equipped": {"value": outer_pair.second.equipped.value, "item": outer_pair.second.equipped.item.decode("utf-8")},
+                "stat_boost": {inner_pair.first.decode("utf-8"): inner_pair.second for inner_pair in outer_pair.second.stat_boost}
+            } for outer_pair in role.tradeDict
+        }
+        print(trade_dict_py)
+        
         data_to_save = {
             "name": role.name,
             "type": role.__class__.__name__,
@@ -5041,15 +5061,14 @@ def save_game(role, filename="savegame.json"):
             "currExp": role.currExp,
             "LevelExp": role.LevelExp,
             "searchTime": role.searchTime,
-            "inventory": {item: role.numInv[item]['Number'] for item in role.getInventoryKeys()},
             "equipped_item": role.equipped_item,
             "InputMapDict": {k: v for k, v in role.InputMapDict.items()},
-            "trade_items_unlocked": list(role.trade_items_unlocked),
             "Quests": Quests,
             "Place": Place,
             "numInv": num_inv_py,
             "tradeDict": trade_dict_py
-        }
+        } #TypeError: Object of type string is not JSON serializable
+        print(data_to_save)
         with open(filename, 'w') as f:
             json.dump(data_to_save, f, indent=4)
         print(f"Game saved to {filename}")
