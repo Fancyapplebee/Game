@@ -5007,10 +5007,15 @@ def save_game(role, filename="savegame.json"):
     global Quests, Place
     if isinstance(role, Role):
         num_inv_py = {
-            outer_pair.first.decode("utf-8") : {inner_pair.first.decode("utf-8"): inner_pair.second for inner_pair in outer_pair.second}
-            for outer_pair in role.numInv
+            outer_key.decode('utf-8'): {
+                inner_key.decode('utf-8'): value for inner_key, value in inner_map.items()
+            } for outer_key, inner_map in role.numInv.items()
         }
-        print(f"num_inv_py = {num_inv_py}")
+        string_inv_py = {
+            outer_key.decode('utf-8'): {
+                inner_key.decode('utf-8'): value.decode('utf-8') for inner_key, value in inner_map.items()
+            } for outer_key, inner_map in role.stringInv.items()
+        }
         #TODO: Correctly convert num_inv_py to python dict!!!
         #std::unordered_map<std::string, std::unordered_map<std::string,double>> numInv;
         #std::unordered_map<std::string, TradeDictValue> tradeDict;
