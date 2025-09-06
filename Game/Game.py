@@ -3364,7 +3364,7 @@ def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red, screen
     NumRounds = 10
     role.health = role.base_health  # TODO: delete!
-    role.attackpower = 20 #TODO: delete!
+    role.attackpower = 1000 #TODO: delete!
     money = 0
     role_image_name = role.name.lower().replace(" jackson", "") + "-start.png" #TODO: Later the role image will have to be adjusted to load the specific image corresponding to the specific role and current item equipped
     role_image_name_flipped = role_image_name.replace(".png", "flip.png")
@@ -3696,8 +3696,8 @@ def QuestGames(Setting, role):
     score = 0
     avg_score = 0
     update_iter = 150
-    AvatarSpeedFactor = 1 #TODO: Change to 15 or something between 10 and 20
-    ShotSpeedFactor = 0.1 #TODO: Change to 1
+    AvatarSpeedFactor = 15 #TODO: Change to 15 or something between 10 and 20
+    ShotSpeedFactor = 1 #TODO: Change to 1
     
     while True:  # Main quest-loop
         if n_iter != 0 and n_iter % update_iter == 0:
@@ -5006,16 +5006,12 @@ def save_game(role, filename="savegame.json"):
     """Saves the game state to a JSON file."""
     global Quests, Place
     if isinstance(role, Role):
+#        std::unordered_map<std::string, std::unordered_map<std::string,double>> numInv;
         num_inv_py = {
-            outer_key.decode('utf-8'): {
-                inner_key.decode('utf-8'): value for inner_key, value in inner_map.items()
-            } for outer_key, inner_map in role.numInv.items()
+            cppStringConvert(outer_pair.first) : {cppStringConvert(inner_pair.first): inner_pair.second for inner_pair in outer_pair.second}
+            for outer_pair in role.numInv
         }
-        string_inv_py = {
-            outer_key.decode('utf-8'): {
-                inner_key.decode('utf-8'): value.decode('utf-8') for inner_key, value in inner_map.items()
-            } for outer_key, inner_map in role.stringInv.items()
-        }
+        print(f"num_inv_py = {num_inv_py}")
         #TODO: Correctly convert num_inv_py to python dict!!!
         #std::unordered_map<std::string, std::unordered_map<std::string,double>> numInv;
         #std::unordered_map<std::string, TradeDictValue> tradeDict;
@@ -5039,19 +5035,18 @@ def save_game(role, filename="savegame.json"):
         #            bool operator()();
         #        };
         trade_dict_py = {
-            outer_pair.first.decode("utf-8") : {"itemsAndQuantityNeeded": {inner_pair.first.decode("utf-8"): inner_pair.second for inner_pair in outer_pair.second.itemsAndQuantityNeeded},
-                "description": outer_pair.second.description.decode("utf-8"),
+            cppStringConvert(outer_pair.first) : {"itemsAndQuantityNeeded": {cppStringConvert(inner_pair.first): inner_pair.second for inner_pair in outer_pair.second.itemsAndQuantityNeeded},
+                "description": cppStringConvert(outer_pair.second.description),
                 "number": outer_pair.second.number,
-                "image_path": outer_pair.second.image_path.decode("utf-8"),
-                "equipped": {"value": outer_pair.second.equipped.value, "item": outer_pair.second.equipped.item.decode("utf-8")},
-                "stat_boost": {inner_pair.first.decode("utf-8"): inner_pair.second for inner_pair in outer_pair.second.stat_boost}
+                "image_path": cppStringConvert(outer_pair.second.image_path),
+                "equipped": {"value": outer_pair.second.equipped.value, "item": cppStringConvert(outer_pair.second.equipped.item)},
+                "stat_boost": {cppStringConvert(inner_pair.first): inner_pair.second for inner_pair in outer_pair.second.stat_boost}
             } for outer_pair in role.tradeDict
         }
-        print(trade_dict_py)
-        
+        print(f"trade_dict_py = {trade_dict_py}\n")
         data_to_save = {
-            "name": role.name,
-            "type": role.__class__.__name__,
+            "name": cppStringConvert(role.name),
+            "role_type": role.__class__.__name__,
             "health": role.health,
             "base_health": role.base_health,
             "attackpower": role.attackpower,
@@ -5066,14 +5061,18 @@ def save_game(role, filename="savegame.json"):
             "currExp": role.currExp,
             "LevelExp": role.LevelExp,
             "searchTime": role.searchTime,
-            "equipped_item": role.equipped_item,
+            "equipped_item": cppStringConvert(role.equipped_item),
             "InputMapDict": {k: v for k, v in role.InputMapDict.items()},
             "Quests": Quests,
-            "Place": Place,
+            #class House(Setting):
+            #    def __init__(self):
+            #        self.name = "House"
+            #        self.places = ("FRIDGE",)
+            "Place": Place.name,
             "numInv": num_inv_py,
             "tradeDict": trade_dict_py
         } #TypeError: Object of type string is not JSON serializable
-        print(data_to_save)
+        print(f"data_to_save = {data_to_save}\n")
         with open(filename, 'w') as f:
             json.dump(data_to_save, f, indent=4)
         print(f"Game saved to {filename}")
@@ -5526,11 +5525,11 @@ if __name__ == "__main__":
 #pygame.display.update()
 ## game loop
 #while running:
-#    
+#
 ## for loop through the event queue
 #    events = pygame.event.get()
 #    for event in events:
-#      
+#
 #        # Check for QUIT event
 #        if event.type == pygame.QUIT:
 #            running = False
