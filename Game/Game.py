@@ -29,32 +29,31 @@ def Defense(Def):
 # Boost stats of hero after a quest, and maybe also after mining? ✅
 # quest2 -> In C programming ✅
 # Work on menu option function where you can use some of your items to build weapons that can boost your stats 👨‍💻
-    # -> Can be either deterministic (i.e., need X number of Y item to get Z weapon) or stochastic (the weapon you can make from a given set of items is not set in stone but is governed by a probability distribution function)
-    # Stats to be boosted cannot affect rest of the game
-        # Can equip/un-equip weapons
-            # equip -> boost in addition to base stats
-            # unequip -> revert to base stats or stats - boost in the case of multiple equips
-    # Figure out how to keep game balanced while adding objects
-        # Derive a suitable scaling to the player's base-stats to balance significant improvement in player's stats with game-difficulty
+    # -> Can also be stochastic (the weapon you can make from a given set of items is not set in stone but is governed by a probability distribution function)
+    # Stats to be boosted cannot affect rest of the game ✅
+        # equip -> boost in addition to base stats ✅
+        # unequip -> revert to base stats or stats - boost in the case of multiple equips ✅
+    # Figure out how to keep game balanced while adding objects ✅
+        # Derive a suitable scaling to the player's base-stats to balance significant improvement in player's stats with game-difficulty ✅
     # Possibly add a stat that removes defense from enemy while held
     # Try to make breakage probabilites to encourage progression
         # Introduce a non-zero probability of losing an equip
-    # When fighting, make unique and not like other weapons
-        # e.g. some equips boost more defense, other attack, etc.
+    # When fighting, make unique and not like other weapons ✅
+        # e.g. some equips boost more defense, other attack, etc. ✅
     # Maybe add some kind of ranged modifier
         # items do more/less damage depending on distance traveled.
     # Make some equips boost stats depending on how much/little health the player has
         # e.g. more boost for health below some threshold
 
-# figure out use case of items not attainable through mining
-# implement a save function
-# saving => writes information to a file (e.g. time, stats, items, time that the RoleHero last searched etc.)
+# figure out use case of items not attainable through mining ✅
+# implement a save function ✅
+# saving => writes information to a file (e.g. time, stats, items, time that the RoleHero last searched etc.) ✅
 # modify search option so that it can only occur once per people day ✅
 # Axes that can increase drop-chances for mine function
 # Find out where we can increase money besides selling ✅
 # Figure out if holding the up/down arrow keys can make it continue going up/down in the menu parts of the game. ✅
 # if event.type -> elif event.type in `for event in pygame.event.get()` ✅
-# Consider multiple enemies on the screen simultaneously
+# Consider multiple enemies on the screen simultaneously ✅
 '''
     - In this case, the health-bars of the enemies would hover over the top of the enemies
     - Could devise a function to determine how many enemies spawn at a given instance
@@ -909,7 +908,9 @@ cppyy.cppdef(
             }
         }
     }
-    void Role::DequipItem(const std::string& item_name) 
+
+    //When we dequip an item, we revert back to base stats.
+    void Role::DequipItem(const std::string& item_name /*name of the item to dequip*/)
     {
         tradeDict[item_name].equipped = false;
         this->equipped_item.clear();
@@ -1515,6 +1516,7 @@ cppyy.cppdef(
         tradeDict["Base Armor"].equipped.r = this;
         tradeDict["Base Armor"].equipped = false;
         tradeDict["Base Armor"].stat_boost["Attack"] = 1.25f;
+        //tradeDict["Base Armor"].stat_boost["Defense"] = 1.40f;
         
         tradeDict["Green Base Armor"].itemsAndQuantityNeeded = 
         { 
@@ -1811,6 +1813,7 @@ underlined_font = pygame.font.Font('freesansbold.ttf', scale_font(font_size))
 underlined_font.set_underline(True)
 #print(scaled_font_size)
 base_font_height = font.size("hi")[1]
+screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
 
 #color_dict_list = [(first_num_characters, first_color), (next_num_characters, next_color), ..., (last_num_characters, last_color)]
 #text = "hello, how are you today?" #len(text) = 25
@@ -1902,7 +1905,6 @@ def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset
     # Adjust fonts dynamically based on screen size
     return textRect
     
-screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
 def wait_til_enter():
     global X, Y, screen
     while True:
@@ -5001,7 +5003,8 @@ def Menu(role, setting):
                         elif optionNumber == 8:
                             InputMap(role)
                         return
-
+        return True
+        
 def save_game(role, filename="savegame.json"):
     """Saves the game state to a JSON file."""
     global Quests, Place
@@ -5266,13 +5269,14 @@ def game(filename = 'savegame.json'):
             if breakFlag:
                 break
 
-        if optionNumber == 0 and gameLoaded: #If the user wants to continue the game and the game was successfully loaded
+        if optionNumber == 0 and gameLoaded: #If the user wants to "Continue Game" and if the game was successfully loaded
             Menu(RoleHero, Place)
             if not Quests:
                 Quests = True
             while True:
-                Menu(RoleHero, Place) #TODO: Maybe add a `isFinished` variable so we can maybe break and then the user can finish the game without being welcomed to the game again down below erroneously.
-
+                isFinished = Menu(RoleHero, Place) #TODO: Come up with criteria to determine if the player won the game.
+                if isFinished:
+                    return
 
         pygame.display.set_caption('Game Window')
         text = font.render('Welcome to the Game!', True, black, light_pink)
@@ -5493,7 +5497,10 @@ if __name__ == "__main__":
     Place = None
     filename = 'savegame.json' #TODO: Maybe get the file name from the user from pygame window (not the terminal)?
     game(filename = filename)
-
+    screen.fill(white)
+    pygame_print("Game Over, hope you had fun!")
+    pygame.display.update()
+    wait_til_enter()
     # Check if a save file exists and attempt to load it
 #    if os.path.exists("savegame.json"):
 #        print("Save file found. Attempting to load game...")
