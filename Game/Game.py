@@ -118,7 +118,7 @@ cppyy.cppdef(
     struct CustomBool
     {
         bool value;
-        std::string item;
+        //std::string item;
         Role* r;
         // Assignment operator overload
         CustomBool() {value=false;}
@@ -5008,9 +5008,16 @@ def save_game(role, filename="savegame.json"):
     if isinstance(role, Role):
 #        std::unordered_map<std::string, std::unordered_map<std::string,double>> numInv;
         num_inv_py = {
-            cppStringConvert(outer_pair.first) : {cppStringConvert(inner_pair.first): inner_pair.second for inner_pair in outer_pair.second}
+            cppStringConvert(outer_pair.first) : outer_pair.second["Number"]#{cppStringConvert(inner_pair.first): inner_pair.second for inner_pair in outer_pair.second}
             for outer_pair in role.numInv
         }
+#        numInv =
+#        {
+#                {
+#                        "Cookies",{{"Number", 0}, {"BuyValue", 1214}, {"SellValue", 971}, {"Questlevel", 1}}
+#                },
+#                ...
+#         }
         print(f"num_inv_py = {num_inv_py}")
         #TODO: Correctly convert num_inv_py to python dict!!!
         #std::unordered_map<std::string, std::unordered_map<std::string,double>> numInv;
@@ -5035,13 +5042,14 @@ def save_game(role, filename="savegame.json"):
         #            bool operator()();
         #        };
         trade_dict_py = {
-            cppStringConvert(outer_pair.first) : {"itemsAndQuantityNeeded": {cppStringConvert(inner_pair.first): inner_pair.second for inner_pair in outer_pair.second.itemsAndQuantityNeeded},
-                "description": cppStringConvert(outer_pair.second.description),
+            cppStringConvert(outer_pair.first) : {
+#            cppStringConvert(outer_pair.first) : {"itemsAndQuantityNeeded": {cppStringConvert(inner_pair.first): inner_pair.second for inner_pair in outer_pair.second.itemsAndQuantityNeeded},
+#                "description": cppStringConvert(outer_pair.second.description),
                 "number": outer_pair.second.number,
-                "image_path": cppStringConvert(outer_pair.second.image_path),
-                "equipped": {"value": outer_pair.second.equipped.value, "item": cppStringConvert(outer_pair.second.equipped.item)},
-                "stat_boost": {cppStringConvert(inner_pair.first): inner_pair.second for inner_pair in outer_pair.second.stat_boost}
-            } for outer_pair in role.tradeDict
+#                "image_path": cppStringConvert(outer_pair.second.image_path),
+                "equipped": outer_pair.second.equipped.value,#{"value": outer_pair.second.equipped.value, "item": cppStringConvert(outer_pair.second.equipped.item)},
+#                "stat_boost": {cppStringConvert(inner_pair.first): inner_pair.second for inner_pair in outer_pair.second.stat_boost}
+            } for outer_pair in role.tradeDict #so outer_pair is an std::pair iterating over each element in tradeDict
         }
         print(f"trade_dict_py = {trade_dict_py}\n")
         data_to_save = {
@@ -5166,10 +5174,10 @@ def load_game(filename="savegame.json"):
         return None #Might want to do something else here
     
     # Restore inventory
-    inventory_data = data.get("inventory", {})
-    for item_name, quantity in inventory_data.items():
-        if item_name in role.numInv:
-            role.numInv[item_name]['Number'] = quantity
+#    inventory_data = data.get("inventory", {})
+#    for item_name, quantity in inventory_data.items():
+#        if item_name in role.numInv:
+#            role.numInv[item_name]['Number'] = quantity
 
     # Restore Input Map
     input_map_data = data.get("InputMapDict", {})
@@ -5191,27 +5199,25 @@ def load_game(filename="savegame.json"):
                 #Check if `role_item` is in `role.numInv`
                 if role_item in role.numInv:
                     print(f"\t{role_item} found in `role.numInv` 🎉")
-                    for role_item_attr in numInvTemp[role_item]:
-                        #Check if the key is in role.numInv
-                        if role_item_attr in role.numInv[role_item]:
-                            print(f"\t\t{role_item_attr} found in `role.numInv[{role_item}]` 🎉")
-                            role.numInv[role_item][role_item_attr] = numInvTemp[role_item][role_item_attr]
-                        else:
-                            print(f"\t\t{role_item_attr} not found in `role.numInv[{role_item}]` ❌")
+                    role.numInv[role_item]["Number"] = numInvTemp[role_item]
+#                    for role_item_attr in numInvTemp[role_item]:
+#                        #Check if the key is in role.numInv
+#                        if role_item_attr in role.numInv[role_item]:
+#                            print(f"\t\t{role_item_attr} found in `role.numInv[{role_item}]` 🎉")
+#                            role.numInv[role_item][role_item_attr] = numInvTemp[role_item][role_item_attr]
+#                        else:
+#                            print(f"\t\t{role_item_attr} not found in `role.numInv[{role_item}]` ❌")
                 else:
                     print(f"\t{role_item} not found in `role.numInv` ❌")
                             
-                    
         except Exception as e:
             print(f"Error when trying to iterator over `numInv` from {filename}: {e}")
             return None #Might want to do something else here
     
-    #TODO: Do this below
-    # Restore unlocked trade items
-#    trade_items_data = data.get("trade_items_unlocked", [])
-#    role.trade_items_unlocked.clear()
-#    for item in trade_items_data:
-#        role.trade_items_unlocked.insert(item)
+    tradeDictTemp = data.get("tradeDict")
+    for trade_item in tradeDictTemp:
+        role.tradeDict[trade_item].number = tradeDictTemp[trade_item]["number"]
+        role.tradeDict[trade_item].equipped.value = tradeDictTemp[trade_item]["equipped"]
 
     print(f"Game loaded from {filename}")
     return role
@@ -5527,7 +5533,7 @@ if __name__ == "__main__":
 #while running:
 #
 ## for loop through the event queue
-#    events = pygame.event.get()
+#    events = pygame.event.get()F
 #    for event in events:
 #
 #        # Check for QUIT event

@@ -1,51 +1,87 @@
 {
+    "name": "PERCY JACKSON",
     "role_type": "PercyJackson",
-    "Place": "House",
-    "name": "Percy",
-    "attackpower": 1080,
-    "base_health": 1000,
-    "health": 240,
-    "baseDefense": 400,
-    "defense": 400,
-    "attackStamina": 0.1,
-    "defenseStamina": 0.2,
-    "speed": 1.4,
-    "money": 750.50,
-    "currLevel": 5,
-    "currExp": 150,
-    "LevelExp": 500,
-    "questLevel": 3,
-    "searchTime": 1678886400.0,
-    "numInv": {
-        "Potion": {
-            "Number": 5,
-            "BuyValue": 50,
-            "SellValue": 25,
-            "Questlevel": 1
-        },
-        "Rocks": {
-            "Number": 20,
-            "BuyValue": 2,
-            "SellValue": 1,
-            "Questlevel": 0
-        }
-    },
-    "stringInv": {
-        "Health Potion": {
-            "Type": "Consumable",
-            "Description": "Restores a small amount of health.",
-            "Picture": "Assets/health_potion.png"
-        },
-        "Rock": {
-            "Type": "Resource",
-            "Description": "A simple rock. Can be used for crafting.",
-            "Picture": "Assets/rock.png"
-        }
-    },
+    "health": 352.4531545642235,
+    "base_health": 352.4531545642235,
+    "attackpower": 1000.0,
+    "defense": 481.1358864105587,
+    "baseDefense": 481.1358864105587,
+    "speed": 1.1304931001337886,
+    "attackStamina": 0.021433248974193027,
+    "defenseStamina": 0.12143324897419303,
+    "money": 993352.0,
+    "questLevel": 1,
+    "currLevel": 7,
+    "currExp": 166.02954406253363,
+    "LevelExp": 181.01933598375618,
+    "searchTime": 0.0,
+    "equipped_item": "Base Armor",
     "InputMapDict": {
-        "104": "Health Potion"
+        "112": "Rocks",
+        "114": "Rocks",
+        "115": "Sands"
     },
-    "equipped_items": {
-        "Base Armor": 1
+    "Quests": true,
+    "Place": "Desert",
+    "numInv": {
+        "Ring": 0.0,
+        "Armor": 0.0,
+        "Cape": 0.0,
+        "Knife": 0.0,
+        "Key 1": 0.0,
+        "Apple": 4.0,
+        "Potion": 0.0,
+        "Water Guns": 0.0,
+        "Sand Pails": 0.0,
+        "Golden Logs": 0.0,
+        "Sands": 47.0,
+        "Cactuses": 0.0,
+        "Logs": 0.0,
+        "Diamonds": 0.0,
+        "Golds": 0.0,
+        "Parrot": 0.0,
+        "Cookies": 0.0,
+        "Silvers": 0.0,
+        "Golden Saplings": 0.0,
+        "Emeralds": 0.0,
+        "Rocks": 21.0
+    },
+    "tradeDict": {
+        "Ring of Vitality": {
+            "number": 0,
+            "equipped": false
+        },
+        "Boots of Swiftness": {
+            "number": 0,
+            "equipped": false
+        },
+        "Sword of Strength": {
+            "number": 0,
+            "equipped": false
+        },
+        "Pointy Base Armor": {
+            "number": 0,
+            "equipped": false
+        },
+        "Armor 1.0": {
+            "number": 0,
+            "equipped": false
+        },
+        "Armor 2.0": {
+            "number": 0,
+            "equipped": false
+        },
+        "Pointy Sword": {
+            "number": 0,
+            "equipped": false
+        },
+        "Green Base Armor": {
+            "number": 0,
+            "equipped": false
+        },
+        "Base Armor": {
+            "number": 1,
+            "equipped": true
+        }
     }
 }
