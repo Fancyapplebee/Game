@@ -1,21 +1,21 @@
 {
     "name": "PERCY JACKSON",
     "role_type": "PercyJackson",
-    "health": 352.4531545642235,
-    "base_health": 352.4531545642235,
-    "attackpower": 1000.0,
-    "defense": 481.1358864105587,
-    "baseDefense": 481.1358864105587,
-    "speed": 1.1304931001337886,
-    "attackStamina": 0.021433248974193027,
-    "defenseStamina": 0.12143324897419303,
-    "money": 993352.0,
-    "questLevel": 1,
-    "currLevel": 7,
-    "currExp": 166.02954406253363,
-    "LevelExp": 181.01933598375618,
+    "health": 451.9536106540228,
+    "base_health": 477.51175080727853,
+    "attackpower": 1021.0740434188427,
+    "defense": 793.7853770181962,
+    "baseDefense": 793.7853770181962,
+    "speed": 1.6764931001337884,
+    "attackStamina": 0.021238501469074203,
+    "defenseStamina": 0.12123850146907421,
+    "money": 1015492.0,
+    "questLevel": 4,
+    "currLevel": 13,
+    "currExp": 130.30204429568516,
+    "LevelExp": 733.3648478076925,
     "searchTime": 0.0,
-    "equipped_item": "Base Armor",
+    "equipped_item": "",
     "InputMapDict": {
         "112": "Rocks",
         "114": "Rocks",
@@ -44,7 +44,7 @@
         "Silvers": 0.0,
         "Golden Saplings": 0.0,
         "Emeralds": 0.0,
-        "Rocks": 21.0
+        "Rocks": 15.0
     },
     "tradeDict": {
         "Ring of Vitality": {
@@ -81,7 +81,7 @@
         },
         "Base Armor": {
             "number": 1,
-            "equipped": true
+            "equipped": false
         }
     }
 }
