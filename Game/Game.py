@@ -22,45 +22,60 @@ neutralNPCs = ("MINER", "WOODCHUCKER")
 def Defense(Def):
     return 1 - (Def / (Def + 100))
 
-# TODO:
-#####
-# Implement buy function of def shop -> possibly add some items ✅
-# Add use function for each of the items ✅
-# Boost stats of hero after a quest, and maybe also after mining? ✅
-# quest2 -> In C programming ✅
-# Work on menu option function where you can use some of your items to build weapons that can boost your stats 👨‍💻
-    # -> Can also be stochastic (the weapon you can make from a given set of items is not set in stone but is governed by a probability distribution function)
-    # Stats to be boosted cannot affect rest of the game ✅
-        # equip -> boost in addition to base stats ✅
-        # unequip -> revert to base stats or stats - boost in the case of multiple equips ✅
-    # Figure out how to keep game balanced while adding objects ✅
-        # Derive a suitable scaling to the player's base-stats to balance significant improvement in player's stats with game-difficulty ✅
-    # Possibly add a stat that removes defense from enemy while held
-    # Try to make breakage probabilites to encourage progression
-        # Introduce a non-zero probability of losing an equip
-    # When fighting, make unique and not like other weapons ✅
-        # e.g. some equips boost more defense, other attack, etc. ✅
-    # Maybe add some kind of ranged modifier
-        # items do more/less damage depending on distance traveled.
-    # Make some equips boost stats depending on how much/little health the player has
-        # e.g. more boost for health below some threshold
+#TODO: Do the following
+    #####
+    # Implement buy function of def shop -> possibly add some items ✅
+    # Add use function for each of the items ✅
+    # Boost stats of hero after a quest, and maybe also after mining? ✅
+    # quest2 -> In C programming ✅
+    # Work on menu option function where you can use some of your items to build weapons that can boost your stats 👨‍💻 ✅
+        # Stats to be boosted cannot affect rest of the game ✅
+            # equip -> boost in addition to base stats ✅
+            # unequip -> revert to base stats or stats - boost in the case of multiple equips ✅
+        # Figure out how to keep game balanced while adding objects ✅
+            # Derive a suitable scaling to the player's base-stats to balance significant improvement in player's stats with game-difficulty ✅
+        # Possibly add a stat that removes defense from enemy while held
+        # Try to make breakage probabilites to encourage progression
+            # Introduce a non-zero probability of losing an equip
+        # When fighting, make unique and not like other weapons ✅
+            # e.g. some equips boost more defense, other attack, etc. ✅
+        # Maybe add some kind of ranged modifier
+            # items do more/less damage depending on distance traveled.
+                # So shot damage could be like a function depending on distance traveled from the player enemy;
+                # perhaps an exponential function: Damage = D_max * exp(-k(distance)), where k is some function
+                # we gotta decide on
+        # Make some equips boost stats depending on how much/little health the player has
+            # e.g. more boost for health below some threshold
 
-# figure out use case of items not attainable through mining ✅
-# implement a save function ✅
-# saving => writes information to a file (e.g. time, stats, items, time that the RoleHero last searched etc.) ✅
-# modify search option so that it can only occur once per people day ✅
-# Axes that can increase drop-chances for mine function
-# Find out where we can increase money besides selling ✅
-# Figure out if holding the up/down arrow keys can make it continue going up/down in the menu parts of the game. ✅
-# if event.type -> elif event.type in `for event in pygame.event.get()` ✅
-# Consider multiple enemies on the screen simultaneously ✅
-'''
-    - In this case, the health-bars of the enemies would hover over the top of the enemies
-    - Could devise a function to determine how many enemies spawn at a given instance
-        - Assuming e.g. 10 instances per quest
-'''
-# Add a much more detailed README.md
-# Figure out how to compile cppyy code with optimizations (e.g. -O2)
+    # figure out use case of items not attainable through mining ✅
+    # implement a save function ✅
+    # saving => writes information to a file (e.g. time, stats, items, time that the RoleHero last searched etc.) ✅
+    # modify search option so that it can only occur once per people day ✅
+    # Axes that can increase drop-chances for mine function
+    # Find out where we can increase money besides selling ✅
+    # Figure out if holding the up/down arrow keys can make it continue going up/down in the menu parts of the game. ✅
+    # if event.type -> elif event.type in `for event in pygame.event.get()` ✅
+    # Consider multiple enemies on the screen simultaneously ✅
+    '''
+        - In this case, the health-bars of the enemies would hover over the top of the enemies
+        - Could devise a function to determine how many enemies spawn at a given instance
+            - Assuming e.g. 10 instances per quest
+    '''
+    # Add a much more detailed README.md
+    # Figure out how to compile cppyy code with optimizations (e.g. -O2) ✅
+        # `export EXTRA_CLING_ARGS="-O2"` (on Mac) ✅
+        # `$env:EXTRA_CLING_ARGS="-O2"` (on Windows) ✅
+    # Before loading cppyy, run a system command to set the compilation flag above to O2 depending on the device
+    # More enemy types!
+    '''
+        1. Start with three types of enemies until quest-level N (where N is TBD)
+        2. At level N, increase possible enemy types to 3+M (where M is TBD)
+        3. Continue with 3+M enemies until level N+P (where P is TBD)
+        4. Repeat steps 1-3 until final level Z (where Z is TBD)
+    '''
+
+        # - Could have some kind of generative mechanism for enemies...?
+    # Format this code better/more consistently.
 
 '''
 cS is NOT an input function!!!
@@ -69,11 +84,8 @@ cS is NOT an input function!!!
 2. gets rid of all of the punctuation
 3. gets rid of leading and trailing spaces
 '''
-
-
 def cS(s):
     return ''.join(c for c in s if c not in punctuation).upper().strip()
-
 
 # A class is a user-defined type!!!
 
@@ -5230,6 +5242,7 @@ def start_game(optionNumber):
     pygame_print("New Game", Y // 1.5 + int(0.22*Y), color=(orange if optionNumber == 1 else black))
     pygame.display.update()
 
+#Main Game function; returns `True` if the game's finished, & `False` if the user ctrl-c'd (so the game saves in that case)
 def game(filename = 'savegame.json'):
     global font, Quests, screen, old_screen, X, Y, Place
     try:
@@ -5276,7 +5289,7 @@ def game(filename = 'savegame.json'):
             while True:
                 isFinished = Menu(RoleHero, Place) #TODO: Come up with criteria to determine if the player won the game.
                 if isFinished:
-                    return
+                    return True
 
         pygame.display.set_caption('Game Window')
         text = font.render('Welcome to the Game!', True, black, light_pink)
@@ -5487,8 +5500,8 @@ def game(filename = 'savegame.json'):
 
     except KeyboardInterrupt:
         print("\nBye")
-        # TODO: Save Here
         save_game(RoleHero)
+        return False
 
 # if __name__ == "__main__":
 #     game()
@@ -5496,9 +5509,9 @@ if __name__ == "__main__":
     role = None
     Place = None
     filename = 'savegame.json' #TODO: Maybe get the file name from the user from pygame window (not the terminal)?
-    game(filename = filename)
+    isFinished = game(filename = filename)
     screen.fill(white)
-    pygame_print("Game Over, hope you had fun!")
+    pygame_print("Game Over, hope you had fun!" if isFinished else "See you later!")
     pygame.display.update()
     wait_til_enter()
     # Check if a save file exists and attempt to load it
