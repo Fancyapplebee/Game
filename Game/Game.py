@@ -3437,11 +3437,11 @@ def QuestGames(Setting, role):
     ground_y = int(0.6667 * Y)
     start_y = ground_y     #Starting y-coordinate for Role
     curr_y = start_y       #Current y-coordinate for Role
-    
+    role_y_velocity = 0    #Player's vertical velocity
     enemy_x = [[int(uniform(.775, 0.885)*X) - buffer_width for i in range(j)] for j in num_enemies] #Starting x-coordinates for NumRounds rounds of enemies
     enemy_y = [ [ground_y]*num_enemies[i] for i in range(len(num_enemies))] #Starting y-coordinates for NumRounds rounds of enemies
     curr_enemy_y = deepcopy(enemy_y) #Current y-coordinates for NumRounds rounds of enemies
-    
+    enemy_y_velocity = [[0]*num_enemies[i] for i in range(len(num_enemies))] #Enemies' vertical velocity
 
     role_jump_t = -1
     enemy_jump_t = [[-1]*num_enemies[i] for i in range(len(num_enemies))] #Starting times for when the enemy can jump
