@@ -1,42 +1,36 @@
 {
     "name": "PERCY JACKSON",
     "role_type": "PercyJackson",
-    "health": 412.3295722708508,
-    "base_health": 533.3047902163576,
+    "health": 458.0109516788797,
+    "base_health": 458.0109516788797,
     "attackpower": 1000.0,
-    "defense": 933.2694755408935,
-    "baseDefense": 933.2694755408935,
-    "speed": 1.9494931001337883,
-    "attackStamina": 0.021238041632201794,
-    "defenseStamina": 0.1212380416322018,
-    "money": 1031062.0,
-    "questLevel": 5,
-    "currLevel": 16,
-    "currExp": 968.5159435913238,
-    "LevelExp": 1191.577525803504,
+    "defense": 745.032879197199,
+    "baseDefense": 745.032879197199,
+    "speed": 1.5854931001337884,
+    "attackStamina": 0.021239332997793306,
+    "defenseStamina": 0.12123933299779331,
+    "money": 956458.0,
+    "questLevel": 4,
+    "currLevel": 12,
+    "currExp": 225.6402098490994,
+    "LevelExp": 609.3381655534142,
     "searchTime": 0.0,
-    "equipped_item": "",
-    "InputMapDict": {
-        "112": "Rocks",
-        "114": "Rocks",
-        "115": "Sands",
-        "111": "Rocks",
-        "105": "Silvers"
-    },
+    "equipped_item": "Base Armor",
+    "InputMapDict": {},
     "Quests": true,
-    "Place": "Desert",
+    "Place": "House",
     "numInv": {
         "Ring": 0.0,
         "Armor": 0.0,
         "Cape": 0.0,
         "Knife": 0.0,
         "Key 1": 0.0,
-        "Apple": 4.0,
+        "Apple": 0.0,
         "Potion": 0.0,
         "Water Guns": 0.0,
         "Sand Pails": 0.0,
         "Golden Logs": 0.0,
-        "Sands": 46.0,
+        "Sands": 1.0,
         "Cactuses": 0.0,
         "Logs": 0.0,
         "Diamonds": 0.0,
@@ -46,7 +40,7 @@
         "Silvers": 0.0,
         "Golden Saplings": 0.0,
         "Emeralds": 0.0,
-        "Rocks": 11.0
+        "Rocks": 25.0
     },
     "tradeDict": {
         "Ring of Vitality": {
@@ -78,12 +72,12 @@
             "equipped": false
         },
         "Green Base Armor": {
-            "number": 0,
-            "equipped": false
+            "number": 1,
+            "equipped": true
         },
         "Base Armor": {
             "number": 1,
-            "equipped": false
+            "equipped": true
         }
     }
 }
