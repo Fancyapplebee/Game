@@ -3523,20 +3523,30 @@ def QuestGames(Setting, role):
     Ns = {}
 
     if os.path.isfile('Qsa.json') and os.path.isfile('Nsa.json') and os.path.isfile('Ns.json'):
-        with open('Qsa.json') as json_file:
-            Qsa = json.load(json_file)
-        with open('Nsa.json') as json_file:
-            Nsa = json.load(json_file)
-        with open('Ns.json') as json_file:
-            Ns = json.load(json_file)
+        try:
+            with open('Qsa.json', 'r') as f:
+                Qsa = json.load(f)
+                Qsa = {eval(k): v for k, v in Qsa.items()}
+            with open('Nsa.json', 'r') as f:
+                Nsa = json.load(f)
+                Nsa = {eval(k): v for k, v in Nsa.items()}
+            with open('Ns.json', 'r') as f:
+                Ns = json.load(f)
+                Ns = {eval(k): v for k, v in Ns.items()}
+            print("Loaded RL statistics.")
+        except (json.JSONDecodeError, FileNotFoundError) as e:
+            print(f"Could not load RL statistics: {e}. Starting fresh.")
+            Qsa, Nsa, Ns = {}, {}, {}
+
 
     def save_stats():
-        with open("Qsa.json", "w") as outfile:
-            json.dump(Qsa, outfile)
-        with open("Nsa.json", "w") as outfile:
-            json.dump(Nsa, outfile)
-        with open("Ns.json", "w") as outfile:
-            json.dump(Ns, outfile)
+        with open('Qsa.json', 'w') as f:
+            json.dump({str(k): v for k, v in Qsa.items()}, f)
+        with open('Nsa.json', 'w') as f:
+            json.dump({str(k): v for k, v in Nsa.items()}, f)
+        with open('Ns.json', 'w') as f:
+            json.dump({str(k): v for k, v in Ns.items()}, f)
+        print("Saved stats.")
 
     c = sqrt(2)
     enemy_options = ("attack", "left", "right", "jump", "rest")
@@ -3669,40 +3679,24 @@ def QuestGames(Setting, role):
         
         Returns: index corresponding to element in enemy_options list that enemy should make
         '''
+        best_move = -1
+        best_score = -np.inf
 
-        UCT = 0
-        UCT_best = -np.inf
-        best_act = "none"
-        best_acts = []
-
-        for enemy_option in enemy_options:
-            # If the condition below is true then we can use the UCT formula
-            if Nsa.get(temp_state) and int(Nsa[temp_state].get(enemy_option) or 0) > 0 and Qsa.get(temp_state) and Qsa.get(temp_state).get(enemy_option):
-                UCT = Qsa[temp_state][enemy_option] + c * sqrt(ln(Ns[temp_state] / Nsa[temp_state][enemy_option]))
+        for move_idx, move in enumerate(enemy_options):
+            state_action = temp_state + (move,)
+            if Nsa.get(state_action, 0) == 0:
+                # If we haven't tried this action before, give it a high value to encourage exploration
+                uct_score = np.inf
             else:
-                best_acts.append(enemy_option)
-                UCT = -np.inf  # encourage this action since it has no visit counts
-            if UCT > UCT_best:
-                best_act = enemy_option
-                UCT_best = UCT
-        
-        if best_act != "none":
-            best_acts.append(best_act)
-        if len(best_acts) > 0:
-            best_act = np.random.choice(best_acts)
+                # UCT formula
+                exploitation_term = Qsa.get(state_action, 0)
+                exploration_term = c * sqrt(ln(Ns.get(temp_state, 1)) / Nsa.get(state_action, 1))
+                uct_score = exploitation_term + exploration_term
 
-        if Ns.get(temp_state):
-            Ns[temp_state] += 1
-            if Nsa[temp_state].get(best_act):  # if the state-action pair has been visited before
-                Nsa[temp_state][best_act] += 1
-            else:  # if the state has been visited but the action has not been taken from this state yet
-                Nsa[temp_state][best_act] = 1
-        else:  # if the state-action pair has not been visited before
-            Ns[temp_state] = 1
-            Nsa[temp_state] = {}
-            Nsa[temp_state][best_act] = 1
-
-        return enemy_options.index(best_act)
+            if uct_score > best_score:
+                best_score = uct_score
+                best_move = move_idx
+        return best_move
 
     n_iter = 0
     max_score = -np.inf
@@ -3710,156 +3704,81 @@ def QuestGames(Setting, role):
     score = 0
     avg_score = 0
     update_iter = 150
-    AvatarSpeedFactor = 15 #TODO: Change to 15 or something between 10 and 20
-    ShotSpeedFactor = 1 #TODO: Change to 1
-    
+    AvatarSpeedFactor = 15  # TODO: Change to 15 or something between 10 and 20
+    ShotSpeedFactor = 1  # TODO: Change to 1
+
     while True:  # Main quest-loop
-        if n_iter != 0 and n_iter % update_iter == 0:
-            if check_point_score == max_score: #if no new max
-                score_ratio = avg_score/(update_iter*(max_score or max_score + np.finfo(float).eps))
-                print(f"avg_score/max_score = {score_ratio}")
-                if random() >= score_ratio:
-                    c = c + sqrt(2)
-                    print(f"Increasing exploration, no luck, c = {c}")
-                else:
-                    c = sqrt(2)
-                    print(f"Lucky, resetting exploration, c = {c}")
-            else:
-                c = sqrt(2) #Keep exploration the same
-                print(f"New max, resetting exploration, c = {c}")
-
-                check_point_score = max_score
-            avg_score = 0
-
-        n_iter += 1
         last_role_health = role.health
         last_agent_health = getEnemyHealth()
-        DangerShotVal = []
-        for i in range(len(enemy)):
-            # Check if enemy is at same height as player (more dangerous)
-            if curr_y - beam_height <= curr_enemy_y[NumberDefeated][i] <= curr_y + buffer_height:
-                danger_val = abs(enemy_x[NumberDefeated][i] - start_x)
-            else:
-                '''
-                Some examples of what we are doing in the line below:
-                 - enemy_x[NumberDefeated][i] = 450 -> danger_val = max(800-450, 450) = max(350, 450) = 450
-                    * (0,0)     (350,0)       (800,0)  --> danger_val = 450
-                 - enemy_x[NumberDefeated][i] = 350 -> danger_val = max(800-350, 350) = max(450, 350) = 450
-                    * (0,0)         (450,0)   (800,0)  --> danger_val = 450
-                '''
-                danger_val = max(X - enemy_x[NumberDefeated][i], enemy_x[NumberDefeated][i])
-
-            # Check for danger from player shots
-            if len(shotsFired):
-                #Below, we check if the range (shot.beam_y - beam_height, shot.beam_y + beam_height) intersects with the range (curr_enemy_y[NumberDefeated][i], curr_enemy_y[NumberDefeated][i] + buffer_width)
-                DangerShots = [shot for shot in shotsFired if
-                               overlaps(shot.beam_y - beam_height, shot.beam_y + beam_height,
-                                        curr_enemy_y[NumberDefeated][i], curr_enemy_y[NumberDefeated][i] + buffer_width)
-                               and not shot.hit_target]
-                if len(DangerShots):
-                    DangerShot = min(DangerShots, key=lambda shot: abs(enemy_x[NumberDefeated][i] - shot.beam_x))
-                    danger_val = min(abs(enemy_x[NumberDefeated][i] - DangerShot.beam_x), danger_val)
-
-            DangerShotVal.append(danger_val)
-        assert(len(DangerShotVal) == num_enemies[NumberDefeated])
-        enemyMoves = []
-        for i in range(len(enemy)):
-            # Create a state string that includes this enemy's danger value and position
-            temp_state = f"{DangerShotVal[i]:.0f}"
-            enemyMoves.append(generateMove(temp_state))
-        for event in pygame.event.get():  # update the option number if necessary
-            if event.type == pygame.VIDEORESIZE:
-                old_X, old_Y = X, Y
-                X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
-                
-                buffer_width, buffer_height = int(.05*X), int(0.05334*Y)
-                beam_height = buffer_height / 4
-                beam_width = buffer_width / 2
-                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
-                screen.fill(white);
-                '''
-                old_X          start_x
-                -----   =    -----------    ->  new_start_x * old_X = start_x * X   ->  new_start_x  =  (start_x * X) / old_X
-                  X          new_start_x
-                '''
-                X_ratio = X / old_X
-                Y_ratio = Y / old_Y
-                
-                start_x = (start_x * X_ratio)
-                start_y = (start_y * Y_ratio)
-                curr_y = (curr_y * Y_ratio)
-                enemy_x = [[X_ratio*i for i in j] for j in enemy_x]
-                enemy_y = [[Y_ratio*i for i in j] for j in enemy_y]
-                curr_enemy_y = [[Y_ratio*i for i in j] for j in curr_enemy_y]
-                ground_y = (ground_y * Y_ratio)
-                shotsFired = [Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in shotsFired]
-                shotsEnemyFired = [[[Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in i] for i in j] for j in shotsEnemyFired]
-                role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
-                
-                enemy_rect = []
-                assert(len(enemy_x) == len(curr_enemy_y) and len(enemy_x) == NumRounds)
-                for i, (x_val, y_val) in enumerate(zip(enemy_x, curr_enemy_y)): #for each round
-                    enemy_round_i_rects = []
-                    assert(len(x_val) == len(y_val))
-                    for (enemy_x_coord, enemy_y_coord) in zip(x_val, y_val): #for each enemy in the current round
-                        enemy_round_i_rects.append(pygame.Rect(enemy_x_coord, enemy_y_coord, buffer_width, buffer_width))
-                    enemy_rect.append(enemy_round_i_rects)
-                
-                renderRole()
-
-            elif event.type == pygame.KEYDOWN:  # checking if any key was selected
-                if event.key == pygame.K_RETURN: #exit the quest game
-                    save_stats()
-                    return
-                elif event.key == pygame.K_SPACE:  # Checking if the role hero fired a shot
-                    # Put beam on the screen if role has the stamina for it
-                    if role.can_attack():
-                        beam_x = start_x + (buffer_width if not role.flipped else 0)
-                        beam_y = curr_y + buffer_width / 2
-                        # Puts the coordinate of the shots fired on the screen
-                        shotsFired.append(Shot(beam_x, beam_y, False,
-                                               role.flipped))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
-                        # Update the wait-time here.
-                        role.update_wait_time()
-                elif event.key in role.InputMapDict and role.numInv[role.InputMapDict[event.key]]["Number"] > 0:
-#                    print(f"{event.key} is in {role.InputMapDict}")
+        n_iter += 1
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                save_stats()
+                pygame.quit()
+                return
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    shot = role.specialAttack() if role.isSpecialShot else role.attack()
+                    shot.beam_x = start_x + (1 if not role.last_move_was_left else -1) * role_rect.width
+                    shot.beam_y = curr_y + role_rect.height / 2
+                    shotsFired.append(shot)
+                elif event.key in role.InputMapDict:
                     role.useInv[role.InputMapDict[event.key]]["Use"]()
                     if role.isSpecialShot:
-                        if role.can_attack():
-                            beam_x = start_x + (buffer_width if not role.flipped else 0)
-                            beam_y = curr_y + buffer_width / 2
-                            # Puts the coordinate of the shots fired on the screen
-                            shotsFired.append(Shot(beam_x, beam_y, False,
-                                                   role.flipped, True, role.specialShotImage))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
-                            # Update the wait-time here.
-                            role.update_wait_time()
-                        else:
-                            role.numInv[role.InputMapDict[event.key]]["Number"] += 1
-        for i in range(len(enemy)): #For each enemy in the current round
-            enemyMove = enemyMoves[i] #Get the index of the list `enemy_options` corresponding to the current enemy's move
+                        pygame_print("SPECIAL SHOT ACTIVATED!", loc_y=int(0.85 * Y), color=cyan)
+                        pygame.display.update()
+                        pygame.time.delay(1000)
+        for i in range(len(enemy)):  # For each enemy in the current round
+            if enemy[i].health > 0:
+                # Find the closest player shot to the enemy
+                closest_player_shot_dist = min([abs(shot.beam_x - enemy_x[NumberDefeated][i]) for shot in shotsFired],
+                                               default=X)
+                # Find the closest enemy shot to the player
+                closest_enemy_shot_dist = min(
+                    [abs(shot.beam_x - start_x) for shot_list in shotsEnemyFired[NumberDefeated] for shot in shot_list],
+                    default=X)
 
-            if enemy_options[enemyMove] == "jump" and enemy_y[NumberDefeated][i] + int(0.2666 * Y) >= ground_y: # Holding down jump makes it bigger
-                curr_enemy_y[NumberDefeated][i] -= 0.006666666666666667 * Y
-                enemy_y[NumberDefeated][i] = curr_enemy_y[NumberDefeated][i]
-                enemy_jump_t[NumberDefeated][i] = time()
+                # Generate state tuple with more features
+                temp_state = (
+                    round(role.health / role.base_health * 5),
+                    round(enemy[i].health / enemy[i].base_health * 5),
+                    round((start_x - enemy_x[NumberDefeated][i]) / X * 10),  # x distance
+                    round((curr_y - curr_enemy_y[NumberDefeated][i]) / Y * 10),  # y distance
+                    round(role_y_velocity / 10),  # player y velocity
+                    round(enemy_y_velocity[NumberDefeated][i] / 10),  # enemy y velocity
+                    len(shotsFired),
+                    len(shotsEnemyFired[NumberDefeated][i]),
+                    round(closest_player_shot_dist / X * 5),
+                    round(closest_enemy_shot_dist / X * 5)
+                )
 
-            if enemy_options[enemyMove] == "attack" and enemy[i].can_attack():
-                beam_x = enemy_x[NumberDefeated][i] + (0 if not enemy[i].flipped else buffer_width)
-                beam_y = curr_enemy_y[NumberDefeated][i] + buffer_width / 2
-                # The arguments of Shot constructor below correspond to x-position of beam, y-position of beam, has it hit the target?, flipped?
-                shotsEnemyFired[NumberDefeated][i].append(Shot(beam_x, beam_y, False, enemy[i].flipped))
-                enemy[i].update_wait_time()
+                enemyMove = generateMove(temp_state)
+                if enemy_options[enemyMove] == "attack":
+                    if time() > enemy[i].attackStamina:
+                        shot = enemy[i].attack()
+                        shot.beam_x = enemy_x[NumberDefeated][i] - beam_width
+                        shot.beam_y = curr_enemy_y[NumberDefeated][i] + enemy_rect[NumberDefeated][i].height / 2
+                        shotsEnemyFired[NumberDefeated][i].append(shot)
+                        enemy[i].attackStamina = time() + enemy[i].speed
+                elif enemy_options[enemyMove] == "right":
+                    enemy_x[NumberDefeated][i] += AvatarSpeedFactor
+                elif enemy_options[enemyMove] == "left":
+                    enemy_x[NumberDefeated][i] -= AvatarSpeedFactor
+                elif enemy_options[enemyMove] == "jump" and curr_enemy_y[NumberDefeated][i] == ground_y:
+                    enemy_jump_t[NumberDefeated][i] = time()
+                    enemy_y_velocity[NumberDefeated][i] = -15  # Initial jump velocity
 
-            if enemy_options[enemyMove] == "right":
-                if enemy_x[NumberDefeated][i] < X - buffer_width:
-                    enemy_x[NumberDefeated][i] += enemy[i].speed * 10
-                enemy[i].flipped = True
+                # Update Q-table
+                state_action_tuple = temp_state + (enemy_options[enemyMove],)
+                if state_action_tuple not in Qsa:
+                    Qsa[state_action_tuple] = 0
+                if state_action_tuple not in Nsa:
+                    Nsa[state_action_tuple] = 0
+                if temp_state not in Ns:
+                    Ns[temp_state] = 0
 
-            if enemy_options[enemyMove] == "left":
-                if enemy_x[NumberDefeated][i] > 0:
-                    enemy_x[NumberDefeated][i] -= enemy[i].speed * 10
-                enemy[i].flipped = False
+                Ns[temp_state] += 1
+                Nsa[state_action_tuple] += 1
 
         keys = pygame.key.get_pressed()
 
