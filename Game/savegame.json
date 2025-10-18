@@ -1,21 +1,21 @@
 {
     "name": "PERCY JACKSON",
     "role_type": "PercyJackson",
-    "health": 458.0109516788797,
-    "base_health": 458.0109516788797,
-    "attackpower": 1000.0,
-    "defense": 745.032879197199,
-    "baseDefense": 745.032879197199,
-    "speed": 1.5854931001337884,
-    "attackStamina": 0.021239332997793306,
-    "defenseStamina": 0.12123933299779331,
-    "money": 956458.0,
-    "questLevel": 4,
-    "currLevel": 12,
-    "currExp": 225.6402098490994,
-    "LevelExp": 609.3381655534142,
+    "health": 459.9697225272559,
+    "base_health": 568.440849242061,
+    "attackpower": 1016.3066930735479,
+    "defense": 1021.1106231051518,
+    "baseDefense": 1021.1106231051518,
+    "speed": 2.1314931001337887,
+    "attackStamina": 0.02123802079942561,
+    "defenseStamina": 0.12123802079942561,
+    "money": 988658.0,
+    "questLevel": 6,
+    "currLevel": 18,
+    "currExp": 677.3228351611715,
+    "LevelExp": 1573.562518618183,
     "searchTime": 0.0,
-    "equipped_item": "Base Armor",
+    "equipped_item": "",
     "InputMapDict": {},
     "Quests": true,
     "Place": "House",
@@ -77,7 +77,7 @@
         },
         "Base Armor": {
             "number": 1,
-            "equipped": true
+            "equipped": false
         }
     }
 }
