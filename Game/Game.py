@@ -3397,6 +3397,8 @@ def QuestGames(Setting, role):
     buffer_width, buffer_height = int(.05*X), int(0.05334*Y)
     beam_height = buffer_height / 4
     beam_width = buffer_width / 2
+    incTimer, incMsg, incDispTime = 0, "", 2 #Variables for displaying increase of stat-level
+
     '''
     How `num_enemies` below is calculated:
     
@@ -3953,7 +3955,13 @@ def QuestGames(Setting, role):
                         pygame.draw.rect(screen, red, enemy_rect[NumberDefeated][i], 2) # Drawing the red-swuare around the enemy to denote that the enemy was hit
                         if enemy[i].health == 0: #Meaning an enemy died
                             money += enemy[i].expYield*10
+                            temp_level = role.currLevel
                             increaseExp(role, enemy[i].expYield)
+                            if role.currLevel > temp_level:
+                                incTimer = time()
+                                #TODO: Figure out how to render the arrow Emoji below in Pygame!
+                                #https://stackoverflow.com/questions/46658351/python-how-to-render-text-emoji-with-pygame
+                                incMsg = f"Level increased: Lv. {temp_level} → Lv. {role.currLevel}"
                             number_defeated += 1 #Increasing the counter for enemies defeated in round `NumberDefeated`
                             enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, num_enemies = update_enemy_lists_after_death(enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, NumberDefeated, num_enemies)
                             # === learning: enemy death penalty & terminal update ===
@@ -4090,6 +4098,9 @@ def QuestGames(Setting, role):
             # reset per-frame reward accumulator
             step_reward[eid] = 0.0
 
+        #Display level-up message
+        if (incTimer + incDispTime) >= time():
+            pygame_print(incMsg)
         pygame.display.update()
 
         if NumberDefeated >= NumRounds or role.health <= 0:
