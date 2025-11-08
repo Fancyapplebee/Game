@@ -137,7 +137,7 @@ cppyy.cppdef(
         // Assignment operator overload
         CustomBool() {value=false;}
         CustomBool& operator=(bool);
-        bool operator()();
+        bool operator()() const;
     };
     
     struct SpecialShot
@@ -348,7 +348,7 @@ cppyy.cppdef(
     bool Role::can_attack()
     {
         bool role_can_attack = ((!moved) || (time() - waitTime >= moveTime));
-        std::cout << "Role can attack = " << std::boolalpha << role_can_attack << '\n';
+        //std::cout << "Role can attack = " << std::boolalpha << role_can_attack << '\n';
         return role_can_attack;
     }
 
@@ -888,6 +888,16 @@ cppyy.cppdef(
     */
     void Role::EquipItem(const std::string& item_name)
     {
+        //`tradeDict` has type `std::unordered_map<std::string, TradeDictValue>`
+        // Below we dequip all items...
+        for (const auto& tradeDictItem: tradeDict) 
+        {
+            if (tradeDictItem.second.equipped())
+            {
+                this->DequipItem(tradeDictItem.first);
+            }
+        }
+        // and then after we now equip the desired item
         this->tradeDict[item_name].equipped = true;
         this->equipped_item = item_name;
 
@@ -1673,7 +1683,7 @@ cppyy.cppdef(
         return out;
     }
     
-    bool CustomBool::operator()()
+    bool CustomBool::operator()() const
     {
         return value;
     }
@@ -1846,10 +1856,11 @@ screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
 #for (char, color_val) in zip(text, color_values):
 #    #...
 
-def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0, scale = True, thresh = 0.9, underline = False, letter_spacing = False, color_dict_list = []):
+def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0, scale = True, thresh = 0.9, underline = False, letter_spacing = False, color_dict_list = [], font_style = 'arial'):
+    #MARK: Font options we know work: 'freesansbold', 'arial'
     global X, Y, font, font_size, base_screen_height, base_font_height, base_font_size, underlined_font
     font_size = base_font_size
-    font = pygame.font.Font('freesansbold.ttf', font_size)
+    font = pygame.font.SysFont(font_style, font_size)
     #Rescaling the font size so it does not trail off the screen
     threshold = thresh*X
     scaled_font_height = (Y*base_font_height)/base_screen_height
@@ -1857,12 +1868,12 @@ def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset
     font_sz = font.size(text)
     while font_size > 1 and (font_sz[0] > threshold or font_sz[1] > scaled_font_height):
         font_size -= 1
-        font = pygame.font.Font('freesansbold.ttf', font_size)
+        font = pygame.font.SysFont(font_style, font_size)
         font_sz = font.size(text)
         
     textRect = None
     if underline:
-        underlined_font = pygame.font.Font('freesansbold.ttf', font_size)
+        underlined_font = pygame.font.SysFont(font_style, font_size)
         underlined_font.set_underline(True)
         if letter_spacing:
             color_values = []
@@ -1892,7 +1903,7 @@ def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset
             textRect.center = (X//2+offset_x, loc_y)
             screen.blit(text, textRect)
     else:
-        font = pygame.font.Font('freesansbold.ttf', font_size)
+        font = pygame.font.SysFont(font_style, font_size)
         if letter_spacing:
             color_values = []
             if color_dict_list:
@@ -2866,7 +2877,7 @@ def tradeItem(role, item_name):
                 pygame.display.update()
 #Stat level 1, Base Armor not equipped, attack power 20. Stat level 4, Base Armor not equipped, attack power 71. Stat level 4, Base Armor equipped, attack power 89. Stat level 6, Base Armor equipped, attack power 120. Stat level 6, Base Armor not equipped, attack power 96. Stat level 7, Base Armor not equipped, attack power 110. Stat level 7, Base Armor equipped, attack power 137.
 def EquipItemInterface(role, item_name):
-    #TODO: Equipping more than 1 item leads to ambiguity in GUI about > 1 item being prompted for dequip -> fix this printing error and make sure only one item is being equipped at a time, i.e., if the role has an item equipped while choosing to equip another then that one the user chooses will be equipped and the prior equip will be automatically dequip
+    #TODO: Include an interface to display the equipped item at a given point, maybe in the Stats that can open a new window to display the equipped item and image, kind of like buyItem, sellItem, etc.
     global font, white, black, orange, screen, X, Y
     screen.fill(white)  # clear the screen
     image_width, image_height = int(0.8*X), int(0.55*Y)
@@ -3959,8 +3970,6 @@ def QuestGames(Setting, role):
                             increaseExp(role, enemy[i].expYield)
                             if role.currLevel > temp_level:
                                 incTimer = time()
-                                #TODO: Figure out how to render the arrow Emoji below in Pygame!
-                                #https://stackoverflow.com/questions/46658351/python-how-to-render-text-emoji-with-pygame
                                 incMsg = f"Level increased: Lv. {temp_level} → Lv. {role.currLevel}"
                             number_defeated += 1 #Increasing the counter for enemies defeated in round `NumberDefeated`
                             enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, num_enemies = update_enemy_lists_after_death(enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, NumberDefeated, num_enemies)
@@ -4100,7 +4109,7 @@ def QuestGames(Setting, role):
 
         #Display level-up message
         if (incTimer + incDispTime) >= time():
-            pygame_print(incMsg)
+            pygame_print(incMsg, font_style = "arial")
         pygame.display.update()
 
         if NumberDefeated >= NumRounds or role.health <= 0:
