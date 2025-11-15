@@ -22,6 +22,9 @@ neutralNPCs = ("MINER", "WOODCHUCKER")
 def Defense(Def):
     return 1 - (Def / (Def + 100))
 
+def scale_0_1(val):
+    return 1/(1+np.exp(val))
+
 #TODO: Do the following
     #####
     # Implement buy function of def shop -> possibly add some items ✅
@@ -134,7 +137,7 @@ cppyy.cppdef(
         // Assignment operator overload
         CustomBool() {value=false;}
         CustomBool& operator=(bool);
-        bool operator()();
+        bool operator()() const;
     };
     
     struct SpecialShot
@@ -163,7 +166,7 @@ cppyy.cppdef(
 
         BadNPC(const std::string& Name);
 
-        void attack(Role&);
+        double attack(Role&);
         void statboost(Role&);
         void update_wait_time();
         bool can_attack();
@@ -261,7 +264,7 @@ cppyy.cppdef(
         bool can_attack();
         void update_wait_time();
         void defend();
-        void attack(BadNPC& enemy, double multiplier = 1.0);
+        double attack(BadNPC& enemy, double multiplier = 1.0);
         void baseLineStats();
         std::vector<std::string> printInventory();
         std::unordered_map<std::string, double> printSellItems(bool print = false);
@@ -303,13 +306,15 @@ cppyy.cppdef(
         virtual ~Role();
     };
 
-    void BadNPC::attack(Role& RoleHero)
+    double BadNPC::attack(Role& RoleHero)
     {
-        RoleHero.health -= (Defense(RoleHero.defense) * attackpower);
+        double damage_dealt = (Defense(RoleHero.defense) * attackpower);
+        RoleHero.health -= damage_dealt;
         if (RoleHero.health < 0)
         {
             RoleHero.health = 0;
         }
+        return damage_dealt;
     }
 
     void Role::defend() //:: is the scope resolution operator
@@ -343,7 +348,7 @@ cppyy.cppdef(
     bool Role::can_attack()
     {
         bool role_can_attack = ((!moved) || (time() - waitTime >= moveTime));
-        std::cout << "Role can attack = " << std::boolalpha << role_can_attack << '\n';
+        //std::cout << "Role can attack = " << std::boolalpha << role_can_attack << '\n';
         return role_can_attack;
     }
 
@@ -373,13 +378,15 @@ cppyy.cppdef(
         waitTime = static_cast<uint64_t>(attackStamina*1000);
     }
 
-    void Role::attack(BadNPC& enemy, double multiplier)
+    double Role::attack(BadNPC& enemy, double multiplier)
     {
-        enemy.health -= (Defense(enemy.defense) * attackpower * multiplier); //the enemy's health can go below 0, so see below :)
+        double damage_dealt = (Defense(enemy.defense) * attackpower * multiplier); 
+        enemy.health -= damage_dealt; //the enemy's health can go below 0, so see below :)
         if (enemy.health < 0)
         {
-            enemy.health = 0;
+            enemy.health = 0; //clips enemy's (potentially negative) health to 0
         }
+        return damage_dealt;
     }
 
     void Role::baseLineStats()
@@ -881,6 +888,16 @@ cppyy.cppdef(
     */
     void Role::EquipItem(const std::string& item_name)
     {
+        //`tradeDict` has type `std::unordered_map<std::string, TradeDictValue>`
+        // Below we dequip all items...
+        for (const auto& tradeDictItem: tradeDict) 
+        {
+            if (tradeDictItem.second.equipped())
+            {
+                this->DequipItem(tradeDictItem.first);
+            }
+        }
+        // and then after we now equip the desired item
         this->tradeDict[item_name].equipped = true;
         this->equipped_item = item_name;
 
@@ -1666,7 +1683,7 @@ cppyy.cppdef(
         return out;
     }
     
-    bool CustomBool::operator()()
+    bool CustomBool::operator()() const
     {
         return value;
     }
@@ -1839,10 +1856,11 @@ screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
 #for (char, color_val) in zip(text, color_values):
 #    #...
 
-def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0, scale = True, thresh = 0.9, underline = False, letter_spacing = False, color_dict_list = []):
+def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset_x=0, scale = True, thresh = 0.9, underline = False, letter_spacing = False, color_dict_list = [], font_style = 'arial'):
+    #MARK: Font options we know work: 'freesansbold', 'arial'
     global X, Y, font, font_size, base_screen_height, base_font_height, base_font_size, underlined_font
     font_size = base_font_size
-    font = pygame.font.Font('freesansbold.ttf', font_size)
+    font = pygame.font.SysFont(font_style, font_size)
     #Rescaling the font size so it does not trail off the screen
     threshold = thresh*X
     scaled_font_height = (Y*base_font_height)/base_screen_height
@@ -1850,12 +1868,12 @@ def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset
     font_sz = font.size(text)
     while font_size > 1 and (font_sz[0] > threshold or font_sz[1] > scaled_font_height):
         font_size -= 1
-        font = pygame.font.Font('freesansbold.ttf', font_size)
+        font = pygame.font.SysFont(font_style, font_size)
         font_sz = font.size(text)
         
     textRect = None
     if underline:
-        underlined_font = pygame.font.Font('freesansbold.ttf', font_size)
+        underlined_font = pygame.font.SysFont(font_style, font_size)
         underlined_font.set_underline(True)
         if letter_spacing:
             color_values = []
@@ -1885,7 +1903,7 @@ def pygame_print(text, loc_y=Y // 2, color=black, background_color=white, offset
             textRect.center = (X//2+offset_x, loc_y)
             screen.blit(text, textRect)
     else:
-        font = pygame.font.Font('freesansbold.ttf', font_size)
+        font = pygame.font.SysFont(font_style, font_size)
         if letter_spacing:
             color_values = []
             if color_dict_list:
@@ -2859,7 +2877,7 @@ def tradeItem(role, item_name):
                 pygame.display.update()
 #Stat level 1, Base Armor not equipped, attack power 20. Stat level 4, Base Armor not equipped, attack power 71. Stat level 4, Base Armor equipped, attack power 89. Stat level 6, Base Armor equipped, attack power 120. Stat level 6, Base Armor not equipped, attack power 96. Stat level 7, Base Armor not equipped, attack power 110. Stat level 7, Base Armor equipped, attack power 137.
 def EquipItemInterface(role, item_name):
-    #TODO: Equipping more than 1 item leads to ambiguity in GUI about > 1 item being prompted for dequip -> fix this printing error and make sure only one item is being equipped at a time, i.e., if the role has an item equipped while choosing to equip another then that one the user chooses will be equipped and the prior equip will be automatically dequip
+    #TODO: Include an interface to display the equipped item at a given point, maybe in the Stats that can open a new window to display the equipped item and image, kind of like buyItem, sellItem, etc.
     global font, white, black, orange, screen, X, Y
     screen.fill(white)  # clear the screen
     image_width, image_height = int(0.8*X), int(0.55*Y)
@@ -3376,6 +3394,7 @@ def get_role_rect(role_rect, role, buffer_width = int(.025*X), buffer_height = i
     return role_rect
 
 def QuestGames(Setting, role):
+    #TODO: see if you can make a pop-up when the role's level increases so the player knows (instead of just having to check in the `Stats` option of the menu all the time
     global font, white, black, orange, X, Y, red, screen
     NumRounds = 10
     role.health = role.base_health  # TODO: delete!
@@ -3389,6 +3408,8 @@ def QuestGames(Setting, role):
     buffer_width, buffer_height = int(.05*X), int(0.05334*Y)
     beam_height = buffer_height / 4
     beam_width = buffer_width / 2
+    incTimer, incMsg, incDispTime = 0, "", 2 #Variables for displaying increase of stat-level
+
     '''
     How `num_enemies` below is calculated:
     
@@ -3402,8 +3423,6 @@ def QuestGames(Setting, role):
     '''
     num_enemies = [1+role.questLevel+randint(0, 2) for i in range(NumRounds)] #number of enemies for each round
     enemies = []
-
-
     '''
     Example Playing Field:
     
@@ -3453,6 +3472,118 @@ def QuestGames(Setting, role):
     print(Setting := Setting.name.upper())
 
     enemy_options = ("attack", "left", "right", "jump", "rest")
+    
+    class NPCBrain:
+        """
+        Linear Q(s,a) with epsilon-greedy selection and online TD(0) updates.
+        Q(s,a) = w_a · phi(s)
+        """
+        def __init__(self, n_actions, n_features, alpha=0.08, gamma=0.95, eps=0.20, eps_min=0.05, eps_decay=0.9995):
+            self.W = np.zeros((n_actions, n_features))  # shape [A, F]
+            self.alpha = alpha
+            self.gamma = gamma
+            self.eps = eps
+            self.eps_min = eps_min
+            self.eps_decay = eps_decay
+
+        def q_values(self, phi):
+            # phi: 1D array of length F
+            if hasattr(np, "array"):
+                phi = np.array(phi, dtype=float)
+                return self.W @ phi #(a, f) * (f, 1) -> (a, 1)
+            else:
+                # fallback
+                return [np.dot(self.W[a], phi) for a in range(len(self.W))]
+
+        #returns index corresponding to max(q-value)
+        #-> tells the NPC which action to take
+        def select_action(self, phi):
+            if random() < self.eps:
+                return randint(0, len(self.W)-1)
+            q = self.q_values(phi)
+            if hasattr(np, "argmax"):
+                return int(np.argmax(q))
+            return max(range(len(q)), key=lambda i: q[i])
+
+        #Updates weights `self.W` and "explorative" noise `self.eps`
+        def update(self, phi, a, r, phi_next, done):
+            q = self.q_values(phi)[a]
+            target = r if done else r + self.gamma * max(self.q_values(phi_next))
+            td = target - q
+            # w_a <- w_a + alpha * td * phi
+            if hasattr(np, "array"):
+                self.W[a] += self.alpha * td * np.array(phi, dtype=float)
+            else:
+                for j in range(len(self.W[a])):
+                    self.W[a][j] += self.alpha * td * phi[j]
+            # gentle exploration decay
+            self.eps = max(self.eps_min, self.eps * self.eps_decay)
+
+    def _clip01(x):
+        return 0.0 if x < 0 else (1.0 if x > 1 else x)
+
+    def enemy_features(i, NumberDefeated, start_x, curr_y, role_rect,
+                       enemy, enemy_x, curr_enemy_y, X, Y, buffer_width, ground_y,
+                       shotsFired, shotsEnemyFired_i, role):
+        """
+        Returns a normalized feature vector phi(s) for enemy i in current round.
+        """
+        ex = enemy_x[NumberDefeated][i]
+        ey = curr_enemy_y[NumberDefeated][i]
+        dx = (ex - start_x) / max(1, X)              # [-?, ?] -> normalize-ish
+        dy = (ey - curr_y)   / max(1, Y)
+        adx = abs(dx)
+        ady = abs(dy)
+
+        # Who is facing whom / line-of-fire alignment
+        same_y_band = 1.0 if ady < (buffer_width / max(1, Y)) else 0.0
+        enemy_facing_player = 1.0 if (enemy[i].flipped and ex < start_x) or ((not enemy[i].flipped) and ex > start_x) else 0.0
+
+        # Cooldowns / ability to act
+        enemy_ready = 1.0 if enemy[i].can_attack() else 0.0
+        role_ready  = 1.0 if role.can_attack()  else 0.0
+
+        # Health (ratios)
+        ehp = enemy[i].health / max(1, enemy[i].base_health)
+        rhp = role.health    / max(1, role.base_health)
+
+        # Edge proximity (avoid walking off / getting stuck)
+        left_edge  = _clip01(1.0 - (ex / max(1, X)))
+        right_edge = _clip01(ex / max(1, X))
+
+        # Incoming player shot proximity (threat)
+        # "min |x - ex|" for player shots roughly in same y band and coming toward the enemy
+        min_shot_dx = 1.0
+        band_h = buffer_width * 0.75
+        for s in shotsFired:
+            if abs(s.beam_y - ey) <= band_h:
+                toward_enemy = (not s.is_flipped and s.beam_x <= ex) or (s.is_flipped and s.beam_x >= ex)
+                if toward_enemy:
+                    sd = abs(s.beam_x - ex) / max(1, X)
+                    if sd < min_shot_dx: min_shot_dx = sd
+        incoming_threat = 1.0 - _clip01(min_shot_dx)  # 1 = very close threat
+
+        # Is enemy airborne (affects jump decisions)
+        airborne = 1.0 if ey < ground_y else 0.0
+
+        # Distance trend encouragement (coarse): prefer closing gap if ready, else dodging
+        # This is not a reward; used as a context feature
+        prefer_close = 1.0 if enemy_ready and same_y_band else 0.0
+        prefer_dodge = 1.0 if incoming_threat > 0.33 else 0.0
+
+        # Final feature vector (keep it small & stable)
+        phi = [
+            dx, dy, adx, ady,
+            same_y_band, enemy_facing_player,
+            enemy_ready, role_ready,
+            ehp, rhp,
+            left_edge, right_edge,
+            incoming_threat,
+            airborne,
+            prefer_close, prefer_dodge,
+            1.0  # bias
+        ]
+        return phi
 
     def spawnBadNPC():
         '''
@@ -3484,6 +3615,27 @@ def QuestGames(Setting, role):
         for enemy_ in enemy_list:
             print(f'[{enemy_.name}, {enemy_.health}, {enemy_.speed}]')
         print("\n")
+
+    # --- Learning state ---
+    n_features = 16 + 1  # keep in sync with enemy_features()
+    npc_brains = {}      # maps enemy_id -> NPCBrain
+    last_phi = {}        # enemy_id -> last feature vector
+    last_action = {}     # enemy_id -> int
+    last_distance = {}   # enemy_id -> float
+    step_reward = {}     # accumulates within a frame (enemy_id -> float)
+    alive_flag = {}      # track if enemy was alive last frame
+
+    def _eid(i):
+        # stable id per enemy object
+        return id(enemy[i])
+
+    def get_brain_for(i):
+        eid = _eid(i)
+        if eid not in npc_brains:
+            npc_brains[eid] = NPCBrain(n_actions=len(enemy_options), n_features=n_features,
+                                       alpha=0.08, gamma=0.95, eps=0.25, eps_min=0.05)
+        return npc_brains[eid]
+
 
     def renderRole():
         global font
@@ -3568,6 +3720,18 @@ def QuestGames(Setting, role):
     shotsFired = [] #role container for shots
     shotsEnemyFired = [[[] for i in range(j)] for j in num_enemies] #[] #enemy container for shots: consisting of `NumRounds` lists of lengths num_enemies[0], num_enemies[1], ..., num_enemies[NumRounds-1]
     
+    # initialize trackers for current round
+    for i in range(len(enemy)):
+        eid = _eid(i)
+        last_distance[eid] = abs(enemy_x[NumberDefeated][i] - start_x)
+        step_reward[eid] = 0.0
+        alive_flag[eid] = True
+        # seed last_phi/action to something harmless
+        last_phi[eid] = enemy_features(i, NumberDefeated, start_x, curr_y, role_rect, enemy,
+                                       enemy_x, curr_enemy_y, X, Y, buffer_width, ground_y,
+                                       shotsFired, shotsEnemyFired[NumberDefeated][i], role)
+        last_action[eid] = 4  # "rest"; recall `enemy_options = ("attack", "left", "right", "jump", "rest")`
+    
     K = 10  # Constant factor for gravity
     global badNPCs  # we're saying that we will be using the global variable badNPCs
     start_msg_time = time()
@@ -3579,7 +3743,18 @@ def QuestGames(Setting, role):
     while True:  # Main quest-loop
         enemyMoves = []
         for i in range(len(enemy)):
-            enemyMoves.append(choice(range(len(enemy_options))))
+            phi = enemy_features(i, NumberDefeated, start_x, curr_y, role_rect, enemy,
+                                 enemy_x, curr_enemy_y, X, Y, buffer_width, ground_y,
+                                 shotsFired, shotsEnemyFired[NumberDefeated][i], role)
+            brain = get_brain_for(i)
+            a = brain.select_action(phi)
+            enemyMoves.append(a)
+            # Remember state-action for the update after we see what happens this frame
+            eid = _eid(i)
+            last_phi[eid] = phi
+            last_action[eid] = a
+            # small living penalty to discourage indecision
+            step_reward[eid] = step_reward.get(eid, 0.0) - 0.002
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.VIDEORESIZE:
                 old_X, old_Y = X, Y
@@ -3777,25 +3952,75 @@ def QuestGames(Setting, role):
             beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width, beam_height) # recreate the rectangle object storing the current shot on the screen
             enemy_resized = True
             while enemy_resized:
-                enemy_resized = False
+                enemy_resized = False #i.e., if enemy(ies) died at this time step
                 for i in range(len(enemy)): #Loop over each enemy and check if `shot` hit `enemy[i]`
                     assert NumberDefeated < len(enemy_rect), f"NumberDefeated = {NumberDefeated} > len(enemy_rect) = {len(enemy_rect)}"
                     assert i < len(enemy_rect[NumberDefeated]), f"i = {i} >= len(enemy_rect[NumberDefeated]) = {len(enemy_rect[NumberDefeated])}"
                     if beam_rect.colliderect(
                             enemy_rect[NumberDefeated][i]) and not shot.hit_target:  # Enemy was hit and this is not a repeat of the same shot
-                        role.attack(enemy[i], multiplier = 1 if not shot.is_special_shot else role.specialShotMultipliers[role.specialShotImage])
+                        damage_dealt = role.attack(enemy[i], multiplier = 1 if not shot.is_special_shot else role.specialShotMultipliers[role.specialShotImage])
+                        # proportional to damage taken (use health drop if you have it; here we use a constant)
+                        e_id = _eid(i)
+                        if e_id in step_reward:
+                            step_reward[e_id] -= scale_0_1(damage_dealt)*1.2
                         pygame.draw.rect(screen, red, enemy_rect[NumberDefeated][i], 2) # Drawing the red-swuare around the enemy to denote that the enemy was hit
-                        if enemy[i].health == 0:
+                        if enemy[i].health == 0: #Meaning an enemy died
                             money += enemy[i].expYield*10
+                            temp_level = role.currLevel
                             increaseExp(role, enemy[i].expYield)
+                            if role.currLevel > temp_level:
+                                incTimer = time()
+                                incMsg = f"Level increased: Lv. {temp_level} → Lv. {role.currLevel}"
                             number_defeated += 1 #Increasing the counter for enemies defeated in round `NumberDefeated`
                             enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, num_enemies = update_enemy_lists_after_death(enemy, enemies, enemy_x, enemy_y, curr_enemy_y, enemy_jump_t, enemy_rect, shotsEnemyFired, NumberDefeated, num_enemies)
+                            # === learning: enemy death penalty & terminal update ===
+                            try:
+                                eid_dead = _eid(i) #getting id of dead enemy
+                                step_reward[eid_dead] -= 1.2 #constant penalty for enemy dying
+                                # Do a terminal update with done=True using a "next state" of zeros
+                                brain_dead = get_brain_for(i)
+                                phi_prev = last_phi[eid_dead]
+                                a_prev = last_action[eid_dead]
+                                phi_next = [0.0]*n_features
+                                brain_dead.update(phi_prev, a_prev, step_reward[eid_dead], phi_next, done=True)
+                                # clear trackers for this enemy id (it will be removed)
+    #                            del last_phi[eid_dead], last_action[eid_dead], step_reward[eid_dead], last_distance[eid_dead], alive_flag[eid_dead]
+                                if eid_dead in last_phi:
+                                    del last_phi[eid_dead]
+                                if eid_dead in last_action:
+                                    del last_action[eid_dead]
+                                if eid_dead in step_reward:
+                                    del step_reward[eid_dead]
+                                if eid_dead in last_distance:
+                                    del last_distance[eid_dead]
+                                if eid_dead in alive_flag:
+                                    del alive_flag[eid_dead]
+                            except:
+                                pass #just go to next line
                             renderRole()
                             if number_defeated == numberToDefeat:
                                 NumberDefeated += 1 #Increasing the counter for the number of rounds completed by the role
                                 #renderRole()
                                 if NumberDefeated < NumRounds:
                                     enemy = enemies[NumberDefeated]  # spawnBadNPC()
+                                    npc_brains = {}      # maps enemy_id -> NPCBrain
+                                    last_phi = {}        # enemy_id -> last feature vector
+                                    last_action = {}     # enemy_id -> int
+                                    last_distance = {}   # enemy_id -> float
+                                    step_reward = {}     # accumulates within a frame (enemy_id -> float)
+                                    alive_flag = {}      # track if enemy was alive last frame
+                                    # initialize trackers for current round
+                                    for i in range(len(enemy)):
+                                        eid = _eid(i)
+                                        last_distance[eid] = abs(enemy_x[NumberDefeated][i] - start_x)
+                                        step_reward[eid] = 0.0
+                                        alive_flag[eid] = True
+                                        # seed last_phi/action to something harmless
+                                        last_phi[eid] = enemy_features(i, NumberDefeated, start_x, curr_y, role_rect, enemy,
+                                                                       enemy_x, curr_enemy_y, X, Y, buffer_width, ground_y,
+                                                                       shotsFired, shotsEnemyFired[NumberDefeated][i], role)
+                                        last_action[eid] = 4  # "rest"
+
                                     number_defeated = 0
                                     numberToDefeat = len(enemy)
                                     pygame_print(f"Round #{NumberDefeated + 1}/{NumRounds}: {', '.join([cppStringConvert(i.name).title() for i in enemy])}", loc_y=int(0.4*Y))
@@ -3825,12 +4050,28 @@ def QuestGames(Setting, role):
                 beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width, beam_height)  # beam object
                 if beam_rect.colliderect(
                         role_rect) and not shot.hit_target:  # Role was hit and this is not a repeat of the same shot
-                    enemy[i].attack(role)
+                    damage_dealt = enemy[i].attack(role)
+                    # === learning: reward damaging the player ===
+                    eid = _eid(i)
+                    if eid in step_reward:
+                        step_reward[eid] += scale_0_1(damage_dealt)*1.2
                     pygame.draw.rect(screen, red, role_rect, 2)
 
                     shot.hit_target = True
                 pygame.draw.ellipse(screen, red, beam_rect)  # Drawing the beam
 
+        # === learning: shaping tied to relative motion ===
+        for i in range(len(enemy)):
+            eid = _eid(i)
+            if enemy[i].health <= 0 or (eid not in last_distance) or (eid not in last_phi) or (eid not in step_reward):
+                continue
+            new_dist = abs(enemy_x[NumberDefeated][i] - start_x)
+            dd = last_distance[eid] - new_dist  # positive if closed gap
+            # Encourage closing when enemy can attack & aligned; otherwise dodging close shots
+            phi_now = last_phi[eid]
+            enemy_ready, same_band, incoming_threat = phi_now[6], phi_now[4], phi_now[12]
+            step_reward[eid] += (0.03 * dd) if (enemy_ready and same_band and incoming_threat < 0.2) else (-0.01 * dd)
+            last_distance[eid] = new_dist
 #        print("Arrived")
 #        exit()
         #Deleting shots that have trailed off the page
@@ -3838,11 +4079,37 @@ def QuestGames(Setting, role):
         temp_idx = min(NumberDefeated, NumRounds - 1) #clips NumberDefeated to NumRounds - 1 if NumberDefeated >= NumRounds (e.g. after the last round)
         shotsEnemyFired[temp_idx] = [[shot for shot in shot_list if shot.beam_x >= 0 and shot.beam_x <= X]  for shot_list in shotsEnemyFired[temp_idx]]
 
-        if role.health <= 0:
+        if role.health <= 0: #Role died 😭
             pygame_print("You died!", loc_y=int(0.4*Y))
+            # reward surviving enemies in case we want to use their q-learning weights for next time
+            for i in range(len(enemy)):
+                if enemy[i].health <= 0:
+                    continue
+                eid = _eid(i)
+                step_reward[eid] += 1.2
         elif time() - start_msg_time < start_msg_interval and NumberDefeated < NumRounds:
             pygame_print(f"Round #{NumberDefeated + 1}/{NumRounds}: {', '.join([cppStringConvert(i.name).title() for i in enemy])}", loc_y=int(0.4*Y))
 
+        # === learning: TD update per alive enemy ===
+        for i in range(len(enemy)):
+            eid = _eid(i)
+            if enemy[i].health <= 0 or (eid not in last_action) or (eid not in last_phi) or (eid not in step_reward):
+                continue
+            brain = get_brain_for(i)
+            # current phi_next after movement & collisions this frame
+            phi_next = enemy_features(i, NumberDefeated, start_x, curr_y, role_rect, enemy,
+                                      enemy_x, curr_enemy_y, X, Y, buffer_width, ground_y,
+                                      shotsFired, shotsEnemyFired[NumberDefeated][i], role)
+            # done? (role died ends episode for learning target)
+            done = (role.health <= 0) or (NumberDefeated >= NumRounds)
+            # one-step TD update
+            brain.update(last_phi[eid], last_action[eid], step_reward[eid], phi_next, done)
+            # reset per-frame reward accumulator
+            step_reward[eid] = 0.0
+
+        #Display level-up message
+        if (incTimer + incDispTime) >= time():
+            pygame_print(incMsg, font_style = "arial")
         pygame.display.update()
 
         if NumberDefeated >= NumRounds or role.health <= 0:
