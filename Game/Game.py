@@ -1815,6 +1815,7 @@ def displayHeroes(printing=False):
 #################################################################################################
 
 pygame.init()
+#Defining colors:
 white = (255, 255, 255)
 green = (0, 255, 0)
 dark_green = (0, 128, 0)
@@ -1825,6 +1826,9 @@ red = (255, 0, 0)
 yellow = (255, 255, 0)
 light_pink = (255, 182, 193)
 orange = (255, 165, 0)
+equipItemColor = (165, 207, 236)
+equipItemHover = (179, 185, 255)
+#Defining screen-size:
 X = 800
 Y = 750
 base_screen_height = Y
@@ -2335,6 +2339,7 @@ def search(setting, role):
 
 def Stats(RoleHero):
     global X, Y, screen
+    equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item}", offset_x=0, loc_y=(0.74*Y), background_color=equipItemColor)
     screen.fill(white)
     pygame_print(f"Attack Power = {RoleHero.attackpower:.0f}", int(0.12*Y))
     pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", int(0.1734*Y))
@@ -2352,7 +2357,11 @@ def Stats(RoleHero):
     font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
     pygame.draw.rect(screen, black, (0.275*X, 0.665*Y, 0.45*X, 0.01333*Y)) #left, top, width, height
     pygame.draw.rect(screen, cyan, (0.275*X, 0.665*Y, 0.45*X*RoleHero.currExp/RoleHero.LevelExp, 0.01333*Y)) #Exp bar
+    onHover = equip_button.collidepoint(pygame.mouse.get_pos())
+    button_color = equipItemHover if onHover else equipItemColor
+    equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
     pygame.display.update()
+    
     while True:
         for event in pygame.event.get():  # update the option number if necessary
             if event.type == pygame.VIDEORESIZE:
@@ -2377,11 +2386,31 @@ def Stats(RoleHero):
                 font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
                 pygame.draw.rect(screen, black, (0.275*X, 0.665*Y, 0.45*X, 0.01333*Y)) #left, top, width, height
                 pygame.draw.rect(screen, cyan, (0.275*X, 0.665*Y, 0.45*X*RoleHero.currExp/RoleHero.LevelExp, 0.01333*Y)) #Exp bar
+                #Add button here for `Equipped Item: {EquippedItem}`
+                #TODO: Need to check why 'None' not displaying here:
+                equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
                 pygame.display.update()
-            if event.type == pygame.KEYDOWN:  # checking if any key was selected
+            elif event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_RETURN:
                     print("exiting menu")
                     return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                if equip_button.collidepoint(pygame.mouse.get_pos()):
+                    #Go to equip-item screen:
+#                    displayEquipItem(RoleHero, RoleHero.equipped_item)
+                    pass
+            if equip_button.collidepoint(pygame.mouse.get_pos()) and not onHover: #hovering
+                button_color = equipItemHover
+                equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
+                pygame.display.update()
+                onHover = True
+            elif not equip_button.collidepoint(pygame.mouse.get_pos()) and onHover: #not hovering
+                button_color = equipItemColor
+                equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
+                pygame.display.update()
+                onHover = False
+
 
 
 # prints a long pygame message
@@ -3297,7 +3326,120 @@ def buyItem(role, item_name):
             
         if current_time - last_move_time > base_delay:
             move_delay = base_delay
+
+#TODO: Finish this function so that it displays the item currently equipped in the correct manner
+def displayEquipItem(role, item_name):
+    #TODO: Handle the case when there is no equipped item properly;
+    #`if item_name == ''` or `if not len(item_name)`.. then, display message "No equipped item!" followed by a call to `wait_til_enter()`
+    global font, white, black, orange, X, Y, screen
+    screen.fill(white)  # clear the screen
+
+    square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
+    image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
+    image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
+
+    num_item = 0  # Count the amount of item_name that the user wants to buy
+    max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
+
+    pygame.draw.rect(screen, white, square_rect)
+    screen.blit(image, square_rect.topleft)
+    pygame_print(f"Name: {item_name}", offset_x=-int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
+    pygame_print(f"Type: Equip-Item", offset_x=-int(0.25 * X), loc_y=int(0.5867 * Y), thresh=0.45)
+    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25 * X), start_height=int(0.6667 * Y), thresh=0.45)
+    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
+    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y), thresh=0.45)
+    if 'SellValue' in role.numInv[item_name]:
+        pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
+    pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
+    font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
+    pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
+    font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
+    pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
+    pygame.display.update()
+    rect = AddButton(text="Buy", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
+    base_delay = 200  # milliseconds
+    move_delay = base_delay
+    last_move_time = pygame.time.get_ticks()
+    moved_down = False
+    moved_up = False
+    button_color = green
+
+    while True:
+    
+        screen.fill(white)  # clear the screen
+        pygame.draw.rect(screen, white, square_rect)
+        screen.blit(image, square_rect.topleft)
+        pygame_print(f"Name: {item_name}", offset_x=-int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
+        pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25 * X), loc_y=int(0.5867 * Y), thresh=0.45)
+        long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25 * X), start_height=int(0.6667 * Y), thresh=0.45)
+        pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
+        pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y), thresh=0.45)
+        if 'SellValue' in role.numInv[item_name]:
+            pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
+        pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
+        font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
+        pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
+        font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
+        pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
+        rect = AddButton(text="Buy", offset_x=int(0.25 * X), loc_y=int(0.7334*Y), background_color=button_color)
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.VIDEORESIZE:
+                X, Y = screen.get_width(), screen.get_height()
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
+                print(f"X, Y = {X}, {Y}")
+                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
+                image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
+                image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
+                pygame.draw.rect(screen, white, square_rect)
+                screen.blit(image, square_rect.topleft)
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    return 0
+            elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
+                mouse_pos = pygame.mouse.get_pos()
+                if rect.collidepoint(mouse_pos):
+                    print("Buying the item.")
+                    role.numInv[item_name]['Number'] += num_item
+                    role.money -= num_item * role.numInv[item_name]['BuyValue']
+                    max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
+                    num_item = 0
+            elif rect.collidepoint(pygame.mouse.get_pos()):
+                button_color = orange
+            elif not rect.collidepoint(pygame.mouse.get_pos()):
+                button_color = green
         
+        keys = pygame.key.get_pressed()
+        current_time = pygame.time.get_ticks()
+
+        if keys[pygame.K_DOWN] and current_time - last_move_time > move_delay:
+            num_item = num_item - 1 if num_item != 0 else max_amount
+            last_move_time = current_time
+            if moved_down:
+                move_delay *= 0.9
+            elif moved_up:
+                moved_up = False
+                moved_down = True
+                move_delay = base_delay
+            else:
+                moved_down = True
+        elif keys[pygame.K_UP] and current_time - last_move_time > move_delay:
+            num_item = num_item + 1 if num_item != max_amount else 0
+            last_move_time = current_time
+            if moved_up:
+                move_delay *= 0.9
+            elif moved_down:
+                moved_down = False
+                moved_up = True
+                move_delay = base_delay
+            else:
+                moved_up = True
+            
+        if current_time - last_move_time > base_delay:
+            move_delay = base_delay
+
 def getItemCounts(role):
     line_count = int(0.1067*Y)
     temp = line_count
