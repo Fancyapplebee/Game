@@ -79,6 +79,7 @@ def scale_0_1(val):
 
         # - Could have some kind of generative mechanism for enemies...?
     # Format this code better/more consistently.
+    #TODO: Store the original image once, then apply transform.scale(original_image) to get a new image instead of doing image = transform.scale(image) repeatedly (lossy compression)
 
 '''
 cS is NOT an input function!!!
@@ -118,6 +119,17 @@ cppyy.cppdef(
     {
         return 1 - (Def / (Def + 100));
     }
+    
+    std::string to_string_with_prec(double obj, int prec = 6)
+    {
+        static constexpr int n = DBL_DIG;
+        assert(prec < n); // Less than because there needs to be one character for the null-terminating character '\0'
+        static char buffer[n];
+        assert(prec >= 0 && "prec is not greater than 0 dude");
+        sprintf(buffer, ("%."+std::to_string(prec)+"f").c_str(), obj);
+        return std::string(buffer);
+    }
+    
     //'Time Since Epoch In Millisecs'
     uint64_t time()
     {
@@ -280,6 +292,7 @@ cppyy.cppdef(
         void DequipItem(const std::string&);
         int GetMaxItemAmount(const std::string&);
         void updateTradeDictInventory(int, const std::string&);
+        std::string getDescription(const std::unordered_map<std::string, float>&);
         
         double AttackLevelFunc(int level)
         {
@@ -980,6 +993,16 @@ cppyy.cppdef(
             }
         }
     }
+    
+    std::string Role::getDescription(const std::unordered_map<std::string, float>& stat_boost_dict)
+    {
+        std::string desc = "";
+        for (const auto& i: stat_boost_dict)
+        {
+            desc += "Raises " + i.first + " by " + to_string_with_prec(i.second, 2) + ". ";
+        }
+        return desc.substr(0, desc.length()-1);
+    }
 
     Role::Role(std::string name)
     {
@@ -1539,101 +1562,104 @@ cppyy.cppdef(
         { 
             {"Rocks", 10}, {"Sands", 30}
         };
-        tradeDict["Base Armor"].description = "Raises Stats by ...";
         tradeDict["Base Armor"].number = 0;
         tradeDict["Base Armor"].image_path = "Assets/armor.png";
         tradeDict["Base Armor"].equipped.r = this;
         tradeDict["Base Armor"].equipped = false;
         tradeDict["Base Armor"].stat_boost["Attack"] = 1.25f;
         //tradeDict["Base Armor"].stat_boost["Defense"] = 1.40f;
+        tradeDict["Base Armor"].description = this->getDescription(tradeDict["Base Armor"].stat_boost);
         
         tradeDict["Green Base Armor"].itemsAndQuantityNeeded = 
         { 
             {"Cactuses", 10}, {"Sands", 30}
         };
-        tradeDict["Green Base Armor"].description = "Raises Stats by ...";
         tradeDict["Green Base Armor"].number = 0;
         tradeDict["Green Base Armor"].image_path = "Assets/green armor.png";
         tradeDict["Green Base Armor"].equipped.r = this;
         tradeDict["Green Base Armor"].equipped = false;
         tradeDict["Green Base Armor"].stat_boost["Attack"] = 1.5f;
-        
+        tradeDict["Green Base Armor"].description = this->getDescription(tradeDict["Green Base Armor"].stat_boost);
+
         tradeDict["Pointy Sword"].itemsAndQuantityNeeded = 
         { 
             {"Knife", 5}, {"Rocks", 50}, {"Sands", 100}
         };
-        tradeDict["Pointy Sword"].description = "Raises Stats by ...";
         tradeDict["Pointy Sword"].number = 0;
         tradeDict["Pointy Sword"].image_path = "Assets/pointy sword.png";
         tradeDict["Pointy Sword"].equipped.r = this;
         tradeDict["Pointy Sword"].equipped = false;
         tradeDict["Pointy Sword"].stat_boost["Attack"] = 1.5f;
+        tradeDict["Pointy Sword"].description = this->getDescription(tradeDict["Pointy Sword"].stat_boost);
 
         tradeDict["Pointy Base Armor"].itemsAndQuantityNeeded = 
         { 
             {"Knife", 5}, {"Cactuses", 10}, {"Sands", 20}, {"Rocks", 15}, {"Base Armor", 1}
         };
-        tradeDict["Pointy Base Armor"].description = "Raises Stats by ...";
         tradeDict["Pointy Base Armor"].number = 0;
         tradeDict["Pointy Base Armor"].image_path = "Assets/spiky armor.png";
         tradeDict["Pointy Base Armor"].equipped.r = this;
         tradeDict["Pointy Base Armor"].equipped = false;
         tradeDict["Pointy Base Armor"].stat_boost["Attack"] = 1.75f;
-        
+        tradeDict["Pointy Base Armor"].description = this->getDescription(tradeDict["Pointy Base Armor"].stat_boost);
+
         tradeDict["Armor 1.0"].itemsAndQuantityNeeded = 
         { 
             {"Silvers", 3}, {"Knife", 10}, {"Sands", 125}, {"Rocks", 150}, {"Base Armor", 1}
         };
-        tradeDict["Armor 1.0"].description = "Raises Stats by ...";
         tradeDict["Armor 1.0"].number = 0;
         tradeDict["Armor 1.0"].image_path = "Assets/armor 1.0.png";
         tradeDict["Armor 1.0"].equipped.r = this;
         tradeDict["Armor 1.0"].equipped = false;
         tradeDict["Armor 1.0"].stat_boost["Attack"] = 2.0f;
-        
+        tradeDict["Armor 1.0"].description = this->getDescription(tradeDict["Armor 1.0"].stat_boost);
+
         tradeDict["Armor 2.0"].itemsAndQuantityNeeded =
         {
             {"Golds", 9}, {"Knife", 30}, {"Sands", 375}, {"Rocks", 200}, {"Armor 1.0", 1}
         };
-        tradeDict["Armor 2.0"].description = "Raises Stats by ...";
         tradeDict["Armor 2.0"].number = 0;
         tradeDict["Armor 2.0"].image_path = "Assets/armor 2.0.png";
         tradeDict["Armor 2.0"].equipped.r = this;
         tradeDict["Armor 2.0"].equipped = false;
         tradeDict["Armor 2.0"].stat_boost["Attack"] = 2.25f;
+        tradeDict["Armor 2.0"].description = this->getDescription(tradeDict["Armor 2.0"].stat_boost);
 
         tradeDict["Boots of Swiftness"].itemsAndQuantityNeeded = 
         {
             {"Logs", 10}, {"Sands", 50}, {"Emeralds", 1}
         };
-        tradeDict["Boots of Swiftness"].description = "Enhances speed and allows for quicker movement.";
         tradeDict["Boots of Swiftness"].number = 0;
         tradeDict["Boots of Swiftness"].image_path = "Assets/boots_of_swiftness.png";
         tradeDict["Boots of Swiftness"].equipped.r = this;
         tradeDict["Boots of Swiftness"].equipped = false;
         tradeDict["Boots of Swiftness"].stat_boost["Speed"] = 2.0f;
+        tradeDict["Boots of Swiftness"].description = "Enhances speed and allows for quicker movement. " 
+                                                      + this->getDescription(tradeDict["Boots of Swiftness"].stat_boost);
 
         tradeDict["Sword of Strength"].itemsAndQuantityNeeded = 
         {
             {"Golds", 5}, {"Logs", 10}, {"Diamonds", 2}
         };
-        tradeDict["Sword of Strength"].description = "Significantly boosts attack power and increases critical hit chance.";
         tradeDict["Sword of Strength"].number = 0;
         tradeDict["Sword of Strength"].image_path = "Assets/sword of strength.png";
         tradeDict["Sword of Strength"].equipped.r = this;
         tradeDict["Sword of Strength"].equipped = false;
         tradeDict["Sword of Strength"].stat_boost["Attack"] = 2.5f;
+        tradeDict["Sword of Strength"].description = "Significantly boosts attack power and increases critical hit chance."
+                                                      + this->getDescription(tradeDict["Sword of Strength"].stat_boost);
 
         tradeDict["Ring of Vitality"].itemsAndQuantityNeeded = 
         {
             {"Emeralds", 2}, {"Golds", 1}, {"Diamonds", 1}
         };
-        tradeDict["Ring of Vitality"].description = "Boosts health regeneration and increases overall stamina.";
         tradeDict["Ring of Vitality"].number = 0;
         tradeDict["Ring of Vitality"].image_path = "Assets/ring_of_vitality.png";
         tradeDict["Sword of Strength"].equipped.r = this;
         tradeDict["Ring of Vitality"].equipped = false;
         tradeDict["Ring of Vitality"].stat_boost["Health"] = 2.0f;
+        tradeDict["Ring of Vitality"].description = "Boosts health regeneration and increases overall stamina."
+                                                     + this->getDescription(tradeDict["Ring of Vitality"].stat_boost);
 
         for (const auto& i: tradeDict)
         {
@@ -2359,7 +2385,7 @@ def Stats(RoleHero):
     pygame.draw.rect(screen, cyan, (0.275*X, 0.665*Y, 0.45*X*RoleHero.currExp/RoleHero.LevelExp, 0.01333*Y)) #Exp bar
     onHover = equip_button.collidepoint(pygame.mouse.get_pos())
     button_color = equipItemHover if onHover else equipItemColor
-    equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
+    equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
     pygame.display.update()
     
     while True:
@@ -2387,7 +2413,6 @@ def Stats(RoleHero):
                 pygame.draw.rect(screen, black, (0.275*X, 0.665*Y, 0.45*X, 0.01333*Y)) #left, top, width, height
                 pygame.draw.rect(screen, cyan, (0.275*X, 0.665*Y, 0.45*X*RoleHero.currExp/RoleHero.LevelExp, 0.01333*Y)) #Exp bar
                 #Add button here for `Equipped Item: {EquippedItem}`
-                #TODO: Need to check why 'None' not displaying here:
                 equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
                 pygame.display.update()
             elif event.type == pygame.KEYDOWN:  # checking if any key was selected
@@ -2398,20 +2423,37 @@ def Stats(RoleHero):
                 mouse_pos = pygame.mouse.get_pos()
                 if equip_button.collidepoint(pygame.mouse.get_pos()):
                     #Go to equip-item screen:
-#                    displayEquipItem(RoleHero, RoleHero.equipped_item)
-                    pass
+                    displayEquipItem(RoleHero, RoleHero.equipped_item)
+                    screen.fill(white)
+                    pygame_print(f"Attack Power = {RoleHero.attackpower:.0f}", int(0.12*Y))
+                    pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", int(0.1734*Y))
+                    pygame_print(f"Speed = {RoleHero.speed:.2f}", int(0.2267*Y))
+                    pygame_print(f"Attack Stamina = {RoleHero.attackStamina:.2f}", int(0.28*Y))
+                    pygame_print(f"Defense Stamina = {RoleHero.defenseStamina:.2f}", int(0.3333*Y))
+                    pygame_print(f"Money = {RoleHero.money}", int(0.3867*Y))
+                    pygame_print(f"Quest Level = {RoleHero.questLevel}", int(0.44*Y))
+                    pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", int(0.4933*Y))
+                    pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", int(0.5467*Y))
+                    pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.635*Y))
+                    pygame.draw.rect(screen, black, (0.275*X, 0.575*Y, 0.45*X, 0.02667*Y)) #left, top, width, height
+                    pygame.draw.rect(screen, green, (0.275*X, 0.575*Y, 0.45*X*RoleHero.health/RoleHero.base_health, 0.02667*Y)) #Health bar
+                    font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
+                    font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
+                    pygame.draw.rect(screen, black, (0.275*X, 0.665*Y, 0.45*X, 0.01333*Y)) #left, top, width, height
+                    pygame.draw.rect(screen, cyan, (0.275*X, 0.665*Y, 0.45*X*RoleHero.currExp/RoleHero.LevelExp, 0.01333*Y)) #Exp bar
+                    #Add button here for `Equipped Item: {EquippedItem}`
+                    equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
+                    pygame.display.update()
             if equip_button.collidepoint(pygame.mouse.get_pos()) and not onHover: #hovering
                 button_color = equipItemHover
-                equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
+                equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
                 pygame.display.update()
                 onHover = True
             elif not equip_button.collidepoint(pygame.mouse.get_pos()) and onHover: #not hovering
                 button_color = equipItemColor
-                equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
+                equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
                 pygame.display.update()
                 onHover = False
-
-
 
 # prints a long pygame message
 def long_pygame_print(message, count=0, line_break=24, color=black, background_color=white, offset_x=0, start_height=int(0.12*Y), thresh = 0.9):
@@ -2440,7 +2482,7 @@ def long_pygame_print(message, count=0, line_break=24, color=black, background_c
             temp += " " + token
 
     pygame_print(temp, loc_y=start_height + count, color=color, background_color=background_color, offset_x=offset_x, thresh = thresh)
-    return count
+    return (start_height + count + int(0.0534 * Y))
 
 
 def AddButton(text="STOP", offset_x=0, loc_y=int(0.048*Y), background_color=red, font_size=int(0.03467*Y)):
@@ -3327,36 +3369,29 @@ def buyItem(role, item_name):
         if current_time - last_move_time > base_delay:
             move_delay = base_delay
 
-#TODO: Finish this function so that it displays the item currently equipped in the correct manner
+#TODO: Make sure we are saving the equipped_item into the save_game.json file
+#TODO: Figure out how to get pygame to round the image corners in the same way the rectangle's corners are rounded: investifage img.subsurface: https://www.reddit.com/r/pygame/comments/ohew49/how_to_crop_an_image_in_pygame/
 def displayEquipItem(role, item_name):
-    #TODO: Handle the case when there is no equipped item properly;
-    #`if item_name == ''` or `if not len(item_name)`.. then, display message "No equipped item!" followed by a call to `wait_til_enter()`
     global font, white, black, orange, X, Y, screen
+    if item_name.empty():
+        screen.fill(white)
+        pygame_print("No equipped item!", loc_y = Y // 2)
+        pygame.display.update()
+        wait_til_enter()
+        return
+        
     screen.fill(white)  # clear the screen
 
-    square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
-    image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
-    image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
-
-    num_item = 0  # Count the amount of item_name that the user wants to buy
-    max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
-
-    pygame.draw.rect(screen, white, square_rect)
-    screen.blit(image, square_rect.topleft)
-    pygame_print(f"Name: {item_name}", offset_x=-int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-    pygame_print(f"Type: Equip-Item", offset_x=-int(0.25 * X), loc_y=int(0.5867 * Y), thresh=0.45)
-    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25 * X), start_height=int(0.6667 * Y), thresh=0.45)
-    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
-    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y), thresh=0.45)
-    if 'SellValue' in role.numInv[item_name]:
-        pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
-    pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-    font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
-    pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-    font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
-    pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-    pygame.display.update()
-    rect = AddButton(text="Buy", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
+    square_rect = pygame.Rect(int(0.05*X), int(0.05*Y), int(0.9*X), int(0.65*Y))  # left, top, width, height
+    image_path = role.tradeDict.at(item_name).image_path
+    image = pygame.image.load(cppStringConvert(image_path))
+    image = pygame.transform.scale(image, (int(0.9*X), int(0.65*Y)))
+    desc = role.tradeDict.at(item_name).description
+    number = role.tradeDict.at(item_name).number
+    
+#    font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
+#    pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
+#    font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
     base_delay = 200  # milliseconds
     move_delay = base_delay
     last_move_time = pygame.time.get_ticks()
@@ -3365,23 +3400,13 @@ def displayEquipItem(role, item_name):
     button_color = green
 
     while True:
-    
         screen.fill(white)  # clear the screen
-        pygame.draw.rect(screen, white, square_rect)
-        screen.blit(image, square_rect.topleft)
-        pygame_print(f"Name: {item_name}", offset_x=-int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-        pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25 * X), loc_y=int(0.5867 * Y), thresh=0.45)
-        long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25 * X), start_height=int(0.6667 * Y), thresh=0.45)
-        pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
-        pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y), thresh=0.45)
-        if 'SellValue' in role.numInv[item_name]:
-            pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
-        pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-        font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
-        pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-        font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
-        pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-        rect = AddButton(text="Buy", offset_x=int(0.25 * X), loc_y=int(0.7334*Y), background_color=button_color)
+        pygame.draw.rect(screen, black, square_rect, border_radius = 30, width = 10)
+        screen.blit(image, square_rect.topleft, special_flags = pygame.BLEND_RGBA_MIN)
+        pygame_print(f"Name: {item_name}", offset_x=0, loc_y=int(0.75 * Y), thresh=0.9)
+        pygame_print(f"Type: Equip-Item", offset_x=0, loc_y=int(0.8 * Y), thresh=0.9)
+        start_height = long_pygame_print(f"Description: {cppStringConvert(desc)}", offset_x=0, start_height=int(0.85 * Y), thresh=0.9)
+        pygame_print(f"Amount: {number}", offset_x=0, loc_y=int(start_height), thresh=0.9)
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -3390,55 +3415,14 @@ def displayEquipItem(role, item_name):
                 X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
-                square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
-                image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
-                image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
-                pygame.draw.rect(screen, white, square_rect)
-                screen.blit(image, square_rect.topleft)
+                square_rect = pygame.Rect(int(0.05*X), int(0.05*Y), int(0.9*X), int(0.65*Y))  # left, top, width, height
+                image = pygame.image.load(cppStringConvert(image_path))
+                image = pygame.transform.scale(image, (int(0.9*X), int(0.65*Y)))
+                pygame.draw.rect(screen, black, square_rect, border_radius = 30, width = 10)
+                screen.blit(image, square_rect.topleft, special_flags = pygame.BLEND_RGBA_MIN)
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     return 0
-            elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
-                mouse_pos = pygame.mouse.get_pos()
-                if rect.collidepoint(mouse_pos):
-                    print("Buying the item.")
-                    role.numInv[item_name]['Number'] += num_item
-                    role.money -= num_item * role.numInv[item_name]['BuyValue']
-                    max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
-                    num_item = 0
-            elif rect.collidepoint(pygame.mouse.get_pos()):
-                button_color = orange
-            elif not rect.collidepoint(pygame.mouse.get_pos()):
-                button_color = green
-        
-        keys = pygame.key.get_pressed()
-        current_time = pygame.time.get_ticks()
-
-        if keys[pygame.K_DOWN] and current_time - last_move_time > move_delay:
-            num_item = num_item - 1 if num_item != 0 else max_amount
-            last_move_time = current_time
-            if moved_down:
-                move_delay *= 0.9
-            elif moved_up:
-                moved_up = False
-                moved_down = True
-                move_delay = base_delay
-            else:
-                moved_down = True
-        elif keys[pygame.K_UP] and current_time - last_move_time > move_delay:
-            num_item = num_item + 1 if num_item != max_amount else 0
-            last_move_time = current_time
-            if moved_up:
-                move_delay *= 0.9
-            elif moved_down:
-                moved_down = False
-                moved_up = True
-                move_delay = base_delay
-            else:
-                moved_up = True
-            
-        if current_time - last_move_time > base_delay:
-            move_delay = base_delay
 
 def getItemCounts(role):
     line_count = int(0.1067*Y)
@@ -4264,20 +4248,12 @@ def QuestGames(Setting, role):
             
 def TradeOption(Role):
     global X, Y, screen
-#    tradeItems = Role.GetItemsUserCanTrade()
-#    if not tradeItems.size():
-#        pygame_print("You don't have any items that you can trade for!", 0.4*Y, color=black, background_color=white)
-#        pygame.display.update()
-#        wait_til_enter()
-#        return
     tradeItems = Role.tradeDictKeys
     if not tradeItems.size():
         pygame_print("You don't have any items that you can trade for!", 0.4*Y, color=black, background_color=white)
         pygame.display.update()
         wait_til_enter()
         return
-    #Role.tradeDictKeys
-
     optionNumber = 0
     maxItems = 3
     startTradeIdx = 0
@@ -4293,9 +4269,7 @@ def TradeOption(Role):
         for i in range(startTradeIdx, endTradeIdx):
             pygame_print(tradeItems[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
             text_y += 0.05334*Y
-
-#        pygame_print(f"Your Money = {Role.money:0.2f}", text_y + 0.02667*Y, color=black, background_color=white)
-
+            
         stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 0.10667*Y, background_color=red)
 
         pygame.display.update()
@@ -5080,6 +5054,7 @@ def printMenuOptions(optionNumber):
     pygame_print("Input Map", (0.6533*Y), color=(orange if optionNumber == 8 else black), background_color=white)
     pygame.display.update()
 
+#TODO: Need to add Save and Quit options to the menu!
 def Menu(role, setting):
     # Only going to execute once
     global Quests, orange, black, white, X, Y, screen
@@ -5209,16 +5184,16 @@ def save_game(role, filename="savegame.json"):
         print(f"num_inv_py = {num_inv_py}")
         #TODO: Correctly convert num_inv_py to python dict!!!
         #std::unordered_map<std::string, std::unordered_map<std::string,double>> numInv;
-        #std::unordered_map<std::string, TradeDictValue> tradeDict;
-        #        struct TradeDictValue
-        #        {
-        #            std::unordered_map<std::string, int> itemsAndQuantityNeeded;
-        #            std::string description;
-        #            int number;
-        #            std::string image_path;
-        #            CustomBool equipped;
-        #            std::unordered_map<std::string, float> stat_boost;
-        #        };
+#        std::unordered_map<std::string, TradeDictValue> tradeDict;
+#                struct TradeDictValue
+#                {
+#                    std::unordered_map<std::string, int> itemsAndQuantityNeeded;
+#                    std::string description;
+#                    int number;
+#                    std::string image_path;
+#                    CustomBool equipped;
+#                    std::unordered_map<std::string, float> stat_boost;
+#                };
         #        struct CustomBool
         #        {
         #            bool value;
