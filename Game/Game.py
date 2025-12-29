@@ -3369,8 +3369,6 @@ def buyItem(role, item_name):
         if current_time - last_move_time > base_delay:
             move_delay = base_delay
 
-#TODO: Make sure we are saving the equipped_item into the save_game.json file
-#TODO: Figure out how to get pygame to round the image corners in the same way the rectangle's corners are rounded: investifage img.subsurface: https://www.reddit.com/r/pygame/comments/ohew49/how_to_crop_an_image_in_pygame/
 def displayEquipItem(role, item_name):
     global font, white, black, orange, X, Y, screen
     if item_name.empty():
@@ -3384,8 +3382,8 @@ def displayEquipItem(role, item_name):
 
     square_rect = pygame.Rect(int(0.05*X), int(0.05*Y), int(0.9*X), int(0.65*Y))  # left, top, width, height
     image_path = role.tradeDict.at(item_name).image_path
-    image = pygame.image.load(cppStringConvert(image_path))
-    image = pygame.transform.scale(image, (int(0.9*X), int(0.65*Y)))
+    original_image = pygame.image.load(cppStringConvert(image_path))
+    image = pygame.transform.scale(original_image, (int(0.9*X), int(0.65*Y)))
     desc = role.tradeDict.at(item_name).description
     number = role.tradeDict.at(item_name).number
     
@@ -3398,28 +3396,70 @@ def displayEquipItem(role, item_name):
     moved_down = False
     moved_up = False
     button_color = green
+    
+    # 1. Create a surface for the "masked" image
+    # Ensure it has an alpha channel (SRCALPHA)
+    masked_image = pygame.Surface(image.get_size(), pygame.SRCALPHA)
+
+    # 2. Fill `masked_image` with black
+    masked_image.fill((0, 0, 0, 0))
+
+    # 3. Draw the rounded rectangle shape (in white) onto `masked_image`
+    pygame.draw.rect(masked_image, white, image.get_rect(), border_radius=30)
+
+    # 4. Blit `image` onto `masked_image` using BLEND_RGBA_MIN
+    masked_image.blit(image, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+
+    # 5. Draw the border on top of `masked_image`
+    border_width = 10
+    pygame.draw.rect(masked_image, black, image.get_rect(), width=border_width, border_radius=30)
+
+    # 6. Finally, draw the result to the main screen
+    screen.blit(masked_image, square_rect.topleft)
+
+    pygame_print(f"Name: {item_name}", offset_x=0, loc_y=int(0.75 * Y), thresh=0.9)
+    pygame_print(f"Type: Equip-Item", offset_x=0, loc_y=int(0.8 * Y), thresh=0.9)
+    start_height = long_pygame_print(f"Description: {cppStringConvert(desc)}", offset_x=0, start_height=int(0.85 * Y), thresh=0.9)
+    pygame_print(f"Amount: {number}", offset_x=0, loc_y=int(start_height), thresh=0.9)
+    pygame.display.update()
 
     while True:
-        screen.fill(white)  # clear the screen
-        pygame.draw.rect(screen, black, square_rect, border_radius = 30, width = 10)
-        screen.blit(image, square_rect.topleft, special_flags = pygame.BLEND_RGBA_MIN)
-        pygame_print(f"Name: {item_name}", offset_x=0, loc_y=int(0.75 * Y), thresh=0.9)
-        pygame_print(f"Type: Equip-Item", offset_x=0, loc_y=int(0.8 * Y), thresh=0.9)
-        start_height = long_pygame_print(f"Description: {cppStringConvert(desc)}", offset_x=0, start_height=int(0.85 * Y), thresh=0.9)
-        pygame_print(f"Amount: {number}", offset_x=0, loc_y=int(start_height), thresh=0.9)
-        pygame.display.update()
-
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
                 X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                screen.fill(white)  # clear the screen
                 square_rect = pygame.Rect(int(0.05*X), int(0.05*Y), int(0.9*X), int(0.65*Y))  # left, top, width, height
-                image = pygame.image.load(cppStringConvert(image_path))
-                image = pygame.transform.scale(image, (int(0.9*X), int(0.65*Y)))
-                pygame.draw.rect(screen, black, square_rect, border_radius = 30, width = 10)
-                screen.blit(image, square_rect.topleft, special_flags = pygame.BLEND_RGBA_MIN)
+                image = pygame.transform.scale(original_image, (int(0.9*X), int(0.65*Y)))
+                
+                # 1. Create a surface for the "masked" image
+                # Ensure it has an alpha channel (SRCALPHA)
+                masked_image = pygame.Surface(image.get_size(), pygame.SRCALPHA)
+
+                # 2. Fill `masked_image` with black
+                masked_image.fill((0, 0, 0, 0))
+
+                # 3. Draw the rounded rectangle shape (in white) onto `masked_image`
+                pygame.draw.rect(masked_image, white, image.get_rect(), border_radius=30)
+
+                # 4. Blit `image` onto `masked_image` using BLEND_RGBA_MIN
+                masked_image.blit(image, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+
+                # 5. Draw the border on top of `masked_image`
+                border_width = 10
+                pygame.draw.rect(masked_image, black, image.get_rect(), width=border_width, border_radius=30)
+
+                # 6. Finally, draw the result to the main screen
+                screen.blit(masked_image, square_rect.topleft)
+
+                pygame_print(f"Name: {item_name}", offset_x=0, loc_y=int(0.75 * Y), thresh=0.9)
+                pygame_print(f"Type: Equip-Item", offset_x=0, loc_y=int(0.8 * Y), thresh=0.9)
+                start_height = long_pygame_print(f"Description: {cppStringConvert(desc)}", offset_x=0, start_height=int(0.85 * Y), thresh=0.9)
+                pygame_print(f"Amount: {number}", offset_x=0, loc_y=int(start_height), thresh=0.9)
+                pygame.display.update()
+                
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     return 0
@@ -5170,10 +5210,6 @@ def save_game(role, filename="savegame.json"):
     global Quests, Place
     if isinstance(role, Role):
 #        std::unordered_map<std::string, std::unordered_map<std::string,double>> numInv;
-        num_inv_py = {
-            cppStringConvert(outer_pair.first) : outer_pair.second["Number"]#{cppStringConvert(inner_pair.first): inner_pair.second for inner_pair in outer_pair.second}
-            for outer_pair in role.numInv
-        }
 #        numInv =
 #        {
 #                {
@@ -5181,40 +5217,36 @@ def save_game(role, filename="savegame.json"):
 #                },
 #                ...
 #         }
-        print(f"num_inv_py = {num_inv_py}")
-        #TODO: Correctly convert num_inv_py to python dict!!!
-        #std::unordered_map<std::string, std::unordered_map<std::string,double>> numInv;
+        num_inv_py = {
+            cppStringConvert(outer_pair.first) : outer_pair.second["Number"]
+            for outer_pair in role.numInv
+        }
 #        std::unordered_map<std::string, TradeDictValue> tradeDict;
-#                struct TradeDictValue
-#                {
-#                    std::unordered_map<std::string, int> itemsAndQuantityNeeded;
-#                    std::string description;
-#                    int number;
-#                    std::string image_path;
-#                    CustomBool equipped;
-#                    std::unordered_map<std::string, float> stat_boost;
-#                };
-        #        struct CustomBool
-        #        {
-        #            bool value;
-        #            std::string item;
-        #            Role* r;
-        #            // Assignment operator overload
-        #            CustomBool() {value=false;}
-        #            CustomBool& operator=(bool);
-        #            bool operator()();
-        #        };
+#        struct TradeDictValue
+#        {
+#            std::unordered_map<std::string, int> itemsAndQuantityNeeded;
+#            std::string description;
+#            int number;
+#            std::string image_path;
+#            CustomBool equipped;
+#            std::unordered_map<std::string, float> stat_boost;
+#        };
+#        struct CustomBool
+#        {
+#            bool value;
+#            std::string item;
+#            Role* r;
+#            // Assignment operator overload
+#            CustomBool() {value=false;}
+#            CustomBool& operator=(bool);
+#            bool operator()();
+#        };
         trade_dict_py = {
             cppStringConvert(outer_pair.first) : {
-#            cppStringConvert(outer_pair.first) : {"itemsAndQuantityNeeded": {cppStringConvert(inner_pair.first): inner_pair.second for inner_pair in outer_pair.second.itemsAndQuantityNeeded},
-#                "description": cppStringConvert(outer_pair.second.description),
                 "number": outer_pair.second.number,
-#                "image_path": cppStringConvert(outer_pair.second.image_path),
-                "equipped": outer_pair.second.equipped.value,#{"value": outer_pair.second.equipped.value, "item": cppStringConvert(outer_pair.second.equipped.item)},
-#                "stat_boost": {cppStringConvert(inner_pair.first): inner_pair.second for inner_pair in outer_pair.second.stat_boost}
+                "equipped": outer_pair.second.equipped.value,
             } for outer_pair in role.tradeDict #so outer_pair is an std::pair iterating over each element in tradeDict
         }
-        print(f"trade_dict_py = {trade_dict_py}\n")
         data_to_save = {
             "name": cppStringConvert(role.name),
             "role_type": role.__class__.__name__,
@@ -5243,7 +5275,6 @@ def save_game(role, filename="savegame.json"):
             "numInv": num_inv_py,
             "tradeDict": trade_dict_py
         } #TypeError: Object of type string is not JSON serializable
-        print(f"data_to_save = {data_to_save}\n")
         with open(filename, 'w') as f:
             json.dump(data_to_save, f, indent=4)
         print(f"Game saved to {filename}")
