@@ -79,6 +79,7 @@ def scale_0_1(val):
 
         # - Could have some kind of generative mechanism for enemies...?
     # Format this code better/more consistently.
+    #TODO: Store the original image once, then apply transform.scale(original_image) to get a new image instead of doing image = transform.scale(image) repeatedly (lossy compression)
 
 '''
 cS is NOT an input function!!!
@@ -2454,8 +2455,6 @@ def Stats(RoleHero):
                 pygame.display.update()
                 onHover = False
 
-
-
 # prints a long pygame message
 def long_pygame_print(message, count=0, line_break=24, color=black, background_color=white, offset_x=0, start_height=int(0.12*Y), thresh = 0.9):
     global X, Y, font, font_size, base_screen_height, base_font_height, base_font_size
@@ -2848,7 +2847,6 @@ def tradeItem(role, item_name):
     
     pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.78*Y), thresh=0.45)
     rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.85*Y), background_color=green)
-#    on_sell_rect = False
 
     pygame.display.update()
 
@@ -2919,8 +2917,7 @@ def tradeItem(role, item_name):
                     rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.85*Y), background_color=green)
                     pygame.display.update()
                     
-                    
-            elif rect.collidepoint(pygame.mouse.get_pos()):# and not on_sell_rect:
+            elif rect.collidepoint(pygame.mouse.get_pos()):
                 screen.fill(white)  # clear the screen
                 pygame.draw.rect(screen, white, square_rect)
                 screen.blit(image, square_rect.topleft)
@@ -2932,9 +2929,8 @@ def tradeItem(role, item_name):
 
                 pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.78*Y), thresh=0.45)
                 rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.85*Y), background_color=green)
-#                on_sell_rect = True
                 pygame.display.update()
-            elif not rect.collidepoint(pygame.mouse.get_pos()):# and on_sell_rect:
+            elif not rect.collidepoint(pygame.mouse.get_pos()):
                 screen.fill(white)  # clear the screen
                 pygame.draw.rect(screen, white, square_rect)
                 screen.blit(image, square_rect.topleft)
@@ -2945,7 +2941,6 @@ def tradeItem(role, item_name):
                 print_trade_requirements(role, item_name)
                 pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.78*Y), thresh=0.45)
                 rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.85*Y), background_color=green)
-#                on_sell_rect = False
                 pygame.display.update()
 #Stat level 1, Base Armor not equipped, attack power 20. Stat level 4, Base Armor not equipped, attack power 71. Stat level 4, Base Armor equipped, attack power 89. Stat level 6, Base Armor equipped, attack power 120. Stat level 6, Base Armor not equipped, attack power 96. Stat level 7, Base Armor not equipped, attack power 110. Stat level 7, Base Armor equipped, attack power 137.
 def EquipItemInterface(role, item_name):
@@ -2957,8 +2952,8 @@ def EquipItemInterface(role, item_name):
     square_rect = pygame.Rect(image_left, image_top, image_width, image_height)  # left, top, width, height
     image_name = cppStringConvert(role.tradeDict[item_name].image_path)
     image_name = image_name if len(image_name) else cppStringConvert(role.placeholder_image)
-    image = pygame.image.load(image_name)
-    image = pygame.transform.scale(image, (image_width, image_height))
+    original_image = pygame.image.load(image_name)
+    image = pygame.transform.scale(original_image, (image_width, image_height))
     
     optionNumber = 0
 
@@ -2976,7 +2971,6 @@ def EquipItemInterface(role, item_name):
 #    pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
 #
 #    rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
-#    on_sell_rect = False
 
     pygame.display.update()
 
@@ -2991,8 +2985,7 @@ def EquipItemInterface(role, item_name):
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 screen.fill(white);
                 square_rect = pygame.Rect(image_left, image_top, image_width, image_height)  # left, top, width, height
-                image = pygame.image.load(image_name)
-                image = pygame.transform.scale(image, (image_width, image_height))
+                image = pygame.transform.scale(original_image, (image_width, image_height))
                 pygame.draw.rect(screen, white, square_rect)
                 screen.blit(image, square_rect.topleft)
                 pygame.draw.rect(screen, white, square_rect)
@@ -3042,7 +3035,6 @@ def TradeItemInventoryEquip(Role):
         wait_til_enter()
         return
     #Role.tradeDictKeys
-
     optionNumber = 0
     maxItems = 3
     startTradeIdx = 0
@@ -3050,7 +3042,13 @@ def TradeItemInventoryEquip(Role):
     clock = pygame.time.Clock()
     move_delay = 200  # milliseconds
     last_move_time = pygame.time.get_ticks()
-    while True:
+    stop_button = None
+#    count = 0
+    
+    def update_screen_tradeItemInventoryEquip():
+        nonlocal stop_button, count
+#        print(f"update_screen_tradeItemInventoryEquip called {count}")
+#        count += 1
         screen.fill(white)  # clear the screen
         pygame_print(f"What would you like to equip or dequip?", (0.08*Y), color=black, background_color=white)
         pygame_print("=================================", (0.134*Y), color=black, background_color=white)
@@ -3058,12 +3056,14 @@ def TradeItemInventoryEquip(Role):
         for i in range(startTradeIdx, endTradeIdx):
             pygame_print(tradeItems[i].title(), text_y, color=(orange if optionNumber == i else black), background_color=white)
             text_y += 0.05334*Y
-
-#        pygame_print(f"Your Money = {Role.money:0.2f}", text_y + 0.02667*Y, color=black, background_color=white)
-
+            
         stop_button = AddButton(text="EXIT", offset_x=0, loc_y=text_y + 0.10667*Y, background_color=red)
-
         pygame.display.update()
+    
+    update_screen_tradeItemInventoryEquip()
+    
+    while True:
+
         keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
 
@@ -3075,7 +3075,7 @@ def TradeItemInventoryEquip(Role):
                 startTradeIdx += 1
             endTradeIdx = startTradeIdx + min(tradeItems.size(), maxItems)
             last_move_time = current_time
-
+            update_screen_tradeItemInventoryEquip()
         elif keys[pygame.K_UP] and current_time - last_move_time > move_delay:
             optionNumber = optionNumber - 1 if optionNumber != 0 else tradeItems.size() - 1
             if optionNumber == tradeItems.size() - 1:
@@ -3084,13 +3084,15 @@ def TradeItemInventoryEquip(Role):
                 startTradeIdx -= 1
             endTradeIdx = startTradeIdx + min(tradeItems.size(), maxItems)
             last_move_time = current_time
-
+            update_screen_tradeItemInventoryEquip()
+            
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
                 X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                update_screen_tradeItemInventoryEquip()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     # Handle the selection of the item
@@ -3103,7 +3105,7 @@ def TradeItemInventoryEquip(Role):
                     optionNumber = 0
                     startTradeIdx = 0
                     endTradeIdx = min(tradeItems.size(), maxItems)
-                    screen.fill(white)
+                    update_screen_tradeItemInventoryEquip()
             elif event.type == pygame.MOUSEBUTTONDOWN and stop_button.collidepoint(
                 pygame.mouse.get_pos()):  # If the mouse was clicked on the stop button
                 return
@@ -3113,39 +3115,45 @@ def TradeItemInventoryEquip(Role):
 
 def sellItem(role, item_name):
     global font, white, black, orange, screen, X, Y
-    screen.fill(white)  # clear the screen
 
     square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
-
-    image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
-    
-    image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
-    
+    original_image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
+    image = pygame.transform.scale(original_image, (int(0.4*X), int(0.3133*Y)))
     num_item = 0 #Count the amount of item_name that the user wants to buy
     max_amount = int(role.numInv[item_name]['Number'])
+    rect = None
+    base_delay = 200  # milliseconds
+    move_delay = base_delay
+    last_move_time = pygame.time.get_ticks()
+    moved_down = False
+    moved_up = False
+    button_color = green
+#    count = 0
 
-    pygame.draw.rect(screen, white, square_rect)
-    screen.blit(image, square_rect.topleft)
-    pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
-    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
-    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
-    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y), thresh=0.45)
-    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
-    pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-    font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
-    pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-    font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
-    pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
+    def update_screen_sellItem():
+        nonlocal rect, button_color#, count
+#        print(f"update_screen_sellItem called {count}")
+#        count += 1
+        screen.fill(white)  # clear the screen
+        pygame.draw.rect(screen, white, square_rect)
+        screen.blit(image, square_rect.topleft)
+        pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
+        pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
+        long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
+        pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
+        pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y), thresh=0.45)
+        pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
+        pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
+        font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
+        pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
+        font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
+        pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
+        rect = AddButton(text="Sell", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=button_color)
+        pygame.display.update()
 
-
-    rect = AddButton(text="Sell", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
-#    on_sell_rect = False
-
-    pygame.display.update()
+    update_screen_sellItem()
 
     while True:
-        
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
@@ -3153,48 +3161,19 @@ def sellItem(role, item_name):
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
-                image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
-                image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
-                pygame.draw.rect(screen, white, square_rect)
-                screen.blit(image, square_rect.topleft)
-                pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
-                pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-                long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
-                pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
-                pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y), thresh=0.45)
-                pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
-                pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-                font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
-                pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-                font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
-                pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-                rect = AddButton(text="Sell", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
-                pygame.display.update()
+                image = pygame.transform.scale(original_image, (int(0.4*X), int(0.3133*Y)))
+                update_screen_sellItem()
                 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     return 0
-                elif event.key == pygame.K_DOWN:
-                    num_item = num_item - 1 if num_item != 0 else max_amount
-                elif event.key == pygame.K_UP:
-                    num_item = num_item + 1 if num_item != max_amount else 0
+                #MARK: might be interesting to see if we can also handle up and down arrow-key single-presses as opposed to soley continuous (below `keys[pygame.K_{UP/DOWN}]`)
+#                elif event.key == pygame.K_DOWN:
+#                    num_item = num_item - 1 if num_item != 0 else max_amount
+#                elif event.key == pygame.K_UP:
+#                    num_item = num_item + 1 if num_item != max_amount else 0
                     
-                screen.fill(white)  # clear the screen
-                pygame.draw.rect(screen, white, square_rect)
-                screen.blit(image, square_rect.topleft)
-                pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
-                pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-                long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
-                pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
-                pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y), thresh=0.45)
-                pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
-                pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-                font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
-                pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-                font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
-                pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-                rect = AddButton(text="Sell", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
-                pygame.display.update()
+#                update_screen_sellItem()
                 
             elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
                 mouse_pos = pygame.mouse.get_pos()
@@ -3204,143 +3183,19 @@ def sellItem(role, item_name):
                     role.money += num_item * role.numInv[item_name]['SellValue']
                     max_amount = int(role.numInv[item_name]['Number'])
                     num_item = 0
-
-                    screen.fill(white)  # clear the screen
-                    pygame.draw.rect(screen, white, square_rect)
-                    screen.blit(image, square_rect.topleft)
-                    pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
-                    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-                    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
-                    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
-                    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y), thresh=0.45)
-                    pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
-                    pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-                    font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
-                    pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-                    font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
-                    pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-                    rect = AddButton(text="Sell", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
-                    pygame.display.update()
+                    update_screen_sellItem()
                     
-                    
-            elif rect.collidepoint(pygame.mouse.get_pos()):# and not on_sell_rect:
-                screen.fill(white)  # clear the screen
-                pygame.draw.rect(screen, white, square_rect)
-                screen.blit(image, square_rect.topleft)
-                pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
-                pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-                long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
-                pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
-                pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y), thresh=0.45)
-                pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
-                pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-                font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
-                pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-                font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
-                pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-                rect = AddButton(text="Sell", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=orange)
-#                on_sell_rect = True
-                pygame.display.update()
-            elif not rect.collidepoint(pygame.mouse.get_pos()):# and on_sell_rect:
-                screen.fill(white)  # clear the screen
-                pygame.draw.rect(screen, white, square_rect)
-                screen.blit(image, square_rect.topleft)
-                pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
-                pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-                long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
-                pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
-                pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y), thresh=0.45)
-                pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
-                pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-                font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
-                pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-                font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
-                pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-                rect = AddButton(text="Sell", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
-#                on_sell_rect = False
-                pygame.display.update()
-
-def buyItem(role, item_name):
-    global font, white, black, orange, X, Y, screen
-    screen.fill(white)  # clear the screen
-
-    square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
-    image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
-    image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
-
-    num_item = 0  # Count the amount of item_name that the user wants to buy
-    max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
-
-    pygame.draw.rect(screen, white, square_rect)
-    screen.blit(image, square_rect.topleft)
-    pygame_print(f"Name: {item_name}", offset_x=-int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-    pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25 * X), loc_y=int(0.5867 * Y), thresh=0.45)
-    long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25 * X), start_height=int(0.6667 * Y), thresh=0.45)
-    pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
-    pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y), thresh=0.45)
-    if 'SellValue' in role.numInv[item_name]:
-        pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
-    pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-    font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
-    pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-    font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
-    pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-    pygame.display.update()
-    rect = AddButton(text="Buy", offset_x=int(0.25*X), loc_y=int(0.7334*Y), background_color=green)
-    base_delay = 200  # milliseconds
-    move_delay = base_delay
-    last_move_time = pygame.time.get_ticks()
-    moved_down = False
-    moved_up = False
-    button_color = green
-
-    while True:
-    
-        screen.fill(white)  # clear the screen
-        pygame.draw.rect(screen, white, square_rect)
-        screen.blit(image, square_rect.topleft)
-        pygame_print(f"Name: {item_name}", offset_x=-int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-        pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25 * X), loc_y=int(0.5867 * Y), thresh=0.45)
-        long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25 * X), start_height=int(0.6667 * Y), thresh=0.45)
-        pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
-        pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y), thresh=0.45)
-        if 'SellValue' in role.numInv[item_name]:
-            pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
-        pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-        font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
-        pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-        font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
-        pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-        rect = AddButton(text="Buy", offset_x=int(0.25 * X), loc_y=int(0.7334*Y), background_color=button_color)
-        pygame.display.update()
-
-        for event in pygame.event.get():
-            if event.type == pygame.VIDEORESIZE:
-                X, Y = screen.get_width(), screen.get_height()
-                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
-                print(f"X, Y = {X}, {Y}")
-                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
-                square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
-                image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
-                image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
-                pygame.draw.rect(screen, white, square_rect)
-                screen.blit(image, square_rect.topleft)
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    return 0
-            elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
-                mouse_pos = pygame.mouse.get_pos()
-                if rect.collidepoint(mouse_pos):
-                    print("Buying the item.")
-                    role.numInv[item_name]['Number'] += num_item
-                    role.money -= num_item * role.numInv[item_name]['BuyValue']
-                    max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
-                    num_item = 0
             elif rect.collidepoint(pygame.mouse.get_pos()):
+                temp_color = button_color
                 button_color = orange
+                if (button_color != temp_color):
+                    update_screen_sellItem()
             elif not rect.collidepoint(pygame.mouse.get_pos()):
+                temp_color = button_color
                 button_color = green
-        
+                if (button_color != temp_color):
+                    update_screen_sellItem()
+                    
         keys = pygame.key.get_pressed()
         current_time = pygame.time.get_ticks()
 
@@ -3355,6 +3210,8 @@ def buyItem(role, item_name):
                 move_delay = base_delay
             else:
                 moved_down = True
+            update_screen_sellItem()
+
         elif keys[pygame.K_UP] and current_time - last_move_time > move_delay:
             num_item = num_item + 1 if num_item != max_amount else 0
             last_move_time = current_time
@@ -3366,6 +3223,7 @@ def buyItem(role, item_name):
                 move_delay = base_delay
             else:
                 moved_up = True
+            update_screen_sellItem()
             
         if current_time - last_move_time > base_delay:
             move_delay = base_delay
@@ -3434,6 +3292,9 @@ def displayEquipItem(role, item_name):
         pygame_print(f"Amount: {number}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
         pygame.display.update()
 
+    update_screen_buyItem()
+    
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 X, Y = screen.get_width(), screen.get_height()
@@ -3445,6 +3306,102 @@ def displayEquipItem(role, item_name):
                 image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
                 pygame.draw.rect(screen, white, square_rect)
                 screen.blit(image, square_rect.topleft)
+                update_screen_buyItem()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    return 0
+
+def displayEquipItem(role, item_name):
+    global font, white, black, orange, X, Y, screen
+    if item_name.empty():
+        screen.fill(white)
+        pygame_print("No equipped item!", loc_y = Y // 2)
+        pygame.display.update()
+        wait_til_enter()
+        return
+        
+    screen.fill(white)  # clear the screen
+
+    square_rect = pygame.Rect(int(0.05*X), int(0.05*Y), int(0.9*X), int(0.65*Y))  # left, top, width, height
+    image_path = role.tradeDict.at(item_name).image_path
+    original_image = pygame.image.load(cppStringConvert(image_path))
+    image = pygame.transform.scale(original_image, (int(0.9*X), int(0.65*Y)))
+    desc = role.tradeDict.at(item_name).description
+    number = role.tradeDict.at(item_name).number
+    
+#    font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
+#    pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
+#    font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
+    base_delay = 200  # milliseconds
+    move_delay = base_delay
+    last_move_time = pygame.time.get_ticks()
+    moved_down = False
+    moved_up = False
+    button_color = green
+    
+    # 1. Create a surface for the "masked" image
+    # Ensure it has an alpha channel (SRCALPHA)
+    masked_image = pygame.Surface(image.get_size(), pygame.SRCALPHA)
+
+    # 2. Fill `masked_image` with black
+    masked_image.fill((0, 0, 0, 0))
+
+    # 3. Draw the rounded rectangle shape (in white) onto `masked_image`
+    pygame.draw.rect(masked_image, white, image.get_rect(), border_radius=30)
+
+    # 4. Blit `image` onto `masked_image` using BLEND_RGBA_MIN
+    masked_image.blit(image, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+
+    # 5. Draw the border on top of `masked_image`
+    border_width = 10
+    pygame.draw.rect(masked_image, black, image.get_rect(), width=border_width, border_radius=30)
+
+    # 6. Finally, draw the result to the main screen
+    screen.blit(masked_image, square_rect.topleft)
+
+    pygame_print(f"Name: {item_name}", offset_x=0, loc_y=int(0.75 * Y), thresh=0.9)
+    pygame_print(f"Type: Equip-Item", offset_x=0, loc_y=int(0.8 * Y), thresh=0.9)
+    start_height = long_pygame_print(f"Description: {cppStringConvert(desc)}", offset_x=0, start_height=int(0.85 * Y), thresh=0.9)
+    pygame_print(f"Amount: {number}", offset_x=0, loc_y=int(start_height), thresh=0.9)
+    pygame.display.update()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.VIDEORESIZE:
+                X, Y = screen.get_width(), screen.get_height()
+                X = 410 if X < 410 else X; Y = 385 if Y < 385 else Y;
+                print(f"X, Y = {X}, {Y}")
+                screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+                screen.fill(white)  # clear the screen
+                square_rect = pygame.Rect(int(0.05*X), int(0.05*Y), int(0.9*X), int(0.65*Y))  # left, top, width, height
+                image = pygame.transform.scale(original_image, (int(0.9*X), int(0.65*Y)))
+                
+                # 1. Create a surface for the "masked" image
+                # Ensure it has an alpha channel (SRCALPHA)
+                masked_image = pygame.Surface(image.get_size(), pygame.SRCALPHA)
+
+                # 2. Fill `masked_image` with black
+                masked_image.fill((0, 0, 0, 0))
+
+                # 3. Draw the rounded rectangle shape (in white) onto `masked_image`
+                pygame.draw.rect(masked_image, white, image.get_rect(), border_radius=30)
+
+                # 4. Blit `image` onto `masked_image` using BLEND_RGBA_MIN
+                masked_image.blit(image, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+
+                # 5. Draw the border on top of `masked_image`
+                border_width = 10
+                pygame.draw.rect(masked_image, black, image.get_rect(), width=border_width, border_radius=30)
+
+                # 6. Finally, draw the result to the main screen
+                screen.blit(masked_image, square_rect.topleft)
+
+                pygame_print(f"Name: {item_name}", offset_x=0, loc_y=int(0.75 * Y), thresh=0.9)
+                pygame_print(f"Type: Equip-Item", offset_x=0, loc_y=int(0.8 * Y), thresh=0.9)
+                start_height = long_pygame_print(f"Description: {cppStringConvert(desc)}", offset_x=0, start_height=int(0.85 * Y), thresh=0.9)
+                pygame_print(f"Amount: {number}", offset_x=0, loc_y=int(start_height), thresh=0.9)
+                pygame.display.update()
+                
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     return 0
@@ -5079,6 +5036,7 @@ def printMenuOptions(optionNumber):
     pygame_print("Input Map", (0.6533*Y), color=(orange if optionNumber == 8 else black), background_color=white)
     pygame.display.update()
 
+#TODO: Need to add Save and Quit options to the menu!
 def Menu(role, setting):
     # Only going to execute once
     global Quests, orange, black, white, X, Y, screen
@@ -5194,10 +5152,6 @@ def save_game(role, filename="savegame.json"):
     global Quests, Place
     if isinstance(role, Role):
 #        std::unordered_map<std::string, std::unordered_map<std::string,double>> numInv;
-        num_inv_py = {
-            cppStringConvert(outer_pair.first) : outer_pair.second["Number"]#{cppStringConvert(inner_pair.first): inner_pair.second for inner_pair in outer_pair.second}
-            for outer_pair in role.numInv
-        }
 #        numInv =
 #        {
 #                {
@@ -5230,15 +5184,10 @@ def save_game(role, filename="savegame.json"):
         #        };
         trade_dict_py = {
             cppStringConvert(outer_pair.first) : {
-#            cppStringConvert(outer_pair.first) : {"itemsAndQuantityNeeded": {cppStringConvert(inner_pair.first): inner_pair.second for inner_pair in outer_pair.second.itemsAndQuantityNeeded},
-#                "description": cppStringConvert(outer_pair.second.description),
                 "number": outer_pair.second.number,
-#                "image_path": cppStringConvert(outer_pair.second.image_path),
-                "equipped": outer_pair.second.equipped.value,#{"value": outer_pair.second.equipped.value, "item": cppStringConvert(outer_pair.second.equipped.item)},
-#                "stat_boost": {cppStringConvert(inner_pair.first): inner_pair.second for inner_pair in outer_pair.second.stat_boost}
+                "equipped": outer_pair.second.equipped.value,
             } for outer_pair in role.tradeDict #so outer_pair is an std::pair iterating over each element in tradeDict
         }
-        print(f"trade_dict_py = {trade_dict_py}\n")
         data_to_save = {
             "name": cppStringConvert(role.name),
             "role_type": role.__class__.__name__,
@@ -5267,7 +5216,6 @@ def save_game(role, filename="savegame.json"):
             "numInv": num_inv_py,
             "tradeDict": trade_dict_py
         } #TypeError: Object of type string is not JSON serializable
-        print(f"data_to_save = {data_to_save}\n")
         with open(filename, 'w') as f:
             json.dump(data_to_save, f, indent=4)
         print(f"Game saved to {filename}")
