@@ -3228,16 +3228,53 @@ def sellItem(role, item_name):
         if current_time - last_move_time > base_delay:
             move_delay = base_delay
 
-def buyItem(role, item_name):
+#TODO: Finish this function so that it displays the item currently equipped in the correct manner
+#TODO: Make sure we are saving the equipped_item into the save_game.json file
+def displayEquipItem(role, item_name):
     global font, white, black, orange, X, Y, screen
+    #TODO: Handle the case when there is no equipped item properly;
+    #`if item_name == ''` or `if not len(item_name)`.. then, display message "No equipped item!" followed by a call to `wait_til_enter()`
+    if item_name.empty():
+        screen.fill(white)
+        pygame_print("No equipped item!", loc_y = Y // 2)
+        pygame.display.update()
+        wait_til_enter()
+        return
+        
+            #std::unordered_map<std::string, std::unordered_map<std::string,double>> numInv;
+#        std::unordered_map<std::string, TradeDictValue> tradeDict;
+#                struct TradeDictValue
+#                {
+#                    std::unordered_map<std::string, int> itemsAndQuantityNeeded;
+#                    std::string description;
+#                    int number;
+#                    std::string image_path;
+#                    CustomBool equipped;
+#                    std::unordered_map<std::string, float> stat_boost;
+#                };
+        #        struct CustomBool
+        #        {
+        #            bool value;
+        #            std::string item;
+        #            Role* r;
+        #            // Assignment operator overload
+        #            CustomBool() {value=false;}
+        #            CustomBool& operator=(bool);
+        #            bool operator()();
+        #        };
+        
+    screen.fill(white)  # clear the screen
 
     square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
-    original_image = pygame.image.load(cppStringConvert(role.stringInv[item_name]["Picture"]))
-    image = pygame.transform.scale(original_image, (int(0.4*X), int(0.3133*Y)))
-
-    num_item = 0  # Count the amount of item_name that the user wants to buy
-    max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
-    rect = None
+    image_path = role.tradeDict.at(item_name).image_path
+    image = pygame.image.load(cppStringConvert(image_path))
+    image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
+    desc = role.tradeDict.at(item_name).description
+    number = role.tradeDict.at(item_name).number
+    
+#    font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
+#    pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
+#    font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
     base_delay = 200  # milliseconds
     move_delay = base_delay
     last_move_time = pygame.time.get_ticks()
@@ -3245,24 +3282,14 @@ def buyItem(role, item_name):
     moved_up = False
     button_color = green
 
-    def update_screen_buyItem():
-        nonlocal rect, button_color
+    while True:
         screen.fill(white)  # clear the screen
         pygame.draw.rect(screen, white, square_rect)
         screen.blit(image, square_rect.topleft)
         pygame_print(f"Name: {item_name}", offset_x=-int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-        pygame_print(f"Type: {cppStringConvert(role.stringInv[item_name]['Type'])}", offset_x=-int(0.25 * X), loc_y=int(0.5867 * Y), thresh=0.45)
-        long_pygame_print(f"Description: {cppStringConvert(role.stringInv[item_name]['Description'])}", offset_x=-int(0.25 * X), start_height=int(0.6667 * Y), thresh=0.45)
-        pygame_print(f"Amount: {role.numInv[item_name]['Number']}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
-        pygame_print(f"Buy Value: {role.numInv[item_name]['BuyValue']}", offset_x=int(0.25 * X), loc_y=int(0.3467 * Y), thresh=0.45)
-        if 'SellValue' in role.numInv[item_name]:
-            pygame_print(f"Sell Value: {role.numInv[item_name]['SellValue']}", offset_x=int(0.25 * X), loc_y=int(0.4267 * Y), thresh=0.45)
-        pygame_print(f"Your Money:", offset_x=int(0.25 * X), loc_y=int(0.5067 * Y), thresh=0.45)
-        font = pygame.font.Font('freesansbold.ttf', int(0.03333*Y))
-        pygame_print(f"{role.money:.2f}", offset_x=int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
-        font = pygame.font.Font('freesansbold.ttf', int(0.04267*Y))
-        pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.6667*Y), thresh=0.45)
-        rect = AddButton(text="Buy", offset_x=int(0.25 * X), loc_y=int(0.7334*Y), background_color=button_color)
+        pygame_print(f"Type: Equip-Item", offset_x=-int(0.25 * X), loc_y=int(0.5867 * Y), thresh=0.45)
+        start_height = long_pygame_print(f"Description: {cppStringConvert(desc)}", offset_x=-int(0.25 * X), start_height=int(0.6667 * Y), thresh=0.45)
+        pygame_print(f"Amount: {number}", offset_x=int(0.25 * X), loc_y=int(0.2667 * Y), thresh=0.45)
         pygame.display.update()
 
     update_screen_buyItem()
@@ -3275,64 +3302,14 @@ def buyItem(role, item_name):
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 square_rect = pygame.Rect(int(0.05*X), int(0.1334*Y), int(0.4*X), int(0.31334*Y))  # left, top, width, height
-                image = pygame.transform.scale(original_image, (int(0.4*X), int(0.3133*Y)))
+                image = pygame.image.load(cppStringConvert(image_path))
+                image = pygame.transform.scale(image, (int(0.4*X), int(0.3133*Y)))
                 pygame.draw.rect(screen, white, square_rect)
                 screen.blit(image, square_rect.topleft)
                 update_screen_buyItem()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     return 0
-            elif event.type == pygame.MOUSEBUTTONDOWN:  # checking if the mouse was clicked on the window
-                mouse_pos = pygame.mouse.get_pos()
-                if rect.collidepoint(mouse_pos):
-                    print("Buying the item.")
-                    role.numInv[item_name]['Number'] += num_item
-                    role.money -= num_item * role.numInv[item_name]['BuyValue']
-                    max_amount = int(role.money // role.numInv[item_name]['BuyValue'])
-                    num_item = 0
-                    update_screen_buyItem()
-            elif rect.collidepoint(pygame.mouse.get_pos()):
-                temp_color = button_color
-                button_color = orange
-                if (button_color != temp_color):
-                    update_screen_buyItem()
-            elif not rect.collidepoint(pygame.mouse.get_pos()):
-                temp_color = button_color
-                button_color = green
-                if (button_color != temp_color):
-                    update_screen_buyItem()
-        
-        keys = pygame.key.get_pressed()
-        current_time = pygame.time.get_ticks()
-
-        if keys[pygame.K_DOWN] and current_time - last_move_time > move_delay:
-            num_item = num_item - 1 if num_item != 0 else max_amount
-            last_move_time = current_time
-            if moved_down:
-                move_delay *= 0.9
-            elif moved_up:
-                moved_up = False
-                moved_down = True
-                move_delay = base_delay
-            else:
-                moved_down = True
-            update_screen_buyItem()
-
-        elif keys[pygame.K_UP] and current_time - last_move_time > move_delay:
-            num_item = num_item + 1 if num_item != max_amount else 0
-            last_move_time = current_time
-            if moved_up:
-                move_delay *= 0.9
-            elif moved_down:
-                moved_down = False
-                moved_up = True
-                move_delay = base_delay
-            else:
-                moved_up = True
-            update_screen_buyItem()
-            
-        if current_time - last_move_time > base_delay:
-            move_delay = base_delay
 
 def displayEquipItem(role, item_name):
     global font, white, black, orange, X, Y, screen
@@ -5182,30 +5159,29 @@ def save_game(role, filename="savegame.json"):
 #                },
 #                ...
 #         }
-        num_inv_py = {
-            cppStringConvert(outer_pair.first) : outer_pair.second["Number"]
-            for outer_pair in role.numInv
-        }
+        print(f"num_inv_py = {num_inv_py}")
+        #TODO: Correctly convert num_inv_py to python dict!!!
+        #std::unordered_map<std::string, std::unordered_map<std::string,double>> numInv;
 #        std::unordered_map<std::string, TradeDictValue> tradeDict;
-#        struct TradeDictValue
-#        {
-#            std::unordered_map<std::string, int> itemsAndQuantityNeeded;
-#            std::string description;
-#            int number;
-#            std::string image_path;
-#            CustomBool equipped;
-#            std::unordered_map<std::string, float> stat_boost;
-#        };
-#        struct CustomBool
-#        {
-#            bool value;
-#            std::string item;
-#            Role* r;
-#            // Assignment operator overload
-#            CustomBool() {value=false;}
-#            CustomBool& operator=(bool);
-#            bool operator()();
-#        };
+#                struct TradeDictValue
+#                {
+#                    std::unordered_map<std::string, int> itemsAndQuantityNeeded;
+#                    std::string description;
+#                    int number;
+#                    std::string image_path;
+#                    CustomBool equipped;
+#                    std::unordered_map<std::string, float> stat_boost;
+#                };
+        #        struct CustomBool
+        #        {
+        #            bool value;
+        #            std::string item;
+        #            Role* r;
+        #            // Assignment operator overload
+        #            CustomBool() {value=false;}
+        #            CustomBool& operator=(bool);
+        #            bool operator()();
+        #        };
         trade_dict_py = {
             cppStringConvert(outer_pair.first) : {
                 "number": outer_pair.second.number,
