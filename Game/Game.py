@@ -10,6 +10,7 @@ import numpy as np
 import pygame
 from PIL import Image
 from copy import deepcopy
+import os.path
 
 Quests = False
 QUEST_ITEMS_VEC = None
@@ -2542,12 +2543,15 @@ def Mine(role, setting):
                       'Golden Saplings': 'Assets/sapling.png'}
     stop_rect = None
     square_rect = None
-    original_image = pygame.image.load(MineImagesDict[item])  #TODO: Fix bug UnboundLocalError: local variable 'item' referenced before assignment
-    image = pygame.transform.scale(original_image, (buffer_width_x, buffer_width_y))
+    original_image = None
+    buffer_width_x, buffer_width_y = None, None
+    rand_X, rand_Y = None, None
+    temp_X, temp_Y = None, None
+    image = None
     font_sz = int(0.0267*Y)
     font = pygame.font.Font('freesansbold.ttf', font_sz)
     def update_screen_Mine(resize = False):
-        nonlocal stop_rect, square_rect, item
+        nonlocal stop_rect, square_rect, item, original_image, buffer_width_x, buffer_width_y, image, rand_X, rand_Y, temp_X, temp_Y
         screen.fill(white)
         pygame_print(f"Player Wins = {wins}", loc_y=int(0.1334*Y))
         pygame_print(f"{Opponent.role} Wins = {losses}", loc_y=int(0.1867*Y))
@@ -2559,20 +2563,32 @@ def Mine(role, setting):
         pygame.draw.line(screen, black, (int(0.9*X), int(0.35*Y)), (int(0.9*X), int(0.9*Y)))  # right edge
         # Determine coordinates where object will appear on the screen
         buffer_width_x, buffer_width_y = int(0.05*X), int(0.0534*Y)
-        rand_X, rand_Y = randint(int(0.1*X) + buffer_width_x, int(0.9*X) - buffer_width_x), randint(int(0.35*Y) + buffer_width_y, int(0.9*Y) - buffer_width_y)
+        if resize:
+            # temp_X, temp_Y = 300, 300
+            # X, Y = 600, 500
+            # rand_X, rand_Y = 40, 30
+            # -> rand_X/temp_X = 40/300 = new_X/(X=600) -> new_X = (X*rand_X)/temp_X
+            # -> rand_Y/temp_Y = 30/300 = new_Y/(Y=500) -> new_Y = (Y*rand_Y)/temp_Y
+            
+            rand_X = (X*rand_X)/temp_X
+            rand_Y = (Y*rand_Y)/temp_Y
+        else:
+            rand_X, rand_Y = randint(int(0.1*X) + buffer_width_x, int(0.9*X) - buffer_width_x), randint(int(0.35*Y) + buffer_width_y, int(0.9*Y) - buffer_width_y)
         square_rect = pygame.Rect(rand_X, rand_Y, buffer_width_x, buffer_width_y)
         pygame.draw.rect(screen, white, square_rect)
         if resize:
             image = pygame.transform.scale(original_image, (buffer_width_x, buffer_width_y))
         else:
             item = np.random.choice(MinableItems, p=MineItemsProbs)
+            original_image = pygame.image.load(MineImagesDict[item])
+            image = pygame.transform.scale(original_image, (buffer_width_x, buffer_width_y))
         screen.blit(image, square_rect.topleft)
         pygame.display.update()
 
     # Each iteration corresponds to a respawn of an object
     # on the screen
     while True:
-        update_screen_Mine()
+        update_screen_Mine() #only called (without resize) once per item-spawn (an iteration)
 
         start = time()
         npcTime = 1 + (1 * random())
@@ -2581,6 +2597,8 @@ def Mine(role, setting):
         playerTime = None
         mouse_pos = None
 
+        # This loop below controls the one current item on the screen
+        # waiting to be grabbed, by the player or by the npc
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.VIDEORESIZE:
@@ -2591,7 +2609,7 @@ def Mine(role, setting):
                     screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                     font_sz = int(0.0267*Y)
                     font = pygame.font.Font('freesansbold.ttf', font_sz)
-                    update_screen_Mine()
+                    update_screen_Mine(resize=True)
                     
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
@@ -3405,8 +3423,10 @@ Rolling a dice:
  
 '''
 
-def get_role_rect(role_rect, role, buffer_width = int(.025*X), buffer_height = int(.025*X)):
-    if role.equipped_item:
+def get_role_rect(role_rect, role, role_image_name, buffer_width = int(.025*X), buffer_height = int(.025*X)):
+    role_temp_equip = role.equipped_item.replace(" ", "")
+    #Image names are of the form `{role}-{role_temp_equip}-start.png`
+    if role.equipped_item and role_temp_equip not in role_image_name:
         equipped_image_path = cppStringConvert(role.tradeDict[role.equipped_item].image_path)
         equipped_image = pygame.image.load(equipped_image_path)
         equipped_image = pygame.transform.scale(equipped_image, (buffer_width, buffer_height))
@@ -3414,13 +3434,19 @@ def get_role_rect(role_rect, role, buffer_width = int(.025*X), buffer_height = i
     return role_rect
 
 def QuestGames(Setting, role):
-    #TODO: see if you can make a pop-up when the role's level increases so the player knows (instead of just having to check in the `Stats` option of the menu all the time
     global font, white, black, orange, X, Y, red, screen
     NumRounds = 10
     role.health = role.base_health  # TODO: delete!
     role.attackpower = 1000 #TODO: delete!
     money = 0
-    role_image_name = role.name.lower().replace(" jackson", "") + "-start.png" #TODO: Later the role image will have to be adjusted to load the specific image corresponding to the specific role and current item equipped
+    role_image_name = role.name.lower().replace(" jackson", "") + "-start.png"
+    if role.equipped_item:
+        role_temp_equip = role.equipped_item.replace(" ", "")
+        role_image_name_temp = role_image_name.replace("-start", f"-{role_temp_equip}-start")
+        if os.path.isfile(f"Assets/{role_image_name_temp}"):
+            role_image_name = role_image_name_temp
+    print(f"role_image_name = {role_image_name}")
+    
     role_image_name_flipped = role_image_name.replace(".png", "flip.png")
     enemy_image_names = {"NINJA": "ninja.png", "OGRE": "ogre.png", "DEMON": "demon.png"}
     enemy_image_names_flipped = {"NINJA": "ninjaflip.png", "OGRE": "ogreflip.png", "DEMON": "demonflip.png"}
@@ -3678,7 +3704,7 @@ def QuestGames(Setting, role):
             f"Assets/{role_image_name}" if not role.flipped else f"Assets/{role_image_name_flipped}")
         role_image = pygame.transform.scale(role_image, (buffer_width, buffer_height))
         screen.blit(role_image, role_rect.topleft)
-        get_role_rect(role_rect, role, buffer_width=int(.025 * X), buffer_height=int(.025 * X))
+        get_role_rect(role_rect, role, role_image_name, buffer_width=int(.025 * X), buffer_height=int(.025 * X))
         if role.health > 0:
             health_bar_width = buffer_width
             health_bar_height = int(0.00825*Y)
@@ -3725,7 +3751,7 @@ def QuestGames(Setting, role):
                                  (health_bar_x, health_bar_y, health_bar_width * health_percentage, health_bar_height))
         font = pygame.font.Font('freesansbold.ttf', int(0.04266 * Y))
         
-    role_rect = get_role_rect(pygame.Rect(start_x, start_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
+    role_rect = get_role_rect(pygame.Rect(start_x, start_y, buffer_width, buffer_width), role, role_image_name, buffer_width = int(.025*X), buffer_height = int(.025*X))
     enemy_rect = []
     
     for (x_val, y_val) in zip(enemy_x, enemy_y):
@@ -3803,7 +3829,7 @@ def QuestGames(Setting, role):
                 ground_y = (ground_y * Y_ratio)
                 shotsFired = [Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in shotsFired]
                 shotsEnemyFired = [[[Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in i] for i in j] for j in shotsEnemyFired]
-                role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
+                role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, role_image_name, buffer_width = int(.025*X), buffer_height = int(.025*X))
                 
                 enemy_rect = []
                 assert(len(enemy_x) == len(curr_enemy_y) and len(enemy_x) == NumRounds)
@@ -3951,7 +3977,7 @@ def QuestGames(Setting, role):
                     enemy_x[NumberDefeated][i] -= enemy[i].speed * AvatarSpeedFactor
                 enemy[i].flipped = False
 
-        role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, buffer_width = int(.025*X), buffer_height = int(.025*X))
+        role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, role_image_name, buffer_width = int(.025*X), buffer_height = int(.025*X))
         enemy_rect = []
         assert(len(enemy_x) == len(curr_enemy_y) and len(enemy_x) == NumRounds)
         for i, (x_val, y_val) in enumerate(zip(enemy_x, curr_enemy_y)): #for each round
