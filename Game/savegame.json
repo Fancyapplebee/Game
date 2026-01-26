@@ -1,48 +1,46 @@
 {
-    "name": "PERCY JACKSON",
-    "role_type": "PercyJackson",
-    "health": 462.1283889168555,
-    "base_health": 496.54623537517085,
+    "name": "ELF",
+    "role_type": "Elf",
+    "health": 544.9767091690751,
+    "base_health": 544.9767091690751,
     "attackpower": 1000.0,
-    "defense": 841.3720884379269,
-    "baseDefense": 841.3720884379269,
-    "speed": 1.7674931001337884,
-    "attackStamina": 0.0212381955667537,
-    "defenseStamina": 0.1212381955667537,
-    "money": 1000000.0,
-    "questLevel": 4,
-    "currLevel": 14,
-    "currExp": 805.3027899957697,
-    "LevelExp": 871.4212528966688,
+    "defense": 1437.4542729226873,
+    "baseDefense": 1437.4542729226873,
+    "speed": 2.6594931001337896,
+    "attackStamina": 0.12123801753982243,
+    "defenseStamina": 0.3212380175398223,
+    "money": 997124.0,
+    "questLevel": 3,
+    "currLevel": 26,
+    "currExp": 71.32597368240562,
+    "LevelExp": 140.29611541307906,
     "searchTime": 0.0,
-    "equipped_item": "Pointy Sword",
-    "InputMapDict": {
-        "108": "Ring"
-    },
+    "equipped_item": "",
+    "InputMapDict": {},
     "Quests": true,
     "Place": "House",
     "numInv": {
         "Ring": 0.0,
         "Armor": 0.0,
         "Cape": 0.0,
-        "Knife": 0.0,
+        "Knife": 1.0,
         "Key 1": 0.0,
         "Apple": 0.0,
         "Potion": 0.0,
         "Water Guns": 0.0,
-        "Sand Pails": 10.0,
+        "Sand Pails": 0.0,
         "Golden Logs": 0.0,
-        "Sands": 17.0,
-        "Cactuses": 15.0,
-        "Logs": 4.0,
+        "Sands": 0.0,
+        "Cactuses": 0.0,
+        "Logs": 0.0,
         "Diamonds": 0.0,
         "Golds": 0.0,
         "Parrot": 0.0,
-        "Cookies": 5.0,
+        "Cookies": 0.0,
         "Silvers": 0.0,
         "Golden Saplings": 0.0,
         "Emeralds": 0.0,
-        "Rocks": 9.0
+        "Rocks": 0.0
     },
     "tradeDict": {
         "Ring of Vitality": {
@@ -70,15 +68,15 @@
             "equipped": false
         },
         "Pointy Sword": {
-            "number": 1,
-            "equipped": true
+            "number": 0,
+            "equipped": false
         },
         "Green Base Armor": {
-            "number": 1,
+            "number": 0,
             "equipped": false
         },
         "Base Armor": {
-            "number": 1,
+            "number": 0,
             "equipped": false
         }
     }

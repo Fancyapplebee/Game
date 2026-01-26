@@ -2795,6 +2795,8 @@ def print_trade_requirements(role, item_name):
         
         pygame_print(user_item_info_str, offset_x=int(0.25*X), loc_y=int(start_y + i), thresh=0.45, letter_spacing = True, color_dict_list = color_dict_list)
         i += inc_y
+    
+    return int(start_y + i + inc_y), inc_y
 
 def tradeItem(role, item_name):
     global font, white, black, orange, screen, X, Y
@@ -2819,11 +2821,12 @@ def tradeItem(role, item_name):
         pygame_print(f"Name: {item_name}", offset_x=-int(0.25*X), loc_y=int(0.5067*Y), thresh=0.45)
         pygame_print(f"Type: Equip", offset_x=-int(0.25*X), loc_y=int(0.5867*Y), thresh=0.45)
         long_pygame_print(f"Description: {cppStringConvert(role.tradeDict[item_name].description)}", offset_x=-int(0.25*X), start_height=int(0.6667*Y), thresh=0.45)
-        pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=int(0.5867*Y), thresh=0.45)
-        print_trade_requirements(role, item_name)
-        
-        pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=int(0.78*Y), thresh=0.45)
-        rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=int(0.85*Y), background_color=green)
+        loc_y, inc_y = print_trade_requirements(role, item_name)
+        pygame_print(f"Amount: {role.tradeDict[item_name].number}", offset_x=int(0.25 * X), loc_y=loc_y, thresh=0.45)
+        loc_y = int(loc_y + 1.15*inc_y)
+        pygame_print(f"How many?: {num_item}", offset_x=int(0.25*X), loc_y=loc_y, thresh=0.45)
+        loc_y = int(loc_y + 1.25*inc_y)
+        rect = AddButton(text="Trade", offset_x=int(0.25*X), loc_y=loc_y, background_color=green)
         pygame.display.update()
 
     update_screen_tradeItem()
