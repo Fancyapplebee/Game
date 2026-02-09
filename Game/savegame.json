@@ -1,36 +1,36 @@
 {
     "name": "ELF",
     "role_type": "Elf",
-    "health": 544.9767091690751,
-    "base_health": 544.9767091690751,
-    "attackpower": 1000.0,
-    "defense": 1437.4542729226873,
-    "baseDefense": 1437.4542729226873,
-    "speed": 2.6594931001337896,
-    "attackStamina": 0.12123801753982243,
-    "defenseStamina": 0.3212380175398223,
-    "money": 997124.0,
-    "questLevel": 3,
-    "currLevel": 26,
-    "currExp": 71.32597368240562,
-    "LevelExp": 140.29611541307906,
+    "health": 391.99273726037615,
+    "base_health": 401.0672323009084,
+    "attackpower": 1046.4511059285146,
+    "defense": 1077.6760807522708,
+    "baseDefense": 1077.6760807522708,
+    "speed": 1.8404931001337883,
+    "attackStamina": 0.12123802640222205,
+    "defenseStamina": 0.321238026402222,
+    "money": 1000000.0,
+    "questLevel": 1,
+    "currLevel": 17,
+    "currExp": 37.83268143120273,
+    "LevelExp": 76.36753236814714,
     "searchTime": 0.0,
-    "equipped_item": "",
+    "equipped_item": "Base Armor",
     "InputMapDict": {},
     "Quests": true,
-    "Place": "House",
+    "Place": "Desert",
     "numInv": {
         "Ring": 0.0,
         "Armor": 0.0,
         "Cape": 0.0,
-        "Knife": 1.0,
+        "Knife": 0.0,
         "Key 1": 0.0,
         "Apple": 0.0,
         "Potion": 0.0,
         "Water Guns": 0.0,
         "Sand Pails": 0.0,
         "Golden Logs": 0.0,
-        "Sands": 0.0,
+        "Sands": 1.0,
         "Cactuses": 0.0,
         "Logs": 0.0,
         "Diamonds": 0.0,
@@ -40,7 +40,7 @@
         "Silvers": 0.0,
         "Golden Saplings": 0.0,
         "Emeralds": 0.0,
-        "Rocks": 0.0
+        "Rocks": 11.0
     },
     "tradeDict": {
         "Ring of Vitality": {
@@ -76,8 +76,8 @@
             "equipped": false
         },
         "Base Armor": {
-            "number": 0,
-            "equipped": false
+            "number": 1,
+            "equipped": true
         }
     }
 }

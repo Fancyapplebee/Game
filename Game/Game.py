@@ -80,8 +80,8 @@ def scale_0_1(val):
 
         # - Could have some kind of generative mechanism for enemies...?
     # Format this code better/more consistently.
-    #TODO: Store the original image once, then apply transform.scale(original_image) to get a new image instead of doing image = transform.scale(image) repeatedly (lossy compression)
-
+    # Zoom-in and Zoom-out feature (via command/ctrl +/- and/or two-finger scroll up/down)
+    # Boss battle?
 '''
 cS is NOT an input function!!!
 
@@ -1820,7 +1820,6 @@ def increaseStats(role):
     role.defense = role.baseDefense
     role.speed += role.SpeedLevelFunc(role.currLevel)
 
-
 def increaseExp(role, netExp):
     role.currExp += netExp
     while role.currExp > role.LevelExp:
@@ -2364,29 +2363,56 @@ def search(setting, role):
     role.searchTime = time()
     return setting.places[optionNumber]
 
+def get_role_rect(role_rect, role, role_image_name, buffer_width = int(.025*X), buffer_height = int(.025*X)):
+    role_temp_equip = role.equipped_item.replace(" ", "")
+    #Image names are of the form `{role}-{role_temp_equip}-start.png`
+    if role.equipped_item and role_temp_equip not in role_image_name:
+        equipped_image_path = cppStringConvert(role.tradeDict[role.equipped_item].image_path)
+        original_equipped_image = pygame.image.load(equipped_image_path)
+        equipped_image = pygame.transform.scale(original_equipped_image, (buffer_width, buffer_height))
+        screen.blit(equipped_image, role_rect.topleft)
+    return role_rect
+
 def Stats(RoleHero):
     global X, Y, screen
-    equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item}", offset_x=0, loc_y=(0.74*Y), background_color=equipItemColor)
+    equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item}", offset_x=0, loc_y=(0.84*Y), background_color=equipItemColor)
     screen.fill(white)
-    pygame_print(f"Attack Power = {RoleHero.attackpower:.0f}", int(0.12*Y))
-    pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", int(0.1734*Y))
-    pygame_print(f"Speed = {RoleHero.speed:.2f}", int(0.2267*Y))
-    pygame_print(f"Attack Stamina = {RoleHero.attackStamina:.2f}", int(0.28*Y))
-    pygame_print(f"Defense Stamina = {RoleHero.defenseStamina:.2f}", int(0.3333*Y))
-    pygame_print(f"Money = {RoleHero.money}", int(0.3867*Y))
-    pygame_print(f"Quest Level = {RoleHero.questLevel}", int(0.44*Y))
-    pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", int(0.4933*Y))
-    pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", int(0.5467*Y))
-    pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.635*Y))
-    pygame.draw.rect(screen, black, (0.275*X, 0.575*Y, 0.45*X, 0.02667*Y)) #left, top, width, height
-    pygame.draw.rect(screen, green, (0.275*X, 0.575*Y, 0.45*X*RoleHero.health/RoleHero.base_health, 0.02667*Y)) #Health bar
-    font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
+    pygame_print(f"{RoleHero.name.title()}", int(0.12*Y), underline = True)
+    
+    role_image_name = RoleHero.name.lower().replace(" jackson", "") + "-start.png"
+    if RoleHero.equipped_item:
+        role_temp_equip = RoleHero.equipped_item.replace(" ", "")
+        role_image_name_temp = role_image_name.replace("-start", f"-{role_temp_equip}-start")
+        print(f"role_image_name_temp = {role_image_name_temp}")
+        if os.path.isfile(f"Assets/{role_image_name_temp}"):
+            role_image_name = role_image_name_temp
+    print(f"role_image_name = {role_image_name}")
+    
+    original_role_image = pygame.image.load(f"Assets/{role_image_name}")
+    buffer_width_float = .06*X
+    buffer_width, buffer_height = int(buffer_width_float), int(.06*Y)
+    role_image = pygame.transform.scale(original_role_image, (buffer_width, buffer_height))
+    role_rect = get_role_rect(pygame.Rect(int(0.5*X - buffer_width_float/2), int(0.145*Y), buffer_width, buffer_height), RoleHero, role_image_name, buffer_width, buffer_height) #left, top, width, height
+    screen.blit(role_image, role_rect.topleft)
+    
+    pygame_print(f"Attack Power = {RoleHero.attackpower:.0f}", int(0.22*Y))
+    pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", int(0.2734*Y))
+    pygame_print(f"Speed = {RoleHero.speed:.2f}", int(0.3267*Y))
+    pygame_print(f"Attack Stamina = {RoleHero.attackStamina:.2f}", int(0.38*Y))
+    pygame_print(f"Defense Stamina = {RoleHero.defenseStamina:.2f}", int(0.4333*Y))
+    pygame_print(f"Money = {RoleHero.money}", int(0.4867*Y))
+    pygame_print(f"Quest Level = {RoleHero.questLevel}", int(0.54*Y))
+    pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", int(0.5933*Y))
+    pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", int(0.6467*Y))
+    pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.735*Y))
+    pygame.draw.rect(screen, black, (0.275*X, 0.675*Y, 0.45*X, 0.02667*Y)) #left, top, width, height
+    pygame.draw.rect(screen, green, (0.275*X, 0.675*Y, 0.45*X*RoleHero.health/RoleHero.base_health, 0.02667*Y)) #Health bar
     font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
-    pygame.draw.rect(screen, black, (0.275*X, 0.665*Y, 0.45*X, 0.01333*Y)) #left, top, width, height
-    pygame.draw.rect(screen, cyan, (0.275*X, 0.665*Y, 0.45*X*RoleHero.currExp/RoleHero.LevelExp, 0.01333*Y)) #Exp bar
+    pygame.draw.rect(screen, black, (0.275*X, 0.765*Y, 0.45*X, 0.01333*Y)) #left, top, width, height
+    pygame.draw.rect(screen, cyan, (0.275*X, 0.765*Y, 0.45*X*RoleHero.currExp/RoleHero.LevelExp, 0.01333*Y)) #Exp bar
     onHover = equip_button.collidepoint(pygame.mouse.get_pos())
     button_color = equipItemHover if onHover else equipItemColor
-    equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
+    equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.84*Y), background_color=button_color)
     pygame.display.update()
     
     while True:
@@ -2397,24 +2423,30 @@ def Stats(RoleHero):
                 print(f"X, Y = {X}, {Y}")
                 screen = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
                 screen.fill(white)
-                pygame_print(f"Attack Power = {RoleHero.attackpower:.0f}", int(0.12*Y))
-                pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", int(0.1734*Y))
-                pygame_print(f"Speed = {RoleHero.speed:.2f}", int(0.2267*Y))
-                pygame_print(f"Attack Stamina = {RoleHero.attackStamina:.2f}", int(0.28*Y))
-                pygame_print(f"Defense Stamina = {RoleHero.defenseStamina:.2f}", int(0.3333*Y))
-                pygame_print(f"Money = {RoleHero.money}", int(0.3867*Y))
-                pygame_print(f"Quest Level = {RoleHero.questLevel}", int(0.44*Y))
-                pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", int(0.4933*Y))
-                pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", int(0.5467*Y))
-                pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.635*Y))
-                pygame.draw.rect(screen, black, (0.275*X, 0.575*Y, 0.45*X, 0.02667*Y)) #left, top, width, height
-                pygame.draw.rect(screen, green, (0.275*X, 0.575*Y, 0.45*X*RoleHero.health/RoleHero.base_health, 0.02667*Y)) #Health bar
-                font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
+                pygame_print(f"{RoleHero.name.title()}", int(0.12*Y), underline = True)
+                buffer_width_float = .06*X
+                buffer_width, buffer_height = int(buffer_width_float), int(.06*Y)
+                role_image = pygame.transform.scale(original_role_image, (buffer_width, buffer_height))
+                role_rect = get_role_rect(pygame.Rect(int(0.5*X - buffer_width_float/2), int(0.145*Y), buffer_width, buffer_height), RoleHero, role_image_name, buffer_width, buffer_height) #left, top, width, height
+                screen.blit(role_image, role_rect.topleft)
+                pygame_print(f"Attack Power = {RoleHero.attackpower:.0f}", int(0.22*Y))
+                pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", int(0.2734*Y))
+                pygame_print(f"Speed = {RoleHero.speed:.2f}", int(0.3267*Y))
+                pygame_print(f"Attack Stamina = {RoleHero.attackStamina:.2f}", int(0.38*Y))
+                pygame_print(f"Defense Stamina = {RoleHero.defenseStamina:.2f}", int(0.4333*Y))
+                pygame_print(f"Money = {RoleHero.money}", int(0.4867*Y))
+                pygame_print(f"Quest Level = {RoleHero.questLevel}", int(0.54*Y))
+                pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", int(0.5933*Y))
+                pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", int(0.6467*Y))
+                pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.735*Y))
+                pygame.draw.rect(screen, black, (0.275*X, 0.675*Y, 0.45*X, 0.02667*Y)) #left, top, width, height
+                pygame.draw.rect(screen, green, (0.275*X, 0.675*Y, 0.45*X*RoleHero.health/RoleHero.base_health, 0.02667*Y)) #Health bar
                 font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
-                pygame.draw.rect(screen, black, (0.275*X, 0.665*Y, 0.45*X, 0.01333*Y)) #left, top, width, height
-                pygame.draw.rect(screen, cyan, (0.275*X, 0.665*Y, 0.45*X*RoleHero.currExp/RoleHero.LevelExp, 0.01333*Y)) #Exp bar
-                #Add button here for `Equipped Item: {EquippedItem}`
-                equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
+                pygame.draw.rect(screen, black, (0.275*X, 0.765*Y, 0.45*X, 0.01333*Y)) #left, top, width, height
+                pygame.draw.rect(screen, cyan, (0.275*X, 0.765*Y, 0.45*X*RoleHero.currExp/RoleHero.LevelExp, 0.01333*Y)) #Exp bar
+                onHover = equip_button.collidepoint(pygame.mouse.get_pos())
+                button_color = equipItemHover if onHover else equipItemColor
+                equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.84*Y), background_color=button_color)
                 pygame.display.update()
             elif event.type == pygame.KEYDOWN:  # checking if any key was selected
                 if event.key == pygame.K_RETURN:
@@ -2426,33 +2458,40 @@ def Stats(RoleHero):
                     #Go to equip-item screen:
                     displayEquipItem(RoleHero, RoleHero.equipped_item)
                     screen.fill(white)
-                    pygame_print(f"Attack Power = {RoleHero.attackpower:.0f}", int(0.12*Y))
-                    pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", int(0.1734*Y))
-                    pygame_print(f"Speed = {RoleHero.speed:.2f}", int(0.2267*Y))
-                    pygame_print(f"Attack Stamina = {RoleHero.attackStamina:.2f}", int(0.28*Y))
-                    pygame_print(f"Defense Stamina = {RoleHero.defenseStamina:.2f}", int(0.3333*Y))
-                    pygame_print(f"Money = {RoleHero.money}", int(0.3867*Y))
-                    pygame_print(f"Quest Level = {RoleHero.questLevel}", int(0.44*Y))
-                    pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", int(0.4933*Y))
-                    pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", int(0.5467*Y))
-                    pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.635*Y))
-                    pygame.draw.rect(screen, black, (0.275*X, 0.575*Y, 0.45*X, 0.02667*Y)) #left, top, width, height
-                    pygame.draw.rect(screen, green, (0.275*X, 0.575*Y, 0.45*X*RoleHero.health/RoleHero.base_health, 0.02667*Y)) #Health bar
-                    font = pygame.font.Font('freesansbold.ttf', int(0.02667*Y))
+                    pygame_print(f"{RoleHero.name.title()}", int(0.12*Y), underline = True)
+                    pygame_print(f"{RoleHero.name.title()}", int(0.12*Y), underline = True)
+                    buffer_width_float = .06*X
+                    buffer_width, buffer_height = int(buffer_width_float), int(.06*Y)
+                    role_image = pygame.transform.scale(original_role_image, (buffer_width, buffer_height))
+                    role_rect = get_role_rect(pygame.Rect(int(0.5*X - buffer_width_float/2), int(0.145*Y), buffer_width, buffer_height), RoleHero, role_image_name, buffer_width, buffer_height) #left, top, width, height
+                    screen.blit(role_image, role_rect.topleft)
+                    pygame_print(f"Attack Power = {RoleHero.attackpower:.0f}", int(0.22*Y))
+                    pygame_print(f"Defense = {RoleHero.defense:.0f} / {RoleHero.baseDefense:.0f}", int(0.2734*Y))
+                    pygame_print(f"Speed = {RoleHero.speed:.2f}", int(0.3267*Y))
+                    pygame_print(f"Attack Stamina = {RoleHero.attackStamina:.2f}", int(0.38*Y))
+                    pygame_print(f"Defense Stamina = {RoleHero.defenseStamina:.2f}", int(0.4333*Y))
+                    pygame_print(f"Money = {RoleHero.money}", int(0.4867*Y))
+                    pygame_print(f"Quest Level = {RoleHero.questLevel}", int(0.54*Y))
+                    pygame_print(f"Stat Level = {RoleHero.currLevel:.0f}", int(0.5933*Y))
+                    pygame_print(f"Health = {RoleHero.health:.0f} / {RoleHero.base_health:.0f}", int(0.6467*Y))
+                    pygame_print(f"Exp = {RoleHero.currExp:.2f} / {RoleHero.LevelExp:.2f}", int(0.735*Y))
+                    pygame.draw.rect(screen, black, (0.275*X, 0.675*Y, 0.45*X, 0.02667*Y)) #left, top, width, height
+                    pygame.draw.rect(screen, green, (0.275*X, 0.675*Y, 0.45*X*RoleHero.health/RoleHero.base_health, 0.02667*Y)) #Health bar
                     font = pygame.font.Font('freesansbold.ttf', int(0.02933*Y))
-                    pygame.draw.rect(screen, black, (0.275*X, 0.665*Y, 0.45*X, 0.01333*Y)) #left, top, width, height
-                    pygame.draw.rect(screen, cyan, (0.275*X, 0.665*Y, 0.45*X*RoleHero.currExp/RoleHero.LevelExp, 0.01333*Y)) #Exp bar
-                    #Add button here for `Equipped Item: {EquippedItem}`
-                    equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
+                    pygame.draw.rect(screen, black, (0.275*X, 0.765*Y, 0.45*X, 0.01333*Y)) #left, top, width, height
+                    pygame.draw.rect(screen, cyan, (0.275*X, 0.765*Y, 0.45*X*RoleHero.currExp/RoleHero.LevelExp, 0.01333*Y)) #Exp bar
+                    onHover = equip_button.collidepoint(pygame.mouse.get_pos())
+                    button_color = equipItemHover if onHover else equipItemColor
+                    equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.84*Y), background_color=button_color)
                     pygame.display.update()
             if equip_button.collidepoint(pygame.mouse.get_pos()) and not onHover: #hovering
                 button_color = equipItemHover
-                equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
+                equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.84*Y), background_color=button_color)
                 pygame.display.update()
                 onHover = True
             elif not equip_button.collidepoint(pygame.mouse.get_pos()) and onHover: #not hovering
                 button_color = equipItemColor
-                equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.74*Y), background_color=button_color)
+                equip_button = AddButton(text=f"Equipped Item: {RoleHero.equipped_item if RoleHero.equipped_item.length() else 'None'}", offset_x=0, loc_y=(0.84*Y), background_color=button_color)
                 pygame.display.update()
                 onHover = False
 
@@ -3426,16 +3465,6 @@ Rolling a dice:
  
 '''
 
-def get_role_rect(role_rect, role, role_image_name, buffer_width = int(.025*X), buffer_height = int(.025*X)):
-    role_temp_equip = role.equipped_item.replace(" ", "")
-    #Image names are of the form `{role}-{role_temp_equip}-start.png`
-    if role.equipped_item and role_temp_equip not in role_image_name:
-        equipped_image_path = cppStringConvert(role.tradeDict[role.equipped_item].image_path)
-        equipped_image = pygame.image.load(equipped_image_path)
-        equipped_image = pygame.transform.scale(equipped_image, (buffer_width, buffer_height))
-        screen.blit(equipped_image, role_rect.topleft)
-    return role_rect
-
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red, screen
     NumRounds = 10
@@ -3517,7 +3546,7 @@ def QuestGames(Setting, role):
     role_rect = None
     enemy_rect = [[None]*num_enemies[i] for i in range(len(num_enemies))]
     
-    print(enemy_jump_t,enemy_rect,sep='\n')
+#    print(enemy_jump_t,enemy_rect,sep='\n')
     print(Setting := Setting.name.upper())
 
     enemy_options = ("attack", "left", "right", "jump", "rest")
@@ -3658,12 +3687,12 @@ def QuestGames(Setting, role):
     getEnemyBaseHealth = lambda: sum(sum(enemy_.base_health for enemy_ in enemy_list) for enemy_list in enemies)
     TotalEnemyBaseHealth = getEnemyBaseHealth()
     
-    print(*enemies, f"\nTotalEnemyBaseHealth = {TotalEnemyBaseHealth}\nnum_enemies={num_enemies}", sep='\n')
+#    print(*enemies, f"\nTotalEnemyBaseHealth = {TotalEnemyBaseHealth}\nnum_enemies={num_enemies}", sep='\n')
     assert(getEnemyHealth() == TotalEnemyBaseHealth)
-    for enemy_list in enemies:
-        for enemy_ in enemy_list:
-            print(f'[{enemy_.name}, {enemy_.health}, {enemy_.speed}]')
-        print("\n")
+#    for enemy_list in enemies:
+#        for enemy_ in enemy_list:
+#            print(f'[{enemy_.name}, {enemy_.health}, {enemy_.speed}]')
+#        print("\n")
 
     # --- Learning state ---
     n_features = 16 + 1  # keep in sync with enemy_features()
@@ -3703,9 +3732,9 @@ def QuestGames(Setting, role):
         pygame_print(f"Quest #{role.questLevel + 1}", loc_y=0.08 * Y, underline = True)
 
         # Render role sprite
-        role_image = pygame.image.load(
+        original_role_image = pygame.image.load(
             f"Assets/{role_image_name}" if not role.flipped else f"Assets/{role_image_name_flipped}")
-        role_image = pygame.transform.scale(role_image, (buffer_width, buffer_height))
+        role_image = pygame.transform.scale(original_role_image, (buffer_width, buffer_height))
         screen.blit(role_image, role_rect.topleft)
         get_role_rect(role_rect, role, role_image_name, buffer_width=int(.025 * X), buffer_height=int(.025 * X))
         if role.health > 0:
@@ -3734,8 +3763,8 @@ def QuestGames(Setting, role):
                 image_path = os.path.join(os.getcwd(), "Assets",
                                           enemy_image_names_flipped[enemy_name_str] if enemy_val.flipped else
                                           enemy_image_names[enemy_name_str])
-                enemy_image = pygame.image.load(image_path)
-                enemy_image = pygame.transform.scale(enemy_image, (buffer_width, buffer_height))
+                original_enemy_image = pygame.image.load(image_path)
+                enemy_image = pygame.transform.scale(original_enemy_image, (buffer_width, buffer_height))
                 screen.blit(enemy_image, rect.topleft)
 
                 # Render individual enemy health bar
@@ -4088,8 +4117,8 @@ def QuestGames(Setting, role):
                 pygame.draw.ellipse(screen, orange, beam_rect)  # Drawing the beam
             else:
 #                print(shot.special_image, cppStringConvert(shot.special_image))
-                image = pygame.image.load(cppStringConvert(shot.special_image))
-                image = pygame.transform.scale(image, (beam_width, beam_height))
+                original_image = pygame.image.load(cppStringConvert(shot.special_image))
+                image = pygame.transform.scale(original_image, (beam_width, beam_height))
                 screen.blit(image, beam_rect.topleft)
         
         for i, shot_list in enumerate(shotsEnemyFired[min(NumberDefeated, NumRounds - 1)]): #looping over each enemy[i]'s shot_list in the current round `NumberDefeated`
