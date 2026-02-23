@@ -43,11 +43,10 @@ def scale_0_1(val):
             # Introduce a non-zero probability of losing an equip
         # When fighting, make unique and not like other weapons ✅
             # e.g. some equips boost more defense, other attack, etc. ✅
-        # Maybe add some kind of ranged modifier
-            # items do more/less damage depending on distance traveled.
-                # So shot damage could be like a function depending on distance traveled from the player enemy;
-                # perhaps an exponential function: Damage = D_max * exp(-k(distance)), where k is some function
-                # we gotta decide on
+        # Add a heat-seeking shot-type that follows the player's location for some number of time-steps
+        # Investigate why the shots seem to be emanating too low on the screen wrt the sprite-locations for certain settings but not others.
+            # Also investigate why the desert backdrop doesn't cover the whole screen (a white rectangular part on the screen that the backdrop doesn't cover)
+        # Maybe add some kind of ranged modifier, where items do more/less damage depending on distance traveled. ✅
         # Make some equips boost stats depending on how much/little health the player has
             # e.g. more boost for health below some threshold
 
@@ -102,6 +101,7 @@ cppyy.cppdef(
     struct Shot
     {
         double beam_x, beam_y;
+        double start_beam_x, start_beam_y;
         bool hit_target, is_flipped, is_special_shot;
         std::string special_image;
         
@@ -109,10 +109,18 @@ cppyy.cppdef(
         {
             this->beam_x = beam_x;
             this->beam_y = beam_y;
+            this->start_beam_x = beam_x;
+            this->start_beam_y = beam_y;
             this->hit_target = hit_target;
             this->is_flipped = is_flipped;
             this->is_special_shot = is_special_shot;
             this->special_image = special_image;
+        }
+        
+        double distance(double X_size)
+        {
+            //TODO: if later heat-seeking shots are added, we'll need to branch on that variable later and add an argument Y_size
+            return abs(this->beam_x - this->start_beam_x) / X_size;
         }
     };
     
@@ -179,7 +187,7 @@ cppyy.cppdef(
 
         BadNPC(const std::string& Name);
 
-        double attack(Role&);
+        double attack(Role&, double distance = 1.0);
         void statboost(Role&);
         void update_wait_time();
         bool can_attack();
@@ -320,9 +328,10 @@ cppyy.cppdef(
         virtual ~Role();
     };
 
-    double BadNPC::attack(Role& RoleHero)
+    double BadNPC::attack(Role& RoleHero, double distance)
     {
-        double damage_dealt = (Defense(RoleHero.defense) * attackpower);
+        constexpr double pi = 3.14159265358979311600;
+        double damage_dealt = (Defense(RoleHero.defense) * attackpower) * (0.9 + abs(0.1*sin(pi * distance)));
         RoleHero.health -= damage_dealt;
         if (RoleHero.health < 0)
         {
@@ -4128,7 +4137,8 @@ def QuestGames(Setting, role):
                 beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width, beam_height)  # beam object
                 if beam_rect.colliderect(
                         role_rect) and not shot.hit_target:  # Role was hit and this is not a repeat of the same shot
-                    damage_dealt = enemy[i].attack(role)
+                    damage_dealt = enemy[i].attack(role, shot.distance(screen.get_width()))
+                    print(f"damage-dealt by {enemy[i].name} = {damage_dealt}")
                     # === learning: reward damaging the player ===
                     eid = _eid(i)
                     if eid in step_reward:
