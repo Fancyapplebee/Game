@@ -46,7 +46,9 @@ def scale_0_1(val):
         # Add a heat-seeking shot-type that follows the player's location for some number of time-steps
         # Investigate why the shots seem to be emanating too low on the screen wrt the sprite-locations for certain settings but not others.
             # Also investigate why the desert backdrop doesn't cover the whole screen (a white rectangular part on the screen that the backdrop doesn't cover)
-        # Maybe add some kind of ranged modifier, where items do more/less damage depending on distance traveled. ✅
+        # Add a ranged modifier, where items do more/less damage depending on distance traveled
+            # for the enemy. ✅
+            # for the player. 
         # Make some equips boost stats depending on how much/little health the player has
             # e.g. more boost for health below some threshold
 
@@ -1867,6 +1869,7 @@ equipItemHover = (179, 185, 255)
 X = 800
 Y = 750
 base_screen_height = Y
+base_screen_width = X
 def scale_font(size):
     global base_screen_height
     scale_factor = Y / base_screen_height
@@ -3475,7 +3478,7 @@ Rolling a dice:
 '''
 
 def QuestGames(Setting, role):
-    global font, white, black, orange, X, Y, red, screen
+    global font, white, black, orange, X, Y, red, screen, base_screen_width
     NumRounds = 10
     role.health = role.base_health  # TODO: delete!
     role.attackpower = 1000 #TODO: delete!
@@ -3889,8 +3892,8 @@ def QuestGames(Setting, role):
                 elif event.key == pygame.K_SPACE:  # Checking if the role hero fired a shot
                     # Put beam on the screen if role has the stamina for it
                     if role.can_attack():
-                        beam_x = start_x + (buffer_width if not role.flipped else 0)
-                        beam_y = curr_y + buffer_width / 2
+                        beam_x = start_x + (buffer_width*.5 if not role.flipped else 0)
+                        beam_y = curr_y + buffer_height / 3
                         # Puts the coordinate of the shots fired on the screen
                         shotsFired.append(Shot(beam_x, beam_y, False,
                                                role.flipped))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
@@ -3901,8 +3904,8 @@ def QuestGames(Setting, role):
                     role.useInv[role.InputMapDict[event.key]]["Use"]()
                     if role.isSpecialShot:
                         if role.can_attack():
-                            beam_x = start_x + (buffer_width if not role.flipped else 0)
-                            beam_y = curr_y + buffer_width / 2
+                            beam_x = start_x + (buffer_width*.5 if not role.flipped else 0)
+                            beam_y = curr_y + buffer_height / 3
                             # Puts the coordinate of the shots fired on the screen
                             shotsFired.append(Shot(beam_x, beam_y, False,
                                                    role.flipped, True, role.specialShotImage))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
@@ -3927,12 +3930,12 @@ def QuestGames(Setting, role):
 
             if enemy_options[enemyMove] == "right":
                 if enemy_x[NumberDefeated][i] < X - buffer_width:
-                    enemy_x[NumberDefeated][i] += enemy[i].speed * 10
+                    enemy_x[NumberDefeated][i] += enemy[i].speed * 10 * (X/base_screen_width)
                 enemy[i].flipped = True
 
             if enemy_options[enemyMove] == "left":
                 if enemy_x[NumberDefeated][i] > 0:
-                    enemy_x[NumberDefeated][i] -= enemy[i].speed * 10
+                    enemy_x[NumberDefeated][i] -= enemy[i].speed * 10 * (X/base_screen_width)
                 enemy[i].flipped = False
 
         keys = pygame.key.get_pressed()
@@ -3989,11 +3992,11 @@ def QuestGames(Setting, role):
         # ===================================================
         if keys[pygame.K_RIGHT]:  # if right-arrow was pressed, move right
             if start_x < X - buffer_width:
-                start_x += role.speed * AvatarSpeedFactor
+                start_x += role.speed * AvatarSpeedFactor * (X/base_screen_width)
             role.flipped = False
         if keys[pygame.K_LEFT]:  # if left-arrow was pressed, move left
             if start_x > 0:
-                start_x -= role.speed * AvatarSpeedFactor
+                start_x -= role.speed * AvatarSpeedFactor * (X/base_screen_width)
             role.flipped = True
         if keys[pygame.K_UP]: # if up-arrow was pressed...
             if start_y + int(0.2666*Y) >= ground_y:  # Check if they can keep going higher, curr_y must >= 400 atm (less than 200 elevation)
@@ -4011,11 +4014,11 @@ def QuestGames(Setting, role):
             enemyMove = enemyMoves[i]
             if enemy_options[enemyMove] == "right":
                 if enemy_x[NumberDefeated][i] < X - buffer_width:
-                    enemy_x[NumberDefeated][i] += enemy[i].speed * AvatarSpeedFactor
+                    enemy_x[NumberDefeated][i] += enemy[i].speed * AvatarSpeedFactor * (X/base_screen_width)
                 enemy[i].flipped = True
             if enemy_options[enemyMove] == "left":
                 if enemy_x[NumberDefeated][i] > 0:
-                    enemy_x[NumberDefeated][i] -= enemy[i].speed * AvatarSpeedFactor
+                    enemy_x[NumberDefeated][i] -= enemy[i].speed * AvatarSpeedFactor * (X/base_screen_width)
                 enemy[i].flipped = False
 
         role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, role_image_name, buffer_width = int(.025*X), buffer_height = int(.025*X))
@@ -4197,7 +4200,7 @@ def QuestGames(Setting, role):
 
         #Display level-up message
         if (incTimer + incDispTime) >= time():
-            pygame_print(incMsg, font_style = "arial")
+            pygame_print(incMsg, font_style = "arial", loc_y = Y//2)
         pygame.display.update()
 
         if NumberDefeated >= NumRounds or role.health <= 0:
