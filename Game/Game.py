@@ -106,8 +106,12 @@ cppyy.cppdef(
         double start_beam_x, start_beam_y;
         bool hit_target, is_flipped, is_special_shot;
         std::string special_image;
+        const std::chrono::high_resolution_clock::time_point t0;
+        static inline int num_shots = 0;
+        const int shot_id;
+        std::string label;
         
-        Shot(double beam_x, double beam_y, bool hit_target, bool is_flipped, bool is_special_shot = false, std::string special_image = "")
+        Shot(double beam_x, double beam_y, bool hit_target, bool is_flipped, bool is_special_shot = false, const::std::string& special_image = "", const std::string& label = "") : t0{std::chrono::high_resolution_clock::now()}, shot_id{num_shots}, label{label}
         {
             this->beam_x = beam_x;
             this->beam_y = beam_y;
@@ -117,12 +121,21 @@ cppyy.cppdef(
             this->is_flipped = is_flipped;
             this->is_special_shot = is_special_shot;
             this->special_image = special_image;
+            Shot::num_shots++;
         }
         
         double distance(double X_size)
         {
             //TODO: if later heat-seeking shots are added, we'll need to branch on that variable later and add an argument Y_size
             return abs(this->beam_x - this->start_beam_x) / X_size;
+        }
+        
+        ~Shot()
+        {
+            auto t1 = std::chrono::high_resolution_clock::now();
+            double s = std::chrono::duration<double>(t1 - t0).count();
+            std::cout << "Shot(shot-id = " << this->shot_id << ", label = '" << this->label << "') life-time = " << s << '\n';
+            Shot::num_shots--;
         }
     };
     
@@ -3858,12 +3871,17 @@ def QuestGames(Setting, role):
                 screen.fill(white);
                 '''
                 old_X          start_x
-                -----   =    -----------    ->  new_start_x * old_X = start_x * X   ->  new_start_x  =  (start_x * X) / old_X
+                -----   =    -----------    
                   X          new_start_x
+                  
+                ->  new_start_x * old_X = start_x * X   
+                ->  new_start_x = (start_x * X) / old_X
                 '''
+                
                 X_ratio = X / old_X
                 Y_ratio = Y / old_Y
                 
+                ShotSpeedFactor = (ShotSpeedFactor * X_ratio)
                 start_x = (start_x * X_ratio)
                 start_y = (start_y * Y_ratio)
                 curr_y = (curr_y * Y_ratio)
@@ -3871,8 +3889,9 @@ def QuestGames(Setting, role):
                 enemy_y = [[Y_ratio*i for i in j] for j in enemy_y]
                 curr_enemy_y = [[Y_ratio*i for i in j] for j in curr_enemy_y]
                 ground_y = (ground_y * Y_ratio)
-                shotsFired = [Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in shotsFired]
-                shotsEnemyFired = [[[Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image) for shot in i] for i in j] for j in shotsEnemyFired]
+                #TODO: could optimize this to simply change the attributes of each shot instead of re-instantiating them
+                shotsFired = [Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image, "hero") for shot in shotsFired]
+                shotsEnemyFired = [[[Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image, "enemy") for shot in i] for i in j] for j in shotsEnemyFired]
                 role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, role_image_name, buffer_width = int(.025*X), buffer_height = int(.025*X))
                 
                 enemy_rect = []
@@ -3895,8 +3914,9 @@ def QuestGames(Setting, role):
                         beam_x = start_x + (buffer_width*.5 if not role.flipped else 0)
                         beam_y = curr_y + buffer_height / 3
                         # Puts the coordinate of the shots fired on the screen
+#                        (double beam_x, double beam_y, bool hit_target, bool is_flipped, bool is_special_shot = false, const::std::string& special_image = "", const std::string& label = "")
                         shotsFired.append(Shot(beam_x, beam_y, False,
-                                               role.flipped))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
+                                               role.flipped, False, "", "role"))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
                         # Update the wait-time here.
                         role.update_wait_time()
                 elif event.key in role.InputMapDict and role.numInv[role.InputMapDict[event.key]]["Number"] > 0:
@@ -3908,7 +3928,7 @@ def QuestGames(Setting, role):
                             beam_y = curr_y + buffer_height / 3
                             # Puts the coordinate of the shots fired on the screen
                             shotsFired.append(Shot(beam_x, beam_y, False,
-                                                   role.flipped, True, role.specialShotImage))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
+                                                   role.flipped, True, role.specialShotImage, "role"))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
                             # Update the wait-time here.
                             role.update_wait_time()
                         else:
