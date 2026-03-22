@@ -3889,9 +3889,22 @@ def QuestGames(Setting, role):
                 enemy_y = [[Y_ratio*i for i in j] for j in enemy_y]
                 curr_enemy_y = [[Y_ratio*i for i in j] for j in curr_enemy_y]
                 ground_y = (ground_y * Y_ratio)
-                #TODO: could optimize this to simply change the attributes of each shot instead of re-instantiating them
-                shotsFired = [Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image, "hero") for shot in shotsFired]
-                shotsEnemyFired = [[[Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image, "enemy") for shot in i] for i in j] for j in shotsEnemyFired]
+#                shotsFiredStartTimer = time()
+#                shotsFired = [Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image, "hero") for shot in shotsFired]
+                for shot_idx in range(len(shotsFired)):
+                    shotsFired[shot_idx].beam_x *= X_ratio
+                    shotsFired[shot_idx].beam_y *= Y_ratio
+#                print(f"Time to modify hero's shot-coordinates = {time() - shotsFiredStartTimer:.10f}")
+                shotsEnemyFiredStartTimer = time()
+#                shotsEnemyFired = [[[Shot(shot.beam_x*X_ratio, shot.beam_y*Y_ratio, shot.hit_target, shot.is_flipped, shot.is_special_shot, shot.special_image, "enemy") for shot in i] for i in j] for j in shotsEnemyFired]
+
+                for round_idx in range(len(shotsEnemyFired)):
+                    for enemy_idx in range(len(shotsEnemyFired[round_idx])):
+                        for shot_idx in range(len(shotsEnemyFired[round_idx][enemy_idx])):
+                            shotsEnemyFired[round_idx][enemy_idx][shot_idx].beam_x *= X_ratio
+                            shotsEnemyFired[round_idx][enemy_idx][shot_idx].beam_y *= Y_ratio
+#                print(f"Time to modify enemies' shot-coordinates = {time() - shotsEnemyFiredStartTimer:.10f}")
+
                 role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, role_image_name, buffer_width = int(.025*X), buffer_height = int(.025*X))
                 
                 enemy_rect = []
