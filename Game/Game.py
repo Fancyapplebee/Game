@@ -104,14 +104,15 @@ cppyy.cppdef(
     {
         double beam_x, beam_y;
         double start_beam_x, start_beam_y;
-        bool hit_target, is_flipped, is_special_shot;
+        bool hit_target, is_flipped;
+        const bool is_special_shot, is_heat_seeking;
         std::string special_image;
         const std::chrono::high_resolution_clock::time_point t0;
         static inline int num_shots = 0;
         const int shot_id;
         std::string label;
         
-        Shot(double beam_x, double beam_y, bool hit_target, bool is_flipped, bool is_special_shot = false, const::std::string& special_image = "", const std::string& label = "") : t0{std::chrono::high_resolution_clock::now()}, shot_id{num_shots}, label{label}
+        Shot(double beam_x, double beam_y, bool hit_target, bool is_flipped, bool is_special_shot = false, bool is_heat_seeking = false, const::std::string& special_image = "", const std::string& label = "") : t0{std::chrono::high_resolution_clock::now()}, is_special_shot{is_special_shot}, is_heat_seeking{is_heat_seeking}, shot_id{num_shots}, label{label}
         {
             this->beam_x = beam_x;
             this->beam_y = beam_y;
@@ -119,9 +120,9 @@ cppyy.cppdef(
             this->start_beam_y = beam_y;
             this->hit_target = hit_target;
             this->is_flipped = is_flipped;
-            this->is_special_shot = is_special_shot;
             this->special_image = special_image;
             Shot::num_shots++;
+            std::cout << "is_heat_seeking = " << is_heat_seeking << '\n';
         }
         
         double distance(double X_size)
@@ -3493,6 +3494,7 @@ Rolling a dice:
 def QuestGames(Setting, role):
     global font, white, black, orange, X, Y, red, screen, base_screen_width
     NumRounds = 10
+    HEAT_SEEKING_PROB = 1 #ten-percent chance shot is heat-seeking
     role.health = role.base_health  # TODO: delete!
     role.attackpower = 1000 #TODO: delete!
     money = 0
@@ -3929,7 +3931,7 @@ def QuestGames(Setting, role):
                         # Puts the coordinate of the shots fired on the screen
 #                        (double beam_x, double beam_y, bool hit_target, bool is_flipped, bool is_special_shot = false, const::std::string& special_image = "", const std::string& label = "")
                         shotsFired.append(Shot(beam_x, beam_y, False,
-                                               role.flipped, False, "", "role"))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
+                                               role.flipped, False, False, "", "role"))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
                         # Update the wait-time here.
                         role.update_wait_time()
                 elif event.key in role.InputMapDict and role.numInv[role.InputMapDict[event.key]]["Number"] > 0:
@@ -3941,7 +3943,7 @@ def QuestGames(Setting, role):
                             beam_y = curr_y + buffer_height / 3
                             # Puts the coordinate of the shots fired on the screen
                             shotsFired.append(Shot(beam_x, beam_y, False,
-                                                   role.flipped, True, role.specialShotImage, "role"))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
+                                                   role.flipped, True, False, role.specialShotImage, "role"))  # x-position of beam, y-position of beam, has it hit the target?, flipped?
                             # Update the wait-time here.
                             role.update_wait_time()
                         else:
@@ -3958,7 +3960,9 @@ def QuestGames(Setting, role):
                 beam_x = enemy_x[NumberDefeated][i] + (0 if not enemy[i].flipped else buffer_width)
                 beam_y = curr_enemy_y[NumberDefeated][i] + buffer_width / 2
                 # The arguments of Shot constructor below correspond to x-position of beam, y-position of beam, has it hit the target?, flipped?
-                shotsEnemyFired[NumberDefeated][i].append(Shot(beam_x, beam_y, False, enemy[i].flipped))
+                is_heat_seeking = int(random() < HEAT_SEEKING_PROB)
+                print(f"is_heat_seeking = {is_heat_seeking}")
+                shotsEnemyFired[NumberDefeated][i].append(Shot(beam_x, beam_y, False, enemy[i].flipped, False, is_heat_seeking))
                 enemy[i].update_wait_time()
 
             if enemy_options[enemyMove] == "right":
@@ -4169,7 +4173,17 @@ def QuestGames(Setting, role):
         for i, shot_list in enumerate(shotsEnemyFired[min(NumberDefeated, NumRounds - 1)]): #looping over each enemy[i]'s shot_list in the current round `NumberDefeated`
             for shot in shot_list: #looping over each shot of enemy[i]'s shot_list
                 #print(f"shotsEnemyFired[NumberDefeated] = {shotsEnemyFired[NumberDefeated]}, shot = {shot}")
-                shot.beam_x = shot.beam_x - enemy[i].shot_speed*ShotSpeedFactor if not shot.is_flipped else shot.beam_x + enemy[i].shot_speed*ShotSpeedFactor
+                if shot.is_heat_seeking:
+                    inc_x = role_rect.x - shot.beam_x
+                    inc_y = role_rect.y - shot.beam_y
+                    M_f = sqrt((enemy[i].shot_speed*ShotSpeedFactor)/(inc_x*inc_x + inc_y*inc_y))
+                    inc_x *= M_f
+                    inc_y *= M_f
+                    shot.beam_x += inc_x
+                    shot.beam_y += inc_y
+                else:
+                    shot.beam_x += (-1)**(not shot.is_flipped) * enemy[i].shot_speed*ShotSpeedFactor
+                    
                 beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width, beam_height)  # beam object
                 if beam_rect.colliderect(
                         role_rect) and not shot.hit_target:  # Role was hit and this is not a repeat of the same shot
@@ -4199,9 +4213,9 @@ def QuestGames(Setting, role):
 #        print("Arrived")
 #        exit()
         #Deleting shots that have trailed off the page
-        shotsFired = [shot for shot in shotsFired if shot.beam_x >= 0 and shot.beam_x <= X]
+        shotsFired = [shot for shot in shotsFired if (0 <= shot.beam_x <= X and 0 <= shot.beam_y <= Y) and not shot.hit_target]
         temp_idx = min(NumberDefeated, NumRounds - 1) #clips NumberDefeated to NumRounds - 1 if NumberDefeated >= NumRounds (e.g. after the last round)
-        shotsEnemyFired[temp_idx] = [[shot for shot in shot_list if shot.beam_x >= 0 and shot.beam_x <= X]  for shot_list in shotsEnemyFired[temp_idx]]
+        shotsEnemyFired[temp_idx] = [[shot for shot in shot_list if (0 <= shot.beam_x <= X and 0 <= shot.beam_y <= Y) and not shot.hit_target]  for shot_list in shotsEnemyFired[temp_idx]]
 
         if role.health <= 0: #Role died 😭
             pygame_print("You died!", loc_y=int(0.4*Y))
