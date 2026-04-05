@@ -83,6 +83,8 @@ def scale_0_1(val):
     # Format this code better/more consistently.
     # Zoom-in and Zoom-out feature (via command/ctrl +/- and/or two-finger scroll up/down)
     # Boss battle?
+    # Pause button for quest-games
+        # Has to not interfere with input map
 '''
 cS is NOT an input function!!!
 
@@ -2389,7 +2391,7 @@ def search(setting, role):
     role.searchTime = time()
     return setting.places[optionNumber]
 
-def get_role_rect(role_rect, role, role_image_name, buffer_width = int(.025*X), buffer_height = int(.025*X)):
+def get_role_rect(role_rect, role, role_image_name, buffer_width = int(.025*X), buffer_height = int(0.02667*Y)):
     role_temp_equip = role.equipped_item.replace(" ", "")
     #Image names are of the form `{role}-{role_temp_equip}-start.png`
     if role.equipped_item and role_temp_equip not in role_image_name:
@@ -3810,7 +3812,7 @@ def QuestGames(Setting, role):
                                  (health_bar_x, health_bar_y, health_bar_width * health_percentage, health_bar_height))
         font = pygame.font.Font('freesansbold.ttf', int(0.04266 * Y))
         
-    role_rect = get_role_rect(pygame.Rect(start_x, start_y, buffer_width, buffer_width), role, role_image_name, buffer_width = int(.025*X), buffer_height = int(.025*X))
+    role_rect = get_role_rect(pygame.Rect(start_x, start_y, buffer_width, buffer_height), role, role_image_name, buffer_width = int(.025*X), buffer_height = int(0.02667*Y))
     enemy_rect = []
     
     for (x_val, y_val) in zip(enemy_x, enemy_y):
@@ -3907,7 +3909,7 @@ def QuestGames(Setting, role):
                             shotsEnemyFired[round_idx][enemy_idx][shot_idx].beam_y *= Y_ratio
 #                print(f"Time to modify enemies' shot-coordinates = {time() - shotsEnemyFiredStartTimer:.10f}")
 
-                role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, role_image_name, buffer_width = int(.025*X), buffer_height = int(.025*X))
+                role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_height), role, role_image_name, buffer_width = int(.025*X), buffer_height = int(0.02667*Y))
                 
                 enemy_rect = []
                 assert(len(enemy_x) == len(curr_enemy_y) and len(enemy_x) == NumRounds)
@@ -4058,7 +4060,7 @@ def QuestGames(Setting, role):
                     enemy_x[NumberDefeated][i] -= enemy[i].speed * AvatarSpeedFactor * (X/base_screen_width)
                 enemy[i].flipped = False
 
-        role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_width), role, role_image_name, buffer_width = int(.025*X), buffer_height = int(.025*X))
+        role_rect = get_role_rect(pygame.Rect(start_x, curr_y, buffer_width, buffer_height), role, role_image_name, buffer_width = int(.025*X), buffer_height = int(0.02667*Y))
         enemy_rect = []
         assert(len(enemy_x) == len(curr_enemy_y) and len(enemy_x) == NumRounds)
         for i, (x_val, y_val) in enumerate(zip(enemy_x, curr_enemy_y)): #for each round
@@ -4083,14 +4085,18 @@ def QuestGames(Setting, role):
                 for i in range(len(enemy)): #Loop over each enemy and check if `shot` hit `enemy[i]`
                     assert NumberDefeated < len(enemy_rect), f"NumberDefeated = {NumberDefeated} > len(enemy_rect) = {len(enemy_rect)}"
                     assert i < len(enemy_rect[NumberDefeated]), f"i = {i} >= len(enemy_rect[NumberDefeated]) = {len(enemy_rect[NumberDefeated])}"
-                    if beam_rect.colliderect(
-                            enemy_rect[NumberDefeated][i]) and not shot.hit_target:  # Enemy was hit and this is not a repeat of the same shot
+#                    if beam_rect.colliderect(enemy_rect[NumberDefeated][i]) and not shot.hit_target:  # Enemy was hit and this is not a repeat of the same shot
+                    beam_rect_sprite = pygame.sprite.Sprite()
+                    beam_rect_sprite.rect = beam_rect;
+                    enemy_rect_sprite = pygame.sprite.Sprite()
+                    enemy_rect_sprite.rect = enemy_rect[NumberDefeated][i];
+                    if pygame.sprite.collide_rect_ratio(0.5)(beam_rect_sprite, enemy_rect_sprite) and not shot.hit_target:
                         damage_dealt = role.attack(enemy[i], multiplier = 1 if not shot.is_special_shot else role.specialShotMultipliers[role.specialShotImage])
                         # proportional to damage taken (use health drop if you have it; here we use a constant)
                         e_id = _eid(i)
                         if e_id in step_reward:
                             step_reward[e_id] -= scale_0_1(damage_dealt)*1.2
-                        pygame.draw.rect(screen, red, enemy_rect[NumberDefeated][i], 2) # Drawing the red-swuare around the enemy to denote that the enemy was hit
+                        pygame.draw.rect(screen, red, pygame.Rect.scale_by(enemy_rect[NumberDefeated][i], 0.725, 0.975), 2) # Drawing the red-swuare around the enemy to denote that the enemy was hit
                         if enemy[i].health == 0: #Meaning an enemy died
                             money += enemy[i].expYield*10
                             temp_level = role.currLevel
@@ -4185,15 +4191,20 @@ def QuestGames(Setting, role):
                     shot.beam_x += (-1)**(not shot.is_flipped) * enemy[i].shot_speed*ShotSpeedFactor
                     
                 beam_rect = pygame.Rect(shot.beam_x, shot.beam_y, beam_width, beam_height)  # beam object
-                if beam_rect.colliderect(
-                        role_rect) and not shot.hit_target:  # Role was hit and this is not a repeat of the same shot
+                beam_rect_sprite = pygame.sprite.Sprite()
+                beam_rect_sprite.rect = beam_rect;
+                role_rect_sprite = pygame.sprite.Sprite()
+                role_rect_sprite.rect = role_rect;
+#                if beam_rect.colliderect(role_rect) and not shot.hit_target:  # Role was hit and this is not a repeat of the same shot
+                if pygame.sprite.collide_rect_ratio(0.5)(beam_rect_sprite, role_rect_sprite) and not shot.hit_target:  # Role was hit and this is not a repeat of the same shot
+
                     damage_dealt = enemy[i].attack(role, shot.distance(screen.get_width()))
                     print(f"damage-dealt by {enemy[i].name} = {damage_dealt}")
                     # === learning: reward damaging the player ===
                     eid = _eid(i)
                     if eid in step_reward:
                         step_reward[eid] += scale_0_1(damage_dealt)*1.2
-                    pygame.draw.rect(screen, red, role_rect, 2)
+                    pygame.draw.rect(screen, red, pygame.Rect.scale_by(role_rect, 0.725, 0.975), 2)
 
                     shot.hit_target = True
                 pygame.draw.ellipse(screen, red, beam_rect)  # Drawing the beam
